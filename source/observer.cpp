@@ -23,12 +23,15 @@ public:
 public:
     Concurrent_Observed() {}
     ~Concurrent_Observed() {}
+    
     void attach(Concurrent_Observer<D, C> * o, C c) {
-    _observers.insert(o);
-}
+        _observers.insert(o);
+    }
+    
     void detach(Concurrent_Observer<D, C> * o, C c) {
         _observers.remove(o);
     }
+    
     bool notify(C c, D * d) {
         bool notified = false;
         for(Observers::Iterator obs = _observers.begin(); obs != _observers.end(); obs++) {
@@ -56,10 +59,12 @@ public:
 public:
     Concurrent_Observer(): _semaphore(0) {}
     ~Concurrent_Observer() {}
+    
     void update(C c, D * d) {
         _data.insert(d);
         _semaphore.v();
     }
+    
     D * updated() {
         _semaphore.p();
         return _data.remove();

@@ -2,14 +2,15 @@
 class Ethernet; // all necessary definitions and formats
 
 template <typename Engine>
-class NIC: public Ethernet, public Conditional_Data_Observed<Buffer<Ethernet::Frame>,
-
-Ethernet::Protocol>, private Engine
+class NIC:  public Ethernet,
+            public Conditional_Data_Observed<Buffer<Ethernet::Frame>,
+            Ethernet::Protocol>,
+            private Engine
 {
 public:
     static const unsigned int BUFFER_SIZE =
-    Traits<NIC>::SEND_BUFFERS * sizeof(Buffer<Ethernet::Frame>) +
-    Traits<NIC>::RECEIVE_BUFFERS * sizeof(Buffer<Ethernet::Frame>);
+        Traits<NIC>::SEND_BUFFERS * sizeof(Buffer<Ethernet::Frame>) +
+        Traits<NIC>::RECEIVE_BUFFERS * sizeof(Buffer<Ethernet::Frame>);
     typedef Ethernet::Address Address;
     typedef Ethernet::Protocol Protocol_Number;
     typedef Buffer<Ethernet::Frame> Buffer;
@@ -21,15 +22,19 @@ protected:
 
 public:
     ~NIC();
+    
     int send(Address dst, Protocol_Number prot, const void * data, unsigned int size);
     int receive(Address * src, Protocol_Number * prot, void * data, unsigned int size);
+    
     Buffer * alloc(Address dst, Protocol_Number prot, unsigned int size);
     int send(Buffer * buf);
     void free(Buffer * buf);
     int receive(Buffer * buf, Address * src, Address * dst, void * data, unsigned int size);
+    
     const Address & address();
     void address(Address address);
     const Statistics & statistics();
+    
     void attach(Observer * obs, Protocol_Number prot); // possibly inherited
     void detach(Observer * obs, Protocol_Number prot); // possibly inherited
 

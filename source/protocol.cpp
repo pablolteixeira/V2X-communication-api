@@ -4,7 +4,7 @@ class Protocol: private typename NIC::Observer
 {
 public:
     static const typename NIC::Protocol_Number PROTO =
-    Traits<Protocol>::ETHERNET_PROTOCOL_NUMBER;
+        Traits<Protocol>::ETHERNET_PROTOCOL_NUMBER;
     typedef typename NIC::Buffer Buffer;
     typedef typename NIC::Address Physical_Address;
     typedef XXX Port;
@@ -36,7 +36,9 @@ class Packet: public Header
 {
 public:
     Packet();
+    
     Header * header();
+    
     template<typename T>
     T * data() { return reinterpret_cast<T *>(&_data); }
 
@@ -49,6 +51,7 @@ protected:
 
 public:
     ~Protocol() { _nic->detach(this, PROTO); }
+    
     static int send(Address from, Address to, const void * data, unsigned int size);
     // Buffer * buf = NIC::alloc(to.paddr, PROTO, sizeof(Header) + size)
     // NIC::send(buf)
@@ -56,6 +59,7 @@ public:
     // unsigned int s = NIC::receive(buf, &from.paddr, &to.paddr, data, size)
     // NIC::free(buf)
     // return s;
+    
     static void attach(Observer * obs, Address address);
     static void detach(Observer * obs, Address address);
 
