@@ -1,45 +1,37 @@
-// Communication End-Point (for client classes)
-class Message;
+#include "../header/message.h"
+#include <cstring>
 
-template <typename Channel>
-class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data,
-                    typename Channel::Observer::Observing_Condition>
-{
-    typedef Concurrent_Observer<typename Channel::Observer::Observed_Data,
-        typename Channel::Observer::Observing_Condition> Observer;
+// Constructor
+Message::Message(size_t max_size) 
+    : _buffer(new unsigned char[max_size]), _max_size(max_size) {
+}
 
-public:
-    typedef typename Channel::Buffer Buffer;
-    typedef typename Channel::Address Address;
+// Destructor
+Message::~Message() {
+    delete[] _buffer;
+}
 
-public:
-    Communicator(Channel * channel, Address address): _channel(channel), _address(address) {
-        _channel->attach(this, address);
-    }
+// Get mutable data pointer
+unsigned char* Message::data() {
+    return _buffer;
+}
 
-    ~Communicator_Common() { Channel::detach(this, _address); }
-    
-    bool send(const Message * message) {
-        return (_channel->send(_address, Channel::Address::BROADCAST, message->data(),
-            message->size()) > 0);
-    }
+// Get const data pointer
+const unsigned char* Message::data() const {
+    return _buffer;
+}
 
-    bool receive(Message * message) {
-        Buffer * buf = Observer::updated(); // block until a notification is triggered
-        Channel::Address from;
-        int size = _channel->receive(buf, &from, message->data(), message->size());
-        // . . .
-        if(size > 0)
-            return true;
-    }
+// Get current size
+size_t Message::size() const {
+    return _size;
+}
 
-private:
-    void update(typename Channel::Observed * obs, typename
-        Channel::Observer::Observing_Condition c, Buffer * buf) {
-        Observer::update(c, buf); // releases the thread waiting for data
-    }
+// Set size
+void Message::size(size_t s) {
+    _size = (s > _max_size) ? _max_size : s;
+}
 
-private:
-    Channel * _channel;
-    Address _address;
-};
+// Get maximum size
+size_t Message::max_size() const {
+    return _max_size;
+}

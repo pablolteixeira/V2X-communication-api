@@ -1,4 +1,6 @@
-// Communication Protocol
+#ifndef PROTOCOL_H
+#define PROTOCOL_H
+
 template <typename NIC>
 class Protocol: private typename NIC::Observer
 {
@@ -11,40 +13,41 @@ public:
     typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Port> Observer;
     typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Port> Observed;
 
-class Address
-{
-public:
-    enum Null;
+    class Address
+    {
+    public:
+        enum Null;
 
-public:
-    Address();
-    Address(const Null & null);
-    Address(Physical_Address paddr, Port port);
-    operator bool() const { return (_paddr || _port); }
-    bool operator==(Address a) { return (_paddr == a._paddr) && (_port == a._port); }
+    public:
+        Address();
+        Address(const Null & null);
+        Address(Physical_Address paddr, Port port);
+        operator bool() const { return (_paddr || _port); }
+        bool operator==(Address a) { return (_paddr == a._paddr) && (_port == a._port); }
 
-private:
-    Physical_Address _paddr;
-    Port _port;
-};
+    private:
+        Physical_Address _paddr;
+        Port _port;
+    };
 
-class Header;
-static const unsigned int MTU = NIC::MTU - sizeof(Header);
-typedef unsigned char Data[MTU];
-
-class Packet: public Header
-{
-public:
-    Packet();
+    class Header;
     
-    Header * header();
-    
-    template<typename T>
-    T * data() { return reinterpret_cast<T *>(&_data); }
+    static const unsigned int MTU = NIC::MTU - sizeof(Header);
+    typedef unsigned char Data[MTU];
 
-private:
-    Data _data;
-} __attribute__((packed));
+    class Packet: public Header
+    {
+    public:
+        Packet();
+        
+        Header * header();
+        
+        template<typename T>
+        T * data() { return reinterpret_cast<T *>(&_data); }
+
+    private:
+        Data _data;
+    } __attribute__((packed));
 
 protected:
     Protocol(NIC * nic): _nic(nic) { _nic->attach(this, PROTO); }
@@ -74,3 +77,5 @@ private:
     // Channel protocols are usually singletons
     static Observed _observed;
 };
+
+#endif PROTOCOL_H
