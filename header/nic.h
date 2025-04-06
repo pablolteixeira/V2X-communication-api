@@ -1,3 +1,7 @@
+#ifndef NIC_H
+#define NIC_H
+
+
 #include "ethernet.h"
 
 template <typename Engine>
@@ -41,3 +45,5 @@ private:
     Statistics _statistics;
     Buffer _buffer[BUFFER_SIZE];
 };
+
+#endif NIC_H
