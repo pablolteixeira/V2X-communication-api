@@ -20,11 +20,7 @@ public:
     {
     public:
         Frame() {}
-        Frame(Address dst, Address src, Protocol prot) {
-            memcpy(_header.h_dest, dst, ETH_ALEN);
-            memcpy(_header.h_source, src, ETH_ALEN);
-            _header.h_proto = htons(prot);
-        }
+        Frame(Address dst, Address src, Protocol prot);
     
         Header* header() { return &_header; }
         unsigned char* data() { return _data; }
@@ -34,17 +30,9 @@ public:
         unsigned char _data[ETH_FRAME_LEN - sizeof(Header)];
     } __attribute__((packed));
 
-    static void address_to_string(Address addr, char* str) {
-        sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x",
-            addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-    }
+    static void address_to_string(Address addr, char* str);
 
-    static bool is_broadcast(Address addr) {
-        for(int i = 0; i < ETH_ALEN; i++)
-            if(addr[i] != 0xFF)
-                return false;
-        return true;
-    }
+    static bool is_broadcast(Address addr);
 };
 
 #endif ETHERNET_H
