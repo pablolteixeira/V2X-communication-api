@@ -1,4 +1,4 @@
-#include "message.h"
+#include "../header/message.h"
 #include <cstring>
 
 // Constructor
@@ -6,7 +6,7 @@ Message::Message(size_t max_size)
     : _buffer(new unsigned char[max_size]), _max_size(max_size) {
 }
 
-// Destructor
+        
 Message::~Message() {
     delete[] _buffer;
 }
