@@ -1,3 +1,5 @@
+#include "ethernet.h"
+
 template <typename Engine>
 class NIC:  public Ethernet,
             public Conditional_Data_Observed<Buffer<Ethernet::Frame>,
