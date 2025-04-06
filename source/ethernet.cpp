@@ -1,2 +1,2 @@
 // Network
-class Ethernet; // all necessary definitions and formats
+#include "../header/ethernet.h"

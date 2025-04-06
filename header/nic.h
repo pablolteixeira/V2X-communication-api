@@ -1,3 +1,9 @@
+#ifndef NIC_H
+#define NIC_H
+
+
+#include "ethernet.h"
+
 template <typename Engine>
 class NIC:  public Ethernet,
             public Conditional_Data_Observed<Buffer<Ethernet::Frame>,
@@ -39,3 +45,5 @@ private:
     Statistics _statistics;
     Buffer _buffer[BUFFER_SIZE];
 };
+
+#endif NIC_H
