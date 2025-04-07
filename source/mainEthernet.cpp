@@ -3,7 +3,7 @@
 #include "Ethernet.h" // Certifique-se de que este arquivo está no caminho correto
 
 int main() {
-    std::cout << "=== Teste da classe Ethernet no Linux ===" << std::endl;
+    std::cout << "=== Teste da classe Ethernet ===" << std::endl;
     
     // Definir alguns endereços MAC para teste
     Ethernet::Address mac1 = {0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E};
