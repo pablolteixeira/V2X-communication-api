@@ -1,6 +1,6 @@
 #include <iostream>
 #include <iomanip>
-#include "Ethernet.h" // Certifique-se de que este arquivo está no caminho correto
+#include "../header/ethernet.h" // Certifique-se de que este arquivo está no caminho correto
 
 int main() {
     std::cout << "=== Teste da classe Ethernet ===" << std::endl;
