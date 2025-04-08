@@ -88,14 +88,19 @@ public:
         return copy_size;
     }
 
-    const Address & address();
+    const Address & address() {
+        return Engine::_addr;
+    }
 
-    void address(Address address);
+    //void address(Address address);
 
-    const Statistics & statistics();
+    //const Statistics & statistics();
 
-    void attach(Observer * obs, Protocol_Number prot); // possibly inherited
-    void detach(Observer * obs, Protocol_Number prot); // possibly inherited
+    //void attach(Observer * obs, Protocol_Number prot); // possibly inherited
+    //void detach(Observer * obs, Protocol_Number prot); // possibly inherited
+
+    using Observed::attach;
+    using Observed::detach;
 
 private:
     static void* receive_thread_function(void* arg) {
@@ -125,7 +130,7 @@ private:
     }
 
 private:
-    Statistics _statistics;
+    //Statistics _statistics;
     Buffer* _buffer[BUFFER_SIZE];
     unsigned int _buffer_count;
     pthread_t _recv_thread;
