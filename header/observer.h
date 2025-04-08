@@ -1,4 +1,7 @@
 // Fundamentals for Observer X Observed
+#include "ordered_list.h"
+#include "list.h"
+
 template <typename T, typename Condition = void>
 class Conditional_Data_Observer;
 
@@ -9,7 +12,7 @@ class Conditionally_Data_Observed;
 
 template<typename D, typename C = void>
 class Concurrent_Observer;
-
+ 
 template<typename D, typename C = void>
 class Concurrent_Observed
 {
