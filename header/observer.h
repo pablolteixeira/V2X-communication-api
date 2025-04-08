@@ -1,6 +1,7 @@
 // Fundamentals for Observer X Observed
 #include "ordered_list.h"
 #include "list.h"
+#include "semaphore.h"
 
 template <typename T, typename Condition = void>
 class Conditional_Data_Observer;
