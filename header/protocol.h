@@ -121,6 +121,10 @@ public:
         return packet->length();
     }
     
+    static void free(Buffer* buf) {
+        _nic->free(buf);
+    }
+
     static void attach(Observer * obs, Address address) {
         _observed.attach(obs, address.port());
     }
