@@ -1,3 +1,15 @@
+#ifndef RAW_SOCKET_ENGINE_H
+#define RAW_SOCKET_ENGINE_H
+
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <linux/if_packet.h>
+#include <net/if.h>
+#include <unistd.h>
+#include <stdexcept>
+#include <cstring>
+#include "ethernet.h"
+
 class RawSocketEngine 
 {
 protected:
