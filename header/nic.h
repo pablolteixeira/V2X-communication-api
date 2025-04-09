@@ -1,11 +1,14 @@
 #ifndef NIC_H
 #define NIC_H
 
+#include "observer.h"
 #include "ethernet.h"
-#include "buffer.h"
+#include <list>
+#include <pthread.h>
+#include <unistd.h>
 
 template <typename Engine>
-class NIC: public Ethernet, public Conditional_Data_Observed<Buffer<Ethernet::Frame>,
+class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,
             Ethernet::Protocol>, private Engine
 {
 public:
@@ -13,20 +16,28 @@ public:
     
     typedef Ethernet::Address Address;
     typedef Ethernet::Protocol Protocol_Number;
-    typedef Buffer<Ethernet::Frame> Buffer;
+    typedef Buffer<Ethernet::Frame> NICBuffer;
     
     typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
     typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
 protected:
-    NIC() : _buffer_count(0) {
+    /*NIC() : _buffer_count(0) {
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
             _buffer[i] = new Buffer(Ethernet::MTU);
         }
 
         // Start receive thread
         pthread_create(&_recv_thread, NULL, &receive_thread_function, this);
-    }
+    }*/
 public:
+    NIC() : _buffer_count(0) {
+        for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
+            _buffer[i] = new Buffer<Ethernet::Frame>(Ethernet::MTU);
+        }
+
+        // Start receive thread
+        pthread_create(&_recv_thread, NULL, &receive_thread_function, this);
+    }
     ~NIC() {
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
             delete _buffer[i];
@@ -36,12 +47,12 @@ public:
         pthread_join(_recv_thread, NULL);
     }
 
-    Buffer * alloc(Address dst, Protocol_Number prot, unsigned int size) {
+    NICBuffer * alloc(Address dst, Protocol_Number prot, unsigned int size) {
         if (_buffer_count >= BUFFER_SIZE) {
             return nullptr;
         }
 
-        Buffer* buf = _buffer[_buffer_count++];
+        NICBuffer* buf = _buffer[_buffer_count++];
         Ethernet::Frame* frame = buf->frame();
         memcpy(frame->header()->h_dest, dst, ETH_ALEN);
         memcpy(frame->header()->h_source, Engine::_addr, ETH_ALEN);
@@ -51,7 +62,7 @@ public:
         return buf;
     }
 
-    int send(Buffer * buf) {
+    int send(NICBuffer * buf) {
         Ethernet::Frame* frame = buf->frame();
         int result = Engine::raw_send(
             frame->header()->h_dest, 
@@ -63,7 +74,7 @@ public:
         return result;
     }
 
-    void free(Buffer * buf) {
+    void free(NICBuffer * buf) {
         for(unsigned int i = 0; i < _buffer_count; i++) {
             if(_buffer[i] == buf) {
                 if(i < _buffer_count - 1) {
@@ -75,7 +86,7 @@ public:
         }
     }
 
-    int receive(Buffer * buf, Address * src, Address * dst, void * data, unsigned int size) {
+    int receive(NICBuffer * buf, Address * src, Address * dst, void * data, unsigned int size) {
         Ethernet::Frame* frame = buf->frame();
         memcpy(src, frame->header()->h_source, ETH_ALEN);
         memcpy(dst, frame->header()->h_dest, ETH_ALEN);
@@ -109,7 +120,7 @@ private:
             Address src;
             Protocol_Number prot;
 
-            Buffer* buf = nic->alloc(nic->address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
+            NICBuffer* buf = nic->alloc(nic->address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
             if (!buf) {
                 sleep(1);
                 continue;
@@ -131,9 +142,9 @@ private:
 
 private:
     //Statistics _statistics;
-    Buffer* _buffer[BUFFER_SIZE];
+    List<NICBuffer*> _buffer[BUFFER_SIZE];
     unsigned int _buffer_count;
     pthread_t _recv_thread;
 };
 
-#endif NIC_H
+#endif // NIC_H

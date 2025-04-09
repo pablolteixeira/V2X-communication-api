@@ -1,22 +1,27 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
+#include "observer.h"
+#include "buffer.h"
+#include "traits.h"
+#include "ethernet.h"
+
 template <typename NIC>
-class Protocol: private typename NIC::Observer
+class Protocol: private NIC::Observer
 {
 public:
     static const typename NIC::Protocol_Number PROTO = Traits<Protocol>::ETHERNET_PROTOCOL_NUMBER;
     
-    typedef typename NIC::Buffer Buffer;
     typedef typename NIC::Address Physical_Address;
     typedef unsigned short Port;
     typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Port> Observer;
     typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Port> Observed;
+    typedef typename NIC::Buffer NICBuffer;
 
     class Address
     {
     public:
-        enum Null;
+        enum Null {};
 
     public:
         Address() : _port(0) {
@@ -25,7 +30,7 @@ public:
         Address(const Null & null) : _port(0) {
             memset(_paddr, 0, sizeof(_paddr));
         };
-        Address(Physical_Address paddr, Port port) : _paddr(paddr), _port(port);
+        Address(const Physical_Address paddr, Port port) : _paddr(paddr), _port(port) {};
         
         operator bool() const { return (_paddr || _port); }
         
@@ -72,7 +77,7 @@ public:
         
         template<typename T>
         T * data() { 
-            return reinterpret_cast<T *>(&_data); 
+            return reinterpret_cast<T*>(&_data); 
         }
 
     private:
@@ -80,24 +85,25 @@ public:
     } __attribute__((packed));
 
 protected:
-    Protocol(NIC * nic): _nic(nic) { _nic->attach(this, PROTO); }
+    /*Protocol(NIC * nic): _nic(nic) { _nic->attach(this, PROTO); }*/
 
 public:
+    Protocol(NIC * nic): _nic(nic) { _nic->attach(this, PROTO); }
     ~Protocol() { _nic->detach(this, PROTO); }
     
-    static int send(Address from, Address to, const void * data, unsigned int size) {
+    int send(Address from, Address to, const void * data, unsigned int size) {
         if (size > MTU) {
             return -1;
         }
 
-        Buffer* buf = _nic->alloc(to._paddr(), PROTO, sizeof(Header) + size);
+        NICBuffer* buf = _nic->alloc(to._paddr(), PROTO, sizeof(Header) + size);
         if (!buf) {
             return -1;
         }
 
-        Packet* packet = reinterpret_cast::<Packet*>(buf->frame()->data());
+        Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         packet->Header::operator=(Header(from.port(), to.port(), size));
-        memcpy(packet->data<void>(), data, size);
+        memcpy(packet->template data<void>(), data, size);
 
         int result = _nic->send(buf);
         _nic->free(buf);
@@ -105,8 +111,8 @@ public:
         return result;
     }
 
-    static int receive(Buffer * buf, Address from, void * data, unsigned int size) {
-        Packet* packet = reinterpret_cast::<Packet*>(buf->frame()->data());
+    int receive(NICBuffer * buf, Address from, void * data, unsigned int size) {
+        Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
 
         if (packet->length() > size) {
             return -1;
@@ -116,12 +122,12 @@ public:
         _nic->receive(buf, &paddr, nullptr, nullptr, 0);
 
         *from = Address(paddr, packet->from_port());
-        memcpy(data, packet->data<void>(), packet->length());
+        memcpy(data, packet->template data<void>(), packet->length());
 
         return packet->length();
     }
     
-    static void free(Buffer* buf) {
+    void free(NICBuffer* buf) {
         _nic->free(buf);
     }
 
@@ -133,16 +139,19 @@ public:
     }
 
 private:
-    void update(typename NIC::Observed * obs, NIC::Protocol_Number prot, Buffer * buf) {
+    void update(typename NIC::Observed * obs, typename NIC::Protocol_Number prot, NICBuffer * buf) {
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         if(!_observed.notify(packet->to_port(), buf)) // to call receive(...);
             _nic->free(buf);
     }
 
 private:
-    NIC * _nic;
+    NIC* _nic;
     // Channel protocols are usually singletons
     static Observed _observed;
 };
 
-#endif PROTOCOL_H
+template <typename NIC>
+typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
+
+#endif // PROTOCOL_H

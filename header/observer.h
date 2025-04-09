@@ -1,13 +1,53 @@
-// Fundamentals for Observer X Observed
+#ifndef OBSERVER_H
+#define OBSERVER_H
+
 #include "ordered_list.h"
 #include "list.h"
 #include "semaphore.h"
+#include "buffer.h"
+
+// Fundamentals for Observer X Observed
+template <typename T, typename Condition = void>
+class Conditional_Data_Observer 
+{
+public:
+    typedef T Observed_Data;
+    typedef Condition Observing_Condition;
+
+    virtual void update(Condition c, T* d) = 0;
+};
 
 template <typename T, typename Condition = void>
-class Conditional_Data_Observer;
+class Conditionally_Data_Observed 
+{
+public:
+    typedef T Observed_Data;
+    typedef Condition Observing_Condition;
+    typedef Ordered_List<Conditional_Data_Observer<T, Condition>, Condition> Observers;
 
-template <typename T, typename Condition = void>
-class Conditionally_Data_Observed;
+    Conditionally_Data_Observed() {}
+    ~Conditionally_Data_Observed() {}
+
+    void attach(Conditional_Data_Observer<T, Condition>* o, Condition c) {
+        _observers.insert(o);
+    }
+
+    void detach(Conditional_Data_Observer<T, Condition>* o, Condition c) {
+        _observers.remove(o);
+    }
+
+    bool notify(Condition c, T* d) {
+        bool notified = false;
+        for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+            (*obs)->update(c, d);
+            notified = true;
+        }
+        return notified;
+    }
+
+private:
+    Observers _observers;
+};
 
 // Conditional Observer x Conditionally Observed with Data decoupled by a Semaphore
 
@@ -78,3 +118,5 @@ private:
     Semaphore _semaphore;
     List<D> _data;
 };
+
+#endif // OBSERVER_H
