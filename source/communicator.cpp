@@ -1,5 +1,8 @@
 // Communication End-Point (for client classes)
 
+#include "../header/observer.h"
+#include "../header/message.h"
+
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data,
                     typename Channel::Observer::Observing_Condition>
@@ -16,7 +19,7 @@ public:
         _channel->attach(this, address);
     }
 
-    ~Communicator_Common() { Channel::detach(this, _address); }
+    ~Communicator() { Channel::detach(this, _address); }
     
     bool send(const Message * message) {
         return (_channel->send(_address, Channel::Address::BROADCAST, message->data(),
@@ -25,7 +28,7 @@ public:
 
     bool receive(Message * message) {
         Buffer * buf = Observer::updated(); // block until a notification is triggered
-        Channel::Address from;
+        typename Channel::Address from;
         int size = _channel->receive(buf, &from, message->data(), message->size());   
 
         if(size > 0) {

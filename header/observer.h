@@ -38,7 +38,7 @@ public:
     
     bool notify(C c, D * d) {
         bool notified = false;
-        for(Observers::Iterator obs = _observers.begin(); obs != _observers.end(); obs++) {
+        for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); obs++) {
             if(obs->rank() == c) {
                 obs->update(c, d);
                 notified = true;
