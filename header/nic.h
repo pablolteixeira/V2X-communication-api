@@ -3,9 +3,13 @@
 
 #include "observer.h"
 #include "ethernet.h"
-#include <list>
-#include <pthread.h>
+#include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
+#include <errno.h>
+#include <list>
+#include <vector>
+#include <algorithm>
 
 template <typename Engine>
 class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,
@@ -20,31 +24,51 @@ public:
     
     typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
     typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
-protected:
-    /*NIC() : _buffer_count(0) {
-        for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
-            _buffer[i] = new Buffer(Ethernet::MTU);
-        }
 
-        // Start receive thread
-        pthread_create(&_recv_thread, NULL, &receive_thread_function, this);
-    }*/
+    // Global signal handler needs access to all NICs
+    static std::vector<NIC*> active_nics;
 public:
     NIC() : _buffer_count(0) {
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
             _buffer[i] = new Buffer<Ethernet::Frame>(Ethernet::MTU);
         }
 
-        // Start receive thread
-        pthread_create(&_recv_thread, NULL, &receive_thread_function, this);
+        // Register this NIC instance
+        active_nics.push_back(this);
+        
+        // Set up SIGIO handling if this is the first NIC
+        if (active_nics.size() == 1) {
+            // Register the signal handler for SIGIO
+            struct sigaction sa;
+            memset(&sa, 0, sizeof(sa));
+            sa.sa_flags = SA_RESTART;
+            sa.sa_handler = &NIC::sigio_handler;
+            if (sigaction(SIGIO, &sa, NULL) < 0) {
+                perror("sigaction");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        // Set socket for asynchronous I/O
+        int flags = fcntl(Engine::_socket, F_GETFL, 0);
+        fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC);
+        
+        // Set this process as the owner of the socket
+        fcntl(Engine::_socket, F_SETOWN, getpid());
+        
+        // Enable non-blocking I/O for the socket
+        fcntl(Engine::_socket, F_SETFL, flags | O_NONBLOCK);
     }
     ~NIC() {
-        for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
+        // Remove this NIC from the active NICs list
+        auto it = std::find(active_nics.begin(), active_nics.end(), this);
+        if (it != active_nics.end()) {
+            active_nics.erase(it);
+        }
+        
+        for(unsigned int i = 0; i < BUFFER_SIZE; i++) {
             delete _buffer[i];
         }
-
-        pthread_cancel(_recv_thread);
-        pthread_join(_recv_thread, NULL);
     }
 
     NICBuffer * alloc(Address dst, Protocol_Number prot, unsigned int size) {
@@ -90,12 +114,12 @@ public:
         Ethernet::Frame* frame = buf->frame();
         memcpy(src, frame->header()->h_source, ETH_ALEN);
         memcpy(dst, frame->header()->h_dest, ETH_ALEN);
-
+        
         unsigned int data_size = buf->size() - sizeof(Ethernet::Header);
         unsigned int copy_size = (data_size > size) ? size : data_size;
-
+        
         memcpy(data, frame->data(), copy_size);
-
+        
         return copy_size;
     }
 
@@ -114,37 +138,55 @@ public:
     using Observed::detach;
 
 private:
-    static void* receive_thread_function(void* arg) {
-        NIC* nic = static_cast<NIC*>(arg);
-        while(true) {
+    // SIGIO handler (static function shared by all NICs)
+    static void sigio_handler(int signum) {
+        // Check all active NICs for data
+        for (auto nic : active_nics) {
+            nic->process_incoming_data();
+        }
+    }
+
+    // Process incoming data when SIGIO is received
+    void process_incoming_data() {
+        // Keep reading while there's data available (non-blocking)
+        while (true) {
             Address src;
             Protocol_Number prot;
-
-            NICBuffer* buf = nic->alloc(nic->address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
+            
+            // Get a free buffer
+            NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
             if (!buf) {
-                sleep(1);
-                continue;
+                // No buffers available, we'll have to try again later when buffer is freed
+                break;
             }
-
+            
             Ethernet::Frame* frame = buf->frame();
-            int size = nic->receive(&src, &prot, frame->data(), Ethernet::MTU - sizeof(Ethernet::Header));
-
+            int size = Engine::raw_receive(&src, &prot, frame->data(), Ethernet::MTU - sizeof(Ethernet::Header));
+            
             if (size > 0) {
+                // Successful read
                 buf->size(size + sizeof(Ethernet::Header));
-                nic->notify(prot, buf);
+                notify(prot, buf);
+            } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
+                // No more data available
+                free(buf);
+                break;
             } else {
-                nic->free(buf);
+                // Error
+                free(buf);
+                perror("Error reading from socket");
+                break;
             }
         }
-
-        return nullptr;
     }
 
 private:
     //Statistics _statistics;
-    List<NICBuffer*> _buffer[BUFFER_SIZE];
+    NICBuffer* _buffer[BUFFER_SIZE];
     unsigned int _buffer_count;
-    pthread_t _recv_thread;
 };
+
+template <typename Engine>
+std::vector<NIC<Engine>*> NIC<Engine>::active_nics;
 
 #endif // NIC_H
