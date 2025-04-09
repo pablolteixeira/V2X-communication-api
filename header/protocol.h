@@ -16,7 +16,7 @@ public:
     typedef unsigned short Port;
     typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Port> Observer;
     typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Port> Observed;
-    typedef typename NIC::Buffer NICBuffer;
+    typedef typename NIC::NICBuffer NICBuffer;
 
     class Address
     {
