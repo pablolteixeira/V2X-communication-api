@@ -26,8 +26,7 @@ public:
     bool receive(Message * message) {
         Buffer * buf = Observer::updated(); // block until a notification is triggered
         Channel::Address from;
-        int size = _channel->receive(buf, &from, message->data(), message->size());
-        _channel->free(buf);   
+        int size = _channel->receive(buf, &from, message->data(), message->size());   
 
         if(size > 0) {
             message->size(size);
