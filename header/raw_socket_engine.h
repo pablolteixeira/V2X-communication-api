@@ -9,6 +9,11 @@
 #include <stdexcept>
 #include <cstring>
 #include "ethernet.h"
+#include "console_logger.h"
+
+#include <iostream>
+#include <sstream>
+#include <iomanip>
 
 class RawSocketEngine 
 {
@@ -16,27 +21,43 @@ protected:
     RawSocketEngine() {
         _socket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
         if(_socket < 0) {
-            perror("Socket creation failed");
+            ConsoleLogger::error("Socket creation failed");
             throw std::runtime_error("Falha ao criar socket raw");
         }
         
         // Get interface index
+        ConsoleLogger::print("NIC: Setting interface index.");
+        
         struct ifreq ifr;
         memset(&ifr, 0, sizeof(ifr));
-        strcpy(ifr.ifr_name, "eth0"); // Default interface, can be configurable
+        strcpy(ifr.ifr_name, "eno1"); // Default interface, can be configurable
+                
         if(ioctl(_socket, SIOCGIFINDEX, &ifr) < 0) {
-            perror("SIOCGIFINDEX");
+            ConsoleLogger::error("SIOCGIFINDEX");
             close(_socket);
             throw std::runtime_error("Falha ao obter índice da interface");
         }
         _ifindex = ifr.ifr_ifindex;
-        
+
         // Get MAC address
+        ConsoleLogger::print("NIC: Getting MAC Address.");
+
         if(ioctl(_socket, SIOCGIFHWADDR, &ifr) < 0) {
-            perror("SIOCGIFHWADDR");
+            ConsoleLogger::error("SIOCGIFHWADDR");
             close(_socket);
             throw std::runtime_error("Falha ao obter endereço MAC da interface");
         }
+        
+        std::stringstream mac;
+        mac << std::hex << std::setfill('0');
+        for (int i = 0; i < ETH_ALEN; i++) {
+            mac << std::setw(2) << (static_cast<unsigned int>(ifr.ifr_hwaddr.sa_data[i]) & 0xFF);
+            if (i < ETH_ALEN - 1) {
+                mac << ":";
+            }
+        }
+
+        std::cout << "MAC Address: " << mac.str() << std::endl;
         memcpy(_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
     }
     
