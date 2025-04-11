@@ -3,6 +3,7 @@
 
 #include "observer.h"
 #include "ethernet.h"
+#include "console_logger.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -29,6 +30,8 @@ public:
     static std::vector<NIC*> active_nics;
 public:
     NIC() : _buffer_count(0) {
+        ConsoleLogger::print("Starting NIC...");
+
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
             _buffer[i] = new Buffer<Ethernet::Frame>(Ethernet::MTU);
         }
@@ -71,7 +74,7 @@ public:
         }
     }
 
-    NICBuffer * alloc(Address dst, Protocol_Number prot, unsigned int size) {
+    NICBuffer * alloc(const Address dst, Protocol_Number prot, unsigned int size) {
         if (_buffer_count >= BUFFER_SIZE) {
             return nullptr;
         }
