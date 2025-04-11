@@ -12,20 +12,20 @@ public:
     class Iterator
     {
     public:
-        Iterator(typename std::list<T*>::iterator it) _it(it) {};
+        Iterator(typename std::list<T*>::iterator it) : _it(it) {}
         Iterator& operator++() {
             ++_it;
             return *this;
         }
         bool operator!=(const Iterator& other) const {
-            return it != other.it;
+            return _it != other._it;
         }
         T* operator*() const {
             return *_it;
         }
     private:
         typename std::list<T*>::iterator _it;
-    }
+    };
 
     Ordered_List() {}
     ~Ordered_List() {}
