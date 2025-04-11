@@ -9,6 +9,24 @@ template<typename T, typename C = void>
 class Ordered_List 
 {
 public:
+    class Iterator
+    {
+    public:
+        Iterator(typename std::list<T*>::iterator it) _it(it) {};
+        Iterator& operator++() {
+            ++_it;
+            return *this;
+        }
+        bool operator!=(const Iterator& other) const {
+            return it != other.it;
+        }
+        T* operator*() const {
+            return *_it;
+        }
+    private:
+        typename std::list<T*>::iterator _it;
+    }
+
     Ordered_List() {}
     ~Ordered_List() {}
 
@@ -40,6 +58,13 @@ public:
         }
     
         std::cout << "]" << std::endl;
+    }
+
+    Iterator begin() { 
+        return Iterator(_items.begin()); 
+    }
+    Iterator end() { 
+        return Iterator(_items.end()); 
     }
 
 private:
