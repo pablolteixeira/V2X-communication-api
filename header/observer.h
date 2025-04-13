@@ -5,6 +5,7 @@
 #include "list.h"
 #include "semaphore.h"
 #include "buffer.h"
+#include "console_logger.h"
 
 // Fundamentals for Observer X Observed
 template <typename T, typename Condition = void>
@@ -14,7 +15,7 @@ public:
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
 
-    virtual void update(Condition c, T* d) = 0;
+    void update(Condition c, T* d) {};
 };
 
 template <typename T, typename Condition = void>
@@ -25,7 +26,9 @@ public:
     typedef Condition Observing_Condition;
     typedef Ordered_List<Conditional_Data_Observer<T, Condition>, Condition> Observers;
 
-    Conditionally_Data_Observed() {}
+    Conditionally_Data_Observed() {
+        ConsoleLogger::print("Conditionally_Data_Observed: Initializing instance.");
+    }
     ~Conditionally_Data_Observed() {}
 
     void attach(Conditional_Data_Observer<T, Condition>* o, Condition c) {
@@ -101,7 +104,9 @@ public:
     typedef C Observing_Condition;
 
 public:
-    Concurrent_Observer(): _semaphore(0) {}
+    Concurrent_Observer(): _semaphore(0) {
+        ConsoleLogger::print("Concurrent_Observer: Initializing instance.");
+    }
     ~Concurrent_Observer() {}
     
     void update(C c, D * d) {
