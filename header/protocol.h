@@ -5,6 +5,8 @@
 #include "buffer.h"
 #include "traits.h"
 #include "ethernet.h"
+#include <vector>
+#include <unordered_map>
 
 template <typename NIC>
 class Protocol: private NIC::Observer
@@ -14,8 +16,8 @@ public:
     
     typedef typename NIC::Address Physical_Address;
     typedef unsigned short Port;
-    typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Port> Observer;
-    typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Port> Observed;
+    typedef Concurrent_Observer<Buffer<Ethernet::Frame>, Port> Observer;
+    typedef Concurrent_Observed<Buffer<Ethernet::Frame>, Port> Observed;
     typedef typename NIC::NICBuffer NICBuffer;
 
     class Address
@@ -23,6 +25,9 @@ public:
     public:
         enum Null {};
 
+        static Physical_Address BROADCAST_MAC;
+        static const Address BROADCAST;
+        
     public:
         Address() : _port(0) {
             memset(_paddr, 0, sizeof(_paddr));
@@ -30,7 +35,9 @@ public:
         Address(const Null & null) : _port(0) {
             memset(_paddr, 0, sizeof(_paddr));
         };
-        Address(const Physical_Address paddr, Port port) : _paddr(paddr), _port(port) {};
+        Address(Physical_Address paddr, Port port) : _port(port) {
+            memcpy(_paddr, paddr, sizeof(Physical_Address));
+        }
         
         operator bool() const { return (_paddr || _port); }
         
@@ -65,7 +72,7 @@ public:
         unsigned short _length;
     } __attribute__((packed));
     
-    static const unsigned int MTU = NIC::MTU - sizeof(Header);
+    static const unsigned int MTU;
     typedef unsigned char Data[MTU];
 
     class Packet: public Header
@@ -85,14 +92,46 @@ public:
     } __attribute__((packed));
 
 protected:
-    /*Protocol(NIC * nic): _nic(nic) { _nic->attach(this, PROTO); }*/
+    Protocol() {}
 
 public:
-    Protocol(NIC * nic): _nic(nic) { _nic->attach(this, PROTO); }
-    ~Protocol() { _nic->detach(this, PROTO); }
+    ~Protocol() {
+        for (auto nic : _nics) {
+            nic->detach(this, PROTO);
+        }
+    }
     
+    static Protocol* get_instance() {
+        if (_instance == nullptr) {
+            _instance = new Protocol();
+        }
+
+        return _instance;
+    }
+
+    static void register_nic(NIC* nic) {
+        if (_instance) {
+            ConsoleLogger::print("Protocol: Registering NIC");
+            _nics.push_back(nic);
+            nic->attach(_instance, PROTO);
+        }
+    }
+
+    static void unregister_nic(NIC* nic) {
+        if (_instance) {
+            ConsoleLogger::print("Protocol: Unregistering NIC");
+            for (auto it = _nics.begin(); it != _nics.end(); ++it) {
+                if (*it == nic) {
+                    nic->detach(_instance, PROTO);
+                    _nics.erase(it);
+                    return;
+                }
+            }
+        }
+    }
+
     int send(Address from, Address to, const void * data, unsigned int size) {
-        if (size > MTU) {
+        /*if (size > MTU) {
             return -1;
         }
 
@@ -108,11 +147,11 @@ public:
         int result = _nic->send(buf);
         _nic->free(buf);
 
-        return result;
+        return result;*/
     }
 
     int receive(NICBuffer * buf, Address from, void * data, unsigned int size) {
-        Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
+        /*Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
 
         if (packet->length() > size) {
             return -1;
@@ -124,11 +163,7 @@ public:
         *from = Address(paddr, packet->from_port());
         memcpy(data, packet->template data<void>(), packet->length());
 
-        return packet->length();
-    }
-    
-    void free(NICBuffer* buf) {
-        _nic->free(buf);
+        return packet->length();*/
     }
 
     static void attach(Observer * obs, Address address) {
@@ -141,17 +176,35 @@ public:
 private:
     void update(typename NIC::Observed * obs, typename NIC::Protocol_Number prot, NICBuffer * buf) {
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
-        if(!_observed.notify(packet->to_port(), buf)) // to call receive(...);
-            _nic->free(buf);
+        if(!_observed.notify(packet->to_port(), buf)) {
+            /*_nic->free(buf);*/
+        } // to call receive(...);
     }
 
 private:
-    NIC* _nic;
+    static Protocol* _instance;
+    static std::vector<NIC*> _nics;
+    static std::unordered_map<Address, NIC*> _mac_table;
     // Channel protocols are usually singletons
     static Observed _observed;
 };
 
 template <typename NIC>
+typename Protocol<NIC>::Physical_Address Protocol<NIC>::Address::BROADCAST_MAC = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+template <typename NIC>
+const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST(Protocol<NIC>::Address::BROADCAST_MAC, 0);
+
+template <typename NIC>
+const unsigned int Protocol<NIC>::MTU = NIC::MTU - sizeof(Protocol<NIC>::Header);
+
+template <typename NIC>
 typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
+
+template <typename NIC>
+std::vector<NIC*> Protocol<NIC>::_nics;
+
+template <typename NIC>
+Protocol<NIC>* Protocol<NIC>::_instance = nullptr;
 
 #endif // PROTOCOL_H
