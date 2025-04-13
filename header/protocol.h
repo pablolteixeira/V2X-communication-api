@@ -169,19 +169,21 @@ public:
     }
 
     int receive(NICBuffer * buf, Address from, void * data, unsigned int size) {
-        /*Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
+        Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
 
         if (packet->length() > size) {
             return -1;
         }
 
-        Physical_Address paddr;
-        _nic->receive(buf, &paddr, nullptr, nullptr, 0);
+        NIC* nic = get_nic(from.paddr());
 
-        *from = Address(paddr, packet->from_port());
+        Physical_Address paddr;
+        nic->receive(buf, &paddr, nullptr, nullptr, 0);
+
+        from = Address(paddr, packet->from_port());
         memcpy(data, packet->template data<void>(), packet->length());
 
-        return packet->length();*/
+        return packet->length();
     }
 
     static void attach(Observer * obs, Address address) {
@@ -192,10 +194,11 @@ public:
     }
 
 private:
-    void update(typename NIC::Observed * obs, typename NIC::Protocol_Number prot, NICBuffer * buf) {
+    void update(typename NIC::Protocol_Number prot, NICBuffer * buf) override {
+        ConsoleLogger::print("Protocol: Update observers.");
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         if(!_observed.notify(packet->to_port(), buf)) {
-            /*_nic->free(buf);*/
+            //_nic->free(buf);
         } // to call receive(...);
     }
 
