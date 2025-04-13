@@ -87,6 +87,7 @@ protected:
     }
     
     int raw_receive(Ethernet::Address* src, Ethernet::Protocol* prot, void* data, unsigned int size) {
+        ConsoleLogger::print("Raw Socker Engine: Receive started.");  
         Ethernet::Frame frame;
         int bytes_received = recvfrom(_socket, &frame, sizeof(frame), 0, NULL, NULL);
         
