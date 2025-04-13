@@ -8,6 +8,8 @@
 #include "communicator.h"
 #include "message.h"
 
+#include <thread>
+
 typedef NIC<RawSocketEngine> EthernetNIC;
 typedef Protocol<EthernetNIC> EthernetProtocol;
 typedef Communicator<EthernetProtocol> EthernetCommunicator;
@@ -15,15 +17,22 @@ typedef Communicator<EthernetProtocol> EthernetCommunicator;
 class Vehicle
 {
 public:
-    Vehicle(int id, EthernetNIC* nic);
+    Vehicle(int id, EthernetNIC* nic, EthernetProtocol* protocol);
     ~Vehicle();
 
     void start();
+    void stop();
+private:
+    void run();
+
 private:
     int _id;
     EthernetNIC* _nic;
     EthernetProtocol* _protocol;
     EthernetCommunicator* _communicator;
+
+    bool _running = false;
+    std::thread _thread;
 };
 
 #endif // VEHICLE_H
