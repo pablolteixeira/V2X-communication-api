@@ -1,0 +1,101 @@
+             cat-51452   [010] d.... 33947.165385: signal_deliver: sig=9 errno=0 code=0 sa_handler=0 sa_flags=0
+             cat-51452   [010] dN... 33947.165553: signal_generate: sig=17 errno=0 code=2 comm=sudo pid=51450 grp=1 res=0
+            sudo-51450   [002] d.... 33947.165563: signal_deliver: sig=17 errno=0 code=2 sa_handler=7fe84906d340 sa_flags=14000004
+            grep-51451   [009] dN... 33947.165654: signal_generate: sig=17 errno=0 code=2 comm=bash pid=51122 grp=1 res=0
+            sudo-51450   [002] d.... 33947.166168: signal_generate: sig=2 errno=0 code=0 comm=sudo pid=51450 grp=1 res=0
+            sudo-51450   [002] d.... 33947.166169: signal_deliver: sig=9 errno=0 code=0 sa_handler=0 sa_flags=0
+            sudo-51450   [002] dN... 33947.166555: signal_generate: sig=17 errno=0 code=2 comm=bash pid=51122 grp=1 res=2
+            bash-51122   [001] d.... 33947.166676: signal_deliver: sig=17 errno=0 code=2 sa_handler=55fa26e8aa70 sa_flags=14000000
+      DOM Worker-41129   [008] d.... 33948.320178: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [008] d.... 33948.320181: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+ StreamT~ns #182-49141   [010] d.... 33949.023677: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #182 pid=49141 grp=0 res=0
+ StreamT~ns #182-49141   [010] d.... 33949.023682: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f08d1eaaf60 sa_flags=44000004
+ StreamT~ns #182-49141   [010] d.... 33949.023906: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #182 pid=49141 grp=0 res=0
+ StreamT~ns #182-49141   [010] d.... 33949.023908: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f08d1eaaf60 sa_flags=44000004
+ StreamT~ns #182-49141   [010] d.... 33949.024077: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #182 pid=49141 grp=0 res=0
+ StreamT~ns #182-49141   [010] d.... 33949.024080: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f08d1eaaf60 sa_flags=44000004
+           clear-51454   [004] dN... 33950.109335: signal_generate: sig=17 errno=0 code=1 comm=bash pid=51122 grp=1 res=0
+            bash-51122   [001] d.... 33950.109408: signal_deliver: sig=17 errno=0 code=1 sa_handler=55fa26e8aa70 sa_flags=14000000
+        nordvpnd-1037    [010] d.... 33952.244070: signal_generate: sig=23 errno=0 code=-6 comm=nordvpnd pid=1186 grp=0 res=0
+        nordvpnd-1186    [013] d.... 33952.244072: signal_deliver: sig=23 errno=0 code=-6 sa_handler=56428ccad220 sa_flags=1c000004
+      DOM Worker-41129   [005] d.... 33953.331240: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [005] d.... 33953.331242: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+        nordvpnd-1037    [010] d.... 33957.233412: signal_generate: sig=23 errno=0 code=-6 comm=nordvpnd pid=1193 grp=0 res=0
+        nordvpnd-1193    [006] d.... 33957.233417: signal_deliver: sig=23 errno=0 code=-6 sa_handler=56428ccad220 sa_flags=1c000004
+      DOM Worker-41129   [008] d.... 33958.341716: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [008] d.... 33958.341718: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+        nordvpnd-1037    [000] d.... 33962.239077: signal_generate: sig=23 errno=0 code=-6 comm=nordvpnd pid=1186 grp=0 res=0
+        nordvpnd-1186    [014] d.... 33962.239085: signal_deliver: sig=23 errno=0 code=-6 sa_handler=56428ccad220 sa_flags=1c000004
+      DOM Worker-41129   [010] d.... 33963.349488: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [010] d.... 33963.349494: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+ StreamT~ns #146-51462   [002] d.... 33966.326816: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #146 pid=51462 grp=0 res=0
+ StreamT~ns #146-51462   [002] d.... 33966.326821: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f8c950a5f60 sa_flags=44000004
+ StreamT~ns #146-51462   [002] d.... 33966.327067: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #146 pid=51462 grp=0 res=0
+ StreamT~ns #146-51462   [002] d.... 33966.327070: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f8c950a5f60 sa_flags=44000004
+ StreamT~ns #146-51462   [002] d.... 33966.327237: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #146 pid=51462 grp=0 res=0
+ StreamT~ns #146-51462   [002] d.... 33966.327239: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f8c950a5f60 sa_flags=44000004
+        nordvpnd-1037    [010] d.... 33967.243346: signal_generate: sig=23 errno=0 code=-6 comm=nordvpnd pid=1193 grp=0 res=0
+        nordvpnd-1193    [006] d.... 33967.243350: signal_deliver: sig=23 errno=0 code=-6 sa_handler=56428ccad220 sa_flags=1c000004
+      DOM Worker-41129   [010] d.... 33968.376374: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [010] d.... 33968.376377: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+            Xorg-1964    [010] d.h.. 33969.072720: signal_generate: sig=14 errno=0 code=128 comm=Xorg pid=1964 grp=1 res=0
+            Xorg-1964    [010] d.... 33969.072729: signal_deliver: sig=14 errno=0 code=128 sa_handler=5563dc22cac0 sa_flags=14000000
+           <...>-51465   [000] d.... 33971.139304: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #425 pid=51465 grp=0 res=0
+           <...>-51465   [000] d.... 33971.139314: signal_deliver: sig=31 errno=24 code=1 sa_handler=7fb8eb759f60 sa_flags=44000004
+ StreamT~ns #425-51465   [000] d.... 33971.139556: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #425 pid=51465 grp=0 res=0
+ StreamT~ns #425-51465   [000] d.... 33971.139565: signal_deliver: sig=31 errno=24 code=1 sa_handler=7fb8eb759f60 sa_flags=44000004
+ StreamT~ns #425-51465   [000] d.... 33971.139777: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #425 pid=51465 grp=0 res=0
+ StreamT~ns #425-51465   [000] d.... 33971.139786: signal_deliver: sig=31 errno=24 code=1 sa_handler=7fb8eb759f60 sa_flags=44000004
+          <idle>-0       [010] d.h.. 33971.985043: signal_generate: sig=14 errno=0 code=128 comm=Xorg pid=1964 grp=1 res=0
+            Xorg-1964    [004] d.... 33971.985049: signal_deliver: sig=14 errno=0 code=128 sa_handler=5563dc22cac0 sa_flags=14000000
+ WebrtcWorker #3-41116   [004] d.h.. 33971.990044: signal_generate: sig=14 errno=0 code=128 comm=Xorg pid=1964 grp=1 res=0
+            Xorg-1964    [000] d.... 33971.990060: signal_deliver: sig=14 errno=0 code=128 sa_handler=5563dc22cac0 sa_flags=14000000
+      DOM Worker-41129   [010] d.... 33973.394649: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [010] d.... 33973.394655: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+           <...>-51466   [012] d.... 33973.707075: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #458 pid=51466 grp=0 res=0
+           <...>-51466   [012] d.... 33973.707079: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f561dd68f60 sa_flags=44000004
+ StreamT~ns #458-51466   [012] d.... 33973.707184: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #458 pid=51466 grp=0 res=0
+ StreamT~ns #458-51466   [012] d.... 33973.707187: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f561dd68f60 sa_flags=44000004
+ StreamT~ns #458-51466   [012] d.... 33973.707269: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #458 pid=51466 grp=0 res=0
+ StreamT~ns #458-51466   [012] d.... 33973.707272: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f561dd68f60 sa_flags=44000004
+           <...>-51467   [014] d.... 33973.965925: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #640 pid=51467 grp=0 res=0
+           <...>-51467   [014] d.... 33973.965935: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f1d5fc66f60 sa_flags=44000004
+ StreamT~ns #640-51467   [001] d.... 33973.966231: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #640 pid=51467 grp=0 res=0
+ StreamT~ns #640-51467   [001] d.... 33973.966241: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f1d5fc66f60 sa_flags=44000004
+ StreamT~ns #640-51467   [001] d.... 33973.966507: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #640 pid=51467 grp=0 res=0
+ StreamT~ns #640-51467   [001] d.... 33973.966517: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f1d5fc66f60 sa_flags=44000004
+   kworker/u32:0-48211   [013] d.... 33975.033216: signal_generate: sig=2 errno=0 code=128 comm=main pid=51430 grp=1 res=0
+   kworker/u32:0-48211   [013] d.... 33975.033222: signal_generate: sig=2 errno=0 code=128 comm=sudo pid=51429 grp=1 res=0
+            main-51431   [000] d.... 33975.033225: signal_deliver: sig=9 errno=0 code=0 sa_handler=0 sa_flags=0
+           <...>-51430   [006] d.... 33975.033226: signal_deliver: sig=9 errno=0 code=0 sa_handler=0 sa_flags=0
+            sudo-51429   [003] d.... 33975.033236: signal_deliver: sig=2 errno=0 code=128 sa_handler=7fad96416340 sa_flags=14000004
+            main-51430   [006] dN... 33975.060345: signal_generate: sig=17 errno=0 code=2 comm=sudo pid=51429 grp=1 res=0
+            sudo-51429   [003] d.... 33975.060360: signal_deliver: sig=17 errno=0 code=2 sa_handler=7fad96416340 sa_flags=14000004
+            sudo-51429   [003] d.... 33975.060887: signal_generate: sig=2 errno=0 code=0 comm=sudo pid=51429 grp=1 res=0
+            sudo-51429   [003] d.... 33975.060891: signal_deliver: sig=9 errno=0 code=0 sa_handler=0 sa_flags=0
+            sudo-51429   [003] dN... 33975.061283: signal_generate: sig=17 errno=0 code=2 comm=bash pid=50067 grp=1 res=0
+            bash-50067   [008] d.... 33975.061360: signal_deliver: sig=17 errno=0 code=2 sa_handler=562338187a70 sa_flags=14000000
+           <...>-51468   [000] d.... 33975.590892: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #390 pid=51468 grp=0 res=0
+           <...>-51468   [000] d.... 33975.590901: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f12cba17f60 sa_flags=44000004
+ StreamT~ns #390-51468   [000] d.... 33975.591169: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #390 pid=51468 grp=0 res=0
+ StreamT~ns #390-51468   [000] d.... 33975.591176: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f12cba17f60 sa_flags=44000004
+ StreamT~ns #390-51468   [000] d.... 33975.591389: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #390 pid=51468 grp=0 res=0
+ StreamT~ns #390-51468   [000] d.... 33975.591412: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f12cba17f60 sa_flags=44000004
+           clear-51469   [012] dN... 33975.679064: signal_generate: sig=17 errno=0 code=1 comm=bash pid=50067 grp=1 res=0
+            bash-50067   [008] d.... 33975.679094: signal_deliver: sig=17 errno=0 code=1 sa_handler=562338187a70 sa_flags=14000000
+        nordvpnd-1037    [000] d.... 33977.243875: signal_generate: sig=23 errno=0 code=-6 comm=nordvpnd pid=1193 grp=0 res=0
+        nordvpnd-1193    [006] d.... 33977.243880: signal_deliver: sig=23 errno=0 code=-6 sa_handler=56428ccad220 sa_flags=1c000004
+      DOM Worker-41129   [004] d.... 33978.406125: signal_generate: sig=4 errno=0 code=2 comm=DOM Worker pid=41129 grp=0 res=0
+      DOM Worker-41129   [004] d.... 33978.406134: signal_deliver: sig=4 errno=0 code=2 sa_handler=7febf5df2420 sa_flags=4c000004
+           <...>-51473   [000] d.... 33979.008964: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #369 pid=51473 grp=0 res=0
+           <...>-51473   [000] d.... 33979.008974: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f84cf721f60 sa_flags=44000004
+ StreamT~ns #369-51473   [000] d.... 33979.009216: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #369 pid=51473 grp=0 res=0
+ StreamT~ns #369-51473   [000] d.... 33979.009224: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f84cf721f60 sa_flags=44000004
+ StreamT~ns #369-51473   [000] d.... 33979.009435: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #369 pid=51473 grp=0 res=0
+ StreamT~ns #369-51473   [000] d.... 33979.009443: signal_deliver: sig=31 errno=24 code=1 sa_handler=7f84cf721f60 sa_flags=44000004
+           <...>-51474   [009] d.... 33980.368013: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #157 pid=51474 grp=0 res=0
+           <...>-51474   [009] d.... 33980.368017: signal_deliver: sig=31 errno=24 code=1 sa_handler=7febfe6e3f60 sa_flags=44000004
+ StreamT~ns #157-51474   [009] d.... 33980.368129: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #157 pid=51474 grp=0 res=0
+ StreamT~ns #157-51474   [009] d.... 33980.368132: signal_deliver: sig=31 errno=24 code=1 sa_handler=7febfe6e3f60 sa_flags=44000004
+ StreamT~ns #157-51474   [009] d.... 33980.368199: signal_generate: sig=31 errno=24 code=1 comm=StreamT~ns #157 pid=51474 grp=0 res=0
+ StreamT~ns #157-51474   [009] d.... 33980.368201: signal_deliver: sig=31 errno=24 code=1 sa_handler=7febfe6e3f60 sa_flags=44000004
