@@ -36,8 +36,8 @@ public:
 
     // Template method to get data as a specific type (const version)
     template<typename T>
-    const T* get_data() const {
-        return reinterpret_cast<const T*>(_buffer);
+    T* get_data() {
+        return reinterpret_cast<T*>(_buffer);
     }
 
 private:
