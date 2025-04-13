@@ -5,6 +5,7 @@
 
 #include "observer.h"
 #include "message.h"
+#include "console_logger.h"
 
 template <typename Channel>
 class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data,
@@ -18,13 +19,14 @@ public:
     typedef typename Channel::Address Address;
 
 public:
-    Communicator(Channel * channel, Address address): _channel(channel), _address(address) {
+    Communicator(Channel* channel, Address address): _channel(channel), _address(address) {
         _channel->attach(this, address);
     }
 
     ~Communicator() { Channel::detach(this, _address); }
     
     bool send(const Message * message) {
+        ConsoleLogger::print("Communicator: Sending message.");
         return (_channel->send(_address, Channel::Address::BROADCAST, message->data(),
             message->size()) > 0);
     }
@@ -35,7 +37,6 @@ public:
         
         typename Channel::Address from;
         int size = _channel->receive(buf, &from, message->data(), message->size());
-        _channel->free(buf);
 
         if(size > 0) {
             message->size(size);
