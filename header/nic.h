@@ -80,21 +80,24 @@ public:
 
     NICBuffer * alloc(const Address dst, Protocol_Number prot, unsigned int size) {
         ConsoleLogger::print("NIC: Allocating buffer.");
+        
         if (_buffer_count >= BUFFER_SIZE) {
+            ConsoleLogger::error("NIC: _buffer_count >= BUFFER_SIZE");
             return nullptr;
         }
 
         NICBuffer* buf = _buffer[_buffer_count++];
+        buf->size(size + sizeof(Ethernet::Header));
         Ethernet::Frame* frame = buf->frame();
         memcpy(frame->header()->h_dest, dst, ETH_ALEN);
         memcpy(frame->header()->h_source, Engine::_addr, ETH_ALEN);
         frame->header()->h_proto = htons(prot);
-        buf->size(size + sizeof(Ethernet::Header));
 
         return buf;
     }
 
     int send(NICBuffer * buf) {
+        ConsoleLogger::print("NIC: Sending frame.");
         Ethernet::Frame* frame = buf->frame();
         int result = Engine::raw_send(
             frame->header()->h_dest, 
@@ -103,6 +106,7 @@ public:
             buf->size() - sizeof(Ethernet::Header)
         );
 
+        ConsoleLogger::print("NIC: Frame sent.");
         return result;
     }
 
@@ -161,7 +165,7 @@ private:
         while (true) {
             Address src;
             Protocol_Number prot;
-            
+
             // Get a free buffer
             NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
             if (!buf) {
