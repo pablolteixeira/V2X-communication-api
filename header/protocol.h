@@ -7,6 +7,10 @@
 #include "ethernet.h"
 #include <vector>
 #include <unordered_map>
+#include <string>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 template <typename NIC>
 class Protocol: private NIC::Observer
@@ -44,6 +48,8 @@ public:
         bool operator==(Address a) { return (_paddr == a._paddr) && (_port == a._port); }
         
         Port port() const { return _port; }
+    
+        Physical_Address& paddr() { return _paddr; }
     private:
         Physical_Address _paddr;
         Port _port;
@@ -113,6 +119,11 @@ public:
         if (_instance) {
             ConsoleLogger::print("Protocol: Registering NIC");
             _nics.push_back(nic);
+            std::string mac_string = mac_to_string(nic->address());
+            
+            std::cout << "Protocol: NIC Mac Address registered - " << mac_string << std::endl;
+            
+            _mac_table[mac_string] = nic;
             nic->attach(_instance, PROTO);
         }
     }
@@ -131,23 +142,30 @@ public:
     }
 
     int send(Address from, Address to, const void * data, unsigned int size) {
-        /*if (size > MTU) {
+        if (size > MTU) {
             return -1;
         }
+        ConsoleLogger::print("Protocol: Sending message.");
+        std::cout << "SIZES -> " << sizeof(Header) + size << " " << sizeof(Header) << " " << size << std::endl;
 
-        NICBuffer* buf = _nic->alloc(to._paddr(), PROTO, sizeof(Header) + size);
+        NIC* nic = get_nic(from.paddr());
+        NICBuffer* buf = nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
         if (!buf) {
             return -1;
         }
 
+        ConsoleLogger::print("Protocol: Buffer allocated.");
+        
+        Ethernet::Frame* frame = buf->frame();
+
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         packet->Header::operator=(Header(from.port(), to.port(), size));
         memcpy(packet->template data<void>(), data, size);
+        
+        int result = nic->send(buf);
+        nic->free(buf);
 
-        int result = _nic->send(buf);
-        _nic->free(buf);
-
-        return result;*/
+        return result;
     }
 
     int receive(NICBuffer * buf, Address from, void * data, unsigned int size) {
@@ -181,10 +199,27 @@ private:
         } // to call receive(...);
     }
 
+    static std::string mac_to_string(Physical_Address& addr) {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        
+        for (size_t i = 0; i < sizeof(Physical_Address); ++i) {
+            if (i > 0) ss << ":";
+            ss << std::setw(2) << static_cast<int>(addr[i]);
+        }
+        
+        return ss.str();
+    }
+
+    static NIC* get_nic(Physical_Address& paddr) {
+        std::string key = mac_to_string(paddr);
+        return _mac_table[key];
+    }
+
 private:
     static Protocol* _instance;
     static std::vector<NIC*> _nics;
-    static std::unordered_map<Address, NIC*> _mac_table;
+    static std::unordered_map<std::string, NIC*> _mac_table;
     // Channel protocols are usually singletons
     static Observed _observed;
 };
@@ -203,6 +238,9 @@ typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
 
 template <typename NIC>
 std::vector<NIC*> Protocol<NIC>::_nics;
+
+template <typename NIC>
+std::unordered_map<std::string, NIC*> Protocol<NIC>::_mac_table;
 
 template <typename NIC>
 Protocol<NIC>* Protocol<NIC>::_instance = nullptr;
