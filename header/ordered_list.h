@@ -35,10 +35,10 @@ public:
 
         auto it = _items.begin();
 
-        while (it != _items.end() && **it < *item) {
-            if (**it == *item) { 
+        while (it != _items.end()/*&& **it < *item*/) {
+            /*if (**it == *item) { 
                 return;
-            }
+            }*/
 
             ++it;
         }
