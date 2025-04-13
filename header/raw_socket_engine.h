@@ -26,11 +26,11 @@ protected:
         }
         
         // Get interface index
-        ConsoleLogger::print("NIC: Setting interface index.");
+        ConsoleLogger::print("Raw Socker Engine:: Setting interface index.");
         
         struct ifreq ifr;
         memset(&ifr, 0, sizeof(ifr));
-        strcpy(ifr.ifr_name, "eno1"); // Default interface, can be configurable
+        strcpy(ifr.ifr_name, "wlp4s0"); // Default interface, can be configurable
                 
         if(ioctl(_socket, SIOCGIFINDEX, &ifr) < 0) {
             ConsoleLogger::error("SIOCGIFINDEX");
@@ -40,7 +40,7 @@ protected:
         _ifindex = ifr.ifr_ifindex;
 
         // Get MAC address
-        ConsoleLogger::print("NIC: Getting MAC Address.");
+        ConsoleLogger::print("Raw Socker Engine:: Getting MAC Address.");
 
         if(ioctl(_socket, SIOCGIFHWADDR, &ifr) < 0) {
             ConsoleLogger::error("SIOCGIFHWADDR");
@@ -67,7 +67,9 @@ protected:
     }
     
     int raw_send(Ethernet::Address dst, Ethernet::Protocol prot, const void* data, unsigned int size) {
+        ConsoleLogger::print("Raw Socker Engine: Sending frame.");
         Ethernet::Frame frame(dst, _addr, prot);
+        std::cout << "PROTO -> " << prot << std::endl;
         memcpy(frame.data(), data, size);
         
         struct sockaddr_ll socket_address;
@@ -80,6 +82,7 @@ protected:
         int bytes_sent = sendto(_socket, &frame, sizeof(Ethernet::Header) + size, 0,
                                (struct sockaddr*)&socket_address, sizeof(socket_address));
         
+        ConsoleLogger::print("Raw Socker Engine: Frame sent.");                  
         return bytes_sent - sizeof(Ethernet::Header);
     }
     
