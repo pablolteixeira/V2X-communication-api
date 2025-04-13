@@ -15,7 +15,7 @@ public:
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
 
-    void update(Condition c, T* d) {};
+    virtual void update(Condition c, T* d);
 };
 
 template <typename T, typename Condition = void>
@@ -40,6 +40,7 @@ public:
     }
 
     bool notify(Condition c, T* d) {
+        ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
             (*obs)->update(c, d);
@@ -80,12 +81,13 @@ public:
     }
     
     bool notify(C c, D * d) {
+        ConsoleLogger::print("Concurrent_Observed: Initializing instance.");
         bool notified = false;
-        for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); obs++) {
-            if(obs->rank() == c) {
+        for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+            /*if(obs->rank() == c) {
                 obs->update(c, d);
                 notified = true;
-            }
+            }*/
         }
         return notified;
     }
