@@ -4,6 +4,7 @@
 #include "observer.h"
 #include "ethernet.h"
 #include "console_logger.h"
+#include "mac_address_generator.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -29,8 +30,10 @@ public:
     // Global signal handler needs access to all NICs
     static std::vector<NIC*> active_nics;
 public:
-    NIC() : _buffer_count(0) {
+    NIC(const std::string& id) : _buffer_count(0) {
         ConsoleLogger::print("Starting NIC...");
+        
+        MacAddressGenerator::generate_mac_from_seed(id, _address);
 
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
             _buffer[i] = new Buffer<Ethernet::Frame>(Ethernet::MTU);
@@ -47,9 +50,10 @@ public:
             sa.sa_flags = SA_RESTART;
             sa.sa_handler = &NIC::sigio_handler;
             if (sigaction(SIGIO, &sa, NULL) < 0) {
-                perror("sigaction");
+                ConsoleLogger::error("sigaction");
                 exit(EXIT_FAILURE);
             }
+            ConsoleLogger::print("NIC: SIGIO handler set");
         }
         
         // Set socket for asynchronous I/O
@@ -75,6 +79,7 @@ public:
     }
 
     NICBuffer * alloc(const Address dst, Protocol_Number prot, unsigned int size) {
+        ConsoleLogger::print("NIC: Allocating buffer.");
         if (_buffer_count >= BUFFER_SIZE) {
             return nullptr;
         }
@@ -126,8 +131,8 @@ public:
         return copy_size;
     }
 
-    const Address & address() {
-        return Engine::_addr;
+    Address& address() {
+        return _address;
     }
 
     //void address(Address address);
@@ -151,6 +156,7 @@ private:
 
     // Process incoming data when SIGIO is received
     void process_incoming_data() {
+        
         // Keep reading while there's data available (non-blocking)
         while (true) {
             Address src;
@@ -187,6 +193,7 @@ private:
     //Statistics _statistics;
     NICBuffer* _buffer[BUFFER_SIZE];
     unsigned int _buffer_count;
+    Address _address;
 };
 
 template <typename Engine>
