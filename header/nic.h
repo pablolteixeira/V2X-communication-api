@@ -56,15 +56,11 @@ public:
             ConsoleLogger::print("NIC: SIGIO handler set");
         }
         
-        // Set socket for asynchronous I/O
         int flags = fcntl(Engine::_socket, F_GETFL, 0);
-        fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC);
-        
-        // Set this process as the owner of the socket
+        fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
         fcntl(Engine::_socket, F_SETOWN, getpid());
         
-        // Enable non-blocking I/O for the socket
-        fcntl(Engine::_socket, F_SETFL, flags | O_NONBLOCK);
+        std::cout << "PROCESS ID: " << getpid() << std::endl;
     }
     ~NIC() {
         // Remove this NIC from the active NICs list
@@ -111,6 +107,7 @@ public:
     }
 
     void free(NICBuffer * buf) {
+        ConsoleLogger::print("NIC: Free buffer.");
         for(unsigned int i = 0; i < _buffer_count; i++) {
             if(_buffer[i] == buf) {
                 if(i < _buffer_count - 1) {
@@ -152,6 +149,7 @@ public:
 private:
     // SIGIO handler (static function shared by all NICs)
     static void sigio_handler(int signum) {
+        std::cout << "SIGIO RECEIVED: " << signum << std::endl;
         // Check all active NICs for data
         for (auto nic : active_nics) {
             nic->process_incoming_data();
@@ -160,7 +158,6 @@ private:
 
     // Process incoming data when SIGIO is received
     void process_incoming_data() {
-        
         // Keep reading while there's data available (non-blocking)
         while (true) {
             Address src;
