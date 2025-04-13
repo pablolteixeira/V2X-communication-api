@@ -156,7 +156,7 @@ public:
 
         ConsoleLogger::print("Protocol: Buffer allocated.");
         
-        Ethernet::Frame* frame = buf->frame();
+        // Ethernet::Frame* frame = buf->frame();
 
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         packet->Header::operator=(Header(from.port(), to.port(), size));
