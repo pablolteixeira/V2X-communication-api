@@ -15,7 +15,7 @@ public:
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
 
-    virtual void update(Condition c, T* d);
+    virtual void update(Condition c, T* d) {};
 };
 
 template <typename T, typename Condition = void>
