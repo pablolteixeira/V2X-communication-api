@@ -28,7 +28,8 @@ int main() {
 
     Message* msg = new Message();
     TestMessage* data = msg->get_data<TestMessage>();
-    data->text = "Mensagem de teste!";
+    data->text = "Mensagem de teste";
+    msg->size(sizeof(TestMessage));
     communicator1->send(msg);
 
     //Vehicle v1 = Vehicle(1, nic1);
