@@ -58,16 +58,28 @@ public:
     class Header
     {
     public:
-        Header() : _from_port(0), _to_port(0), _length(0) {}
-        Header(Port from_port, Port to_port, unsigned short length)
-            : _from_port(from_port), _to_port(to_port), _length(length) {}
-        
+        Header() : _from_port(0), _to_port(0), _from_paddr(), _to_paddr(), _length(0) {}
+        Header(Address from_address, Address to_address, unsigned short length)
+            : _from_port(from_address.port()), _to_port(to_address.port()), _length(length) {
+                memcpy(_from_paddr, from_address.paddr(), sizeof(Physical_Address));
+                memcpy(_to_paddr, to_address.paddr(), sizeof(Physical_Address));
+            }
+
+
         Port from_port() const { 
             return _from_port; 
         }
         Port to_port() const { 
-            return _to_port; 
+            return _to_port;
         }
+
+        Physical_Address& from_paddr() { 
+            return _from_paddr; 
+        }
+        Physical_Address& to_paddr() { 
+            return _to_paddr; 
+        }
+
         unsigned short length() const { 
             return _length; 
         }
@@ -75,6 +87,8 @@ public:
     private:
         Port _from_port;
         Port _to_port;
+        Physical_Address _from_paddr;
+        Physical_Address _to_paddr;
         unsigned short _length;
     } __attribute__((packed));
     
@@ -85,9 +99,7 @@ public:
     {
     public:
         Packet();
-        
-        Header * header();
-        
+                
         template<typename T>
         T * data() { 
             return reinterpret_cast<T*>(&_data); 
@@ -120,10 +132,10 @@ public:
             ConsoleLogger::print("Protocol: Registering NIC");
             _nics.push_back(nic);
             std::string mac_string = mac_to_string(nic->address());
-            
-            std::cout << "Protocol: NIC Mac Address registered - " << mac_string << std::endl;
-            
+            std::cout << "mac string " << mac_string << std::endl;
+
             _mac_table[mac_string] = nic;
+            std::cout << "nic - mac string " << nic << std::endl;
             nic->attach(_instance, PROTO);
         }
     }
@@ -149,17 +161,20 @@ public:
         std::cout << "SIZES -> " << sizeof(Header) + size << " " << sizeof(Header) << " " << size << std::endl;
 
         NIC* nic = get_nic(from.paddr());
+        std::cout << "MAC ADDRESS SEND BEFORE: " << mac_to_string(from.paddr()) << std::endl;
         NICBuffer* buf = nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
         if (!buf) {
             return -1;
         }
 
         ConsoleLogger::print("Protocol: Buffer allocated.");
-        
-        // Ethernet::Frame* frame = buf->frame();
 
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
-        packet->Header::operator=(Header(from.port(), to.port(), size));
+        packet->Header::operator=(Header(from, to, size));
+
+        std::cout << "MAC ADDRESS SEND: " << mac_to_string(packet->from_paddr()) << std::endl;
+        std::cout << "MAC ADDRESS SEND: " << mac_to_string(packet->to_paddr()) << std::endl;
+
         memcpy(packet->template data<void>(), data, size);
         
         int result = nic->send(buf);
@@ -176,7 +191,7 @@ public:
         }
 
         NIC* nic = get_nic(from.paddr());
-
+        
         Physical_Address paddr;
         nic->receive(buf, &paddr, nullptr, nullptr, 0);
 
@@ -195,11 +210,15 @@ public:
 
 private:
     void update(typename NIC::Protocol_Number prot, NICBuffer * buf) override {
+        std::cout << "Buffer pointer before: " << buf << std::endl;
         ConsoleLogger::print("Protocol: Update observers.");
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
+
         if(!_observed.notify(packet->to_port(), buf)) {
-            //_nic->free(buf);
-        } // to call receive(...);
+            NIC* nic = get_nic(packet->from_paddr());
+
+            nic->free(buf);
+        }
     }
 
     static std::string mac_to_string(Physical_Address& addr) {
@@ -215,6 +234,7 @@ private:
     }
 
     static NIC* get_nic(Physical_Address& paddr) {
+
         std::string key = mac_to_string(paddr);
         return _mac_table[key];
     }

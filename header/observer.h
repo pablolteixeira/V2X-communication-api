@@ -16,6 +16,15 @@ public:
     typedef Condition Observing_Condition;
 
     virtual void update(Condition c, T* d) {};
+
+    void set_condition(Condition condition) {
+        _condition = condition;
+    }
+    Condition rank() {
+        return _condition;
+    }
+private:
+    Condition _condition;
 };
 
 template <typename T, typename Condition = void>
@@ -32,6 +41,8 @@ public:
     ~Conditionally_Data_Observed() {}
 
     void attach(Conditional_Data_Observer<T, Condition>* o, Condition c) {
+        std::cout << "Protocol condition set: " << c << std::endl;
+        o->set_condition(c);
         _observers.insert(o);
     }
 
@@ -43,8 +54,11 @@ public:
         ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            (*obs)->update(c, d);
-            notified = true;
+            std::cout << "PROTO: " << c << std::endl;
+            if ((*obs)->rank() == c) {
+                (*obs)->update(c, d);
+                notified = true;
+            }
         }
         return notified;
     }
@@ -73,6 +87,9 @@ public:
     ~Concurrent_Observed() {}
     
     void attach(Concurrent_Observer<D, C> * o, C c) {
+        ConsoleLogger::print("Concurrent_Observed: Attach");
+        std::cout << "Condition value: " << c << std::endl;
+        o->set_condition(c);
         _observers.insert(o);
     }
     
@@ -81,13 +98,15 @@ public:
     }
     
     bool notify(C c, D * d) {
-        ConsoleLogger::print("Concurrent_Observed: Initializing instance.");
+        ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
+        
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            /*if(obs->rank() == c) {
-                obs->update(c, d);
+            if((*obs)->rank() == c) {
+                ConsoleLogger::print("Concurrent_Observed: Notifying concurrent observers.");
+                (*obs)->update(c, d);
                 notified = true;
-            }*/
+            }
         }
         return notified;
     }
@@ -120,9 +139,16 @@ public:
         _semaphore.p();
         return _data.remove();
     }
-
+    
+    void set_condition(C condition) {
+        _condition = condition;
+    }
+    C rank() {
+        return _condition;
+    }
 private:
     Semaphore _semaphore;
+    C _condition;
     List<D> _data;
 };
 

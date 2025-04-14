@@ -60,6 +60,10 @@ public:
         std::cout << "]" << std::endl;
     }
 
+    int size() {
+        return _items.size();
+    }
+
     Iterator begin() { 
         return Iterator(_items.begin()); 
     }

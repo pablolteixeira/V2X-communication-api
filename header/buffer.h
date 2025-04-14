@@ -4,56 +4,33 @@
 #include <cstddef>
 
 template<typename T>
-class Buffer 
-{
+class Buffer {
 public:
-    // Constructor
-    Buffer() : _data(nullptr), _size(0) {}
-
-    // Constructor with a specified size
-    Buffer(size_t size) : _size(size) {
-        _data = new unsigned char[size];
+    Buffer(size_t max_size) : _max_size(max_size), _size(0) {
+        _data = new unsigned char[max_size];
     }
-
-    // Destructor
+    
     ~Buffer() {
-        if (_data) delete[] _data;
+        delete[] _data;
     }
-
-    // Template method to get data as a specific type
+    
     T* frame() {
         return reinterpret_cast<T*>(_data);
     }
-
-    // Get buffer size
-    unsigned int size() const {
+    
+    size_t size() const {
         return _size;
     }
-
-    // Set buffer size
-    void size(unsigned int s) {
-        // If we're changing size and either don't have memory allocated or need a different size
-        if (s != _size) {
-            // If we already have memory allocated, free it
-            if (_data) {
-                delete[] _data;
-            }
-
-            // Allocate new memory
-            if (s > 0) {
-                _data = new unsigned char[s];
-            } else {
-                _data = nullptr;
-            }
-            
-            // Update the size
-            _size = s;
-        }
+    
+    void size(size_t s) {
+        // Just update logical size, no reallocation
+        _size = (s <= _max_size) ? s : _max_size;
     }
-
+    
 private:
     unsigned char* _data;
-    unsigned int _size;
+    size_t _max_size;
+    size_t _size;
 };
 
 #endif // BUFFER_H
