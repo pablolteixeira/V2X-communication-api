@@ -161,10 +161,8 @@ public:
             return -1;
         }
         ConsoleLogger::print("Protocol: Sending message.");
-        std::cout << "SIZES -> " << sizeof(Header) + size << " | " << sizeof(Header) << " | " << size << std::endl;
-
+        
         NIC* nic = get_nic(from.paddr());
-        std::cout << "MAC ADDRESS SEND BEFORE: " << mac_to_string(from.paddr()) << std::endl;
         NICBuffer* buf = nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
         if (!buf) {
             return -1;
@@ -174,9 +172,6 @@ public:
 
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         packet->Header::operator=(Header(from, to, size));
-
-        std::cout << "MAC ADDRESS SEND: " << mac_to_string(packet->from_paddr()) << std::endl;
-        std::cout << "MAC ADDRESS SEND: " << mac_to_string(packet->to_paddr()) << std::endl;
 
         memcpy(packet->template data<void>(), data, size);
         
@@ -188,17 +183,15 @@ public:
 
     int receive(NICBuffer * buf, Address from, void * data, unsigned int size) {
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
-
         if (packet->length() > size) {
             return -1;
         }
 
         NIC* nic = get_nic(from.paddr());
         
-        Physical_Address paddr;
-        nic->receive(buf, &paddr, nullptr, nullptr, 0);
-
-        from = Address(paddr, packet->from_port());
+        Physical_Address paddr_source;
+        nic->receive(buf, &paddr_source);
+        from = Address(paddr_source, packet->from_port());
         memcpy(data, packet->template data<void>(), packet->length());
 
         return packet->length();
@@ -212,13 +205,13 @@ public:
     }
 
 private:
-    void update(typename NIC::Protocol_Number prot, NICBuffer * buf) override {
-        std::cout << "Buffer pointer before: " << buf << std::endl;
+    void update(Physical_Address& paddr, typename NIC::Protocol_Number prot, NICBuffer * buf) override {
+        // std::cout << "Buffer pointer before: " << buf << std::endl;
         ConsoleLogger::print("Protocol: Update observers.");
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
-
-        if(!_observed.notify(packet->to_port(), buf)) {
-            NIC* nic = get_nic(packet->from_paddr());
+        
+        if(!_observed.notify(prot, buf)) {
+            NIC* nic = get_nic(paddr);
 
             nic->free(buf);
         }
