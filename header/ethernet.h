@@ -8,6 +8,10 @@
 #include <cstdio>
 #include <cstdint>
 
+#include <string>
+#include <sstream>
+#include <iomanip>
+
 // Network
 class Ethernet 
 {
@@ -36,9 +40,22 @@ public:
         unsigned char _data[ETH_FRAME_LEN - sizeof(Header)];
     };
     
-    static void address_to_string(Address addr, char* str) {
-        sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x",
-                addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+    static std::string address_to_string(Address addr) {
+        std::stringstream ss;
+        
+        // Format each byte with leading zeros and colons
+        for (int i = 0; i < 6; ++i) {
+            // Add colon after first byte
+            if (i > 0) {
+                ss << ":";
+            }
+            
+            // Format as hex with leading zeros
+            ss << std::hex << std::setw(2) << std::setfill('0') 
+               << static_cast<int>(addr[i]);
+        }
+        
+        return ss.str();
     }
     
     static bool is_broadcast(Address addr) {
