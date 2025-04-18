@@ -4,6 +4,7 @@
 #include <iostream>
 
 struct TestMessage {
+    std::string from;
     std::string text;
 };
 
@@ -19,7 +20,7 @@ std::string mac_to_string(EthernetNIC::Address& addr) {
     return ss.str();
 }
 
-Vehicle::Vehicle(int id, EthernetNIC* nic, EthernetProtocol* protocol) : _id(id), _nic(nic), _protocol(protocol) {
+Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _nic(nic), _protocol(protocol) {
     _protocol->register_nic(_nic);
 
     EthernetProtocol::Address addr(_nic->address(), 0);
@@ -44,6 +45,8 @@ void Vehicle::start() {
 
     Message* msg = new Message();
     TestMessage* data = msg->get_data<TestMessage>();
+    std::string from = Ethernet::address_to_string(_nic->address());
+    data->from = from;
     data->text = "Mensagem de teste";
     msg->size(sizeof(TestMessage));
     _communicator->send(msg);
@@ -61,10 +64,13 @@ void Vehicle::stop() {
 
 void Vehicle::run() {
     Message* msg = new Message(); // Buffer to hold incoming messages
-    
+
+    std::string vehicle_mac = Ethernet::address_to_string(_nic->address());
+
     while (_running) {
         if (_communicator->receive(msg)) {
-            
+            TestMessage* data = msg->get_data<TestMessage>();
+            std::cout << "Test Message - Vehicle -> " << vehicle_mac << " from: " << data->from << " - text = " << data->text << std::endl;
         }
     }
 
