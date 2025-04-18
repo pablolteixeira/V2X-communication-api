@@ -1,0 +1,681 @@
+Father process: 408328
+Created child process 0 with PID: 408329
+Children process: 408329
+Created child process 1 with PID: 408330
+[32mConditionally_Data_Observed: Initializing instance.[0m
+Children process: 408330
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+MAC Address: d0:39:57:20:1a:7b
+[32mStarting NIC...[0m
+Created child process 2 with PID: 408331
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mNIC: SIGIO handler set[0m
+PROCESS ID: 408329
+[32mProtocol: Registering NIC[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+mac string 75:d2:05:62:58:8d
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+nic - mac string 0x5555c7724ee0
+Protocol condition set: 34952
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mConcurrent_Observed: Attach[0m
+Condition value: 0
+Children process: 408331
+MAC Address: d0:39:57:20:1a:7b
+Starting Vehicle -> 0
+[32mStarting NIC...[0m
+Thread running.
+[32mCommunicator: Sending message.[0m
+[32mProtocol: Sending message.[0m
+Created child process 3 with PID: 408332
+SIZES -> 50 | 18 | 32
+MAC ADDRESS SEND BEFORE: 75:d2:05:62:58:8d
+[32mNIC: Allocating buffer.[0m
+[32mProtocol: Buffer allocated.[0m
+MAC ADDRESS SEND: 75:d2:05:62:58:8d
+[32mNIC: SIGIO handler set[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mNIC: Sending frame.[0m
+PROCESS ID: 408330
+[32mRaw Socker Engine: Sending frame.[0m
+[32mProtocol: Registering NIC[0m
+PROTO -> 34952
+mac string be:72:69:5c:1d:1e
+Children process: 408332
+nic - mac string 0x5555c7724ee0
+[32mConditionally_Data_Observed: Initializing instance.[0m
+nic - mac string 0x5555c7724ee0
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Frame sent.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Frame sent.[0m
+[32m/.[0m
+[32mNIC: Free buffer.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mNIC: Allocating buffer.[0m
+Vehicle NIC408329 created
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+Created child process 4 with PID: 408333
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+Protocol condition set: 34952
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mConcurrent_Observed: Attach[0m
+MAC Address: d0:39:57:20:1a:7b
+[32mConditionally_Data_Observed: Initializing instance.[0m
+Condition value: 0
+[32mStarting NIC...[0m
+Starting Vehicle -> 0
+Thread running.
+[32mCommunicator: Sending message.[0m
+[32mProtocol: Sending message.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+Children process: 408333
+SIZES -> 50 | 18 | 32
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mNIC: SIGIO handler set[0m
+MAC ADDRESS SEND BEFORE: be:72:69:5c:1d:1e
+[32mNIC: Allocating buffer.[0m
+PROCESS ID: 408331
+[32mProtocol: Buffer allocated.[0m
+[32mProtocol: Registering NIC[0m
+MAC ADDRESS SEND: be:72:69:5c:1d:1e
+mac string 1b:7c:26:e9:e0:ba
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+MAC Address: d0:39:57:20:1a:7b
+Created child process 5 with PID: 408334
+[32mNIC: Sending frame.[0m
+nic - mac string 0x5555c7724ee0
+[32mStarting NIC...[0m
+[32mRaw Socker Engine: Sending frame.[0m
+Protocol condition set: 34952
+PROTO -> 34952
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mConcurrent_Observed: Attach[0m
+Condition value: 0
+[32mConditionally_Data_Observed: Initializing instance.[0m
+Condition value: 0
+SIGIO RECEIVED: 29
+[32mRaw Socker Engine: Frame sent.[0m
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Frame sent.[0m
+[32mNIC: SIGIO handler set[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+PROCESS ID: 408332
+[32mConditionally_Data_Observed: Notifying observers.[0m
+Vehicle NIC408330 created
+Children process: 408334
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mProtocol: Registering NIC[0m
+PROTO: 34952
+Buffer pointer before: 0x5555c7725290
+mac string c8:5d:88:d4:0b:45
+[32mProtocol: Update observers.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+Created child process 6 with PID: 408335
+nic - mac string 0x5555c7724ee0
+MAC Address: d0:39:57:20:1a:7b
+[32mNIC: Free buffer.[0m
+Protocol condition set: 34952
+[32mStarting NIC...[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mConcurrent_Observed: Attach[0m
+Condition value: 0
+Starting Vehicle -> 0
+Thread running.
+[32mCommunicator: Sending message.[0m
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mProtocol: Sending message.[0m
+Children process: 408335
+SIZES -> 50 | 18 | 32
+[32mNIC: SIGIO handler set[0m
+MAC ADDRESS SEND BEFORE: c8:5d:88:d4:0b:45
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+PROCESS ID: 408333
+[32mProtocol: Buffer allocated.[0m
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mProtocol: Registering NIC[0m
+MAC ADDRESS SEND: c8:5d:88:d4:0b:45
+mac string 3c:ac:c7:ce:18:12
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mNIC: Sending frame.[0m
+Created child process 7 with PID: 408337
+nic - mac string 0x5555c7724ee0
+[32mRaw Socker Engine: Sending frame.[0m
+MAC Address: d0:39:57:20:1a:7b
+Protocol condition set: 34952
+PROTO -> 34952
+[32mStarting NIC...[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mConcurrent_Observed: Attach[0m
+[32mConcurrent_Observed: Attach[0m
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Frame sent.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mNIC: Frame sent.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mNIC: SIGIO handler set[0m
+Children process: 408337
+[32mNIC: Free buffer.[0m
+PROTO: 34952
+PROCESS ID: 408334
+Vehicle NIC408332 created
+Buffer pointer before: 0x5555c7725290
+[32mProtocol: Registering NIC[0m
+MAC Address: d0:39:57:20:1a:7b
+[32mProtocol: Update observers.[0m
+mac string e7:8a:98:74:87:10
+[32mStarting NIC...[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+Created child process 8 with PID: 408338
+nic - mac string 0x5555c7724ee0
+[32mNIC: Free buffer.[0m
+Protocol condition set: 34952
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mConcurrent_Observed: Attach[0m
+Condition value: 0
+Starting Vehicle -> 0
+Thread running.
+[32mNIC: SIGIO handler set[0m
+[32mCommunicator: Sending message.[0m
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mProtocol: Sending message.[0m
+PROCESS ID: 408335
+SIZES -> 50 | 18 | 32
+[32mProtocol: Registering NIC[0m
+MAC ADDRESS SEND BEFORE: e7:8a:98:74:87:10
+mac string a1:6c:22:11:8b:dc
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mNIC: Allocating buffer.[0m
+Children process: 408338
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+nic - mac string 0x5555c7724ee0
+[32mProtocol: Buffer allocated.[0m
+Protocol condition set: 34952
+MAC ADDRESS SEND: e7:8a:98:74:87:10
+[32mConcurrent_Observer: Initializing instance.[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mConcurrent_Observed: Attach[0m
+[32mNIC: Sending frame.[0m
+MAC Address: d0:39:57:20:1a:7b
+Condition value: 0
+[32mRaw Socker Engine: Sending frame.[0m
+[32mStarting NIC...[0m
+Starting Vehicle -> 0
+PROTO -> 34952
+Thread running.
+[32mCommunicator: Sending message.[0m
+Created child process 9 with PID: 408340
+[32mCommunicator: Sending message.[0m
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Frame sent.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Frame sent.[0m
+[32mNIC: SIGIO handler set[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mNIC: Free buffer.[0m
+PROCESS ID: 408337
+PROTO: 34952
+Vehicle NIC408334 created
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mProtocol: Registering NIC[0m
+Buffer pointer before: 0x5555c7725290
+mac string f0:34:5a:a6:23:cb
+[32mProtocol: Update observers.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+nic - mac string 0x5555c7724ee0
+Children process: 408340
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mNIC: Allocating buffer.[0m
+Protocol condition set: 34952
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mNIC: Free buffer.[0m
+[32mConcurrent_Observed: Attach[0m
+[32mProtocol: Sending message.[0m
+Condition value: 0
+SIZES -> 50 | 18 | 32
+Starting Vehicle -> 0
+MAC ADDRESS SEND BEFORE: a1:6c:22:11:8b:dc
+Thread running.
+MAC Address: d0:39:57:20:1a:7b
+[32mNIC: Allocating buffer.[0m
+[32mCommunicator: Sending message.[0m
+[32mStarting NIC...[0m
+[32mProtocol: Buffer allocated.[0m
+[32mProtocol: Sending message.[0m
+Created child process 10 with PID: 408341
+MAC ADDRESS SEND: a1:6c:22:11:8b:dc
+SIZES -> 50 | 18 | 32
+[32mConditionally_Data_Observed: Initializing instance.[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+MAC ADDRESS SEND BEFORE: f0:34:5a:a6:23:cb
+[32mNIC: Sending frame.[0m
+[32mNIC: Allocating buffer.[0m
+Children process: 408341
+[32mRaw Socker Engine: Sending frame.[0m
+[32mProtocol: Buffer allocated.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mNIC: SIGIO handler set[0m
+PROTO -> 34952
+MAC ADDRESS SEND: f0:34:5a:a6:23:cb
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+PROCESS ID: 408338
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+PROCESS ID: 408338
+SIGIO RECEIVED: 29
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+SIGIO RECEIVED: 29
+[32mRaw Socker Engine: Frame sent.[0m
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Frame sent.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mRaw Socker Engine: Receive started.[0m
+MAC Address: d0:39:57:20:1a:7b
+[32mNIC: Free buffer.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mStarting NIC...[0m
+Vehicle NIC408335 created
+[32mNIC: Allocating buffer.[0m
+PROTO: 34952
+Created child process 11 with PID: 408342
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mRaw Socker Engine: Receive started.[0m
+Buffer pointer before: 0x5555c77258b0
+[32mProtocol: Update observers.[0m
+[32mNIC: Free buffer.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mNIC: SIGIO handler set[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mProtocol: Registering NIC[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+PROCESS ID: 408340
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mNIC: Allocating buffer.[0m
+mac string 5e:d7:6a:cd:50:f2
+[32mProtocol: Registering NIC[0m
+Children process: 408342
+[32mRaw Socker Engine: Receive started.[0m
+mac string a4:18:ad:98:55:2d
+nic - mac string 0x5555c7724ee0
+[32mConditionally_Data_Observed: Notifying observers.[0m
+MAC Address: d0:39:57:20:1a:7b
+Protocol condition set: 34952
+nic - mac string 0x5555c7724ee0
+PROTO: 34952
+[32mStarting NIC...[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+Protocol condition set: 34952
+Buffer pointer before: 0x5555c7725ed0
+[32mConcurrent_Observed: Attach[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mProtocol: Update observers.[0m
+Condition value: 0
+[32mConcurrent_Observed: Attach[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+Starting Vehicle -> 0
+Created child process 12 with PID: 408343
+Condition value: 0
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mNIC: SIGIO handler set[0m
+Thread running.
+Starting Vehicle -> 0
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mNIC: Allocating buffer.[0m
+PROCESS ID: 408341
+Thread running.
+[32mCommunicator: Sending message.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mProtocol: Registering NIC[0m
+[32mCommunicator: Sending message.[0m
+[32mProtocol: Sending message.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mNIC: Free buffer.[0m
+Children process: 408343
+mac string 25:1c:58:56:fd:ef
+[32mProtocol: Sending message.[0m
+SIZES -> 50 | 18 | 32
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mNIC: Sending frame.[0m
+SIZES -> 50 | 18 | 32
+nic - mac string 0x5555c7724ee0
+MAC ADDRESS SEND BEFORE: a4:18:ad:98:55:2d
+MAC ADDRESS SEND BEFORE: 5e:d7:6a:cd:50:f2
+[32mRaw Socker Engine: Sending frame.[0m
+Protocol condition set: 34952
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Allocating buffer.[0m
+PROTO -> 34952
+[32mConcurrent_Observer: Initializing instance.[0m
+MAC Address: d0:39:57:20:1a:7b
+[32mProtocol: Buffer allocated.[0m
+[32mProtocol: Buffer allocated.[0m
+Created child process 13 with PID: 408344
+[32mConcurrent_Observed: Attach[0m
+[32mStarting NIC...[0m
+[32mProtocol: Buffer allocated.[0m
+SIGIO RECEIVED: 29
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mProtocol: Buffer allocated.[0m
+SIGIO RECEIVED: 29
+[32mRaw Socker Engine: Frame sent.[0m
+[32mConcurrent_Observed: Attach[0m
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Frame sent.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mNIC: SIGIO handler set[0m
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+Vehicle NIC408337 created
+PROTO: 34952
+Children process: 408344
+[32mConditionally_Data_Observed: Notifying observers.[0m
+PROTO: 34952
+PROCESS ID: 408342
+Buffer pointer before: 0x5555c7725ed0
+PROTO: 34952
+MAC Address: d0:39:57:20:1a:7b
+Buffer pointer before: 0x5555c77258b0
+[32mProtocol: Registering NIC[0m
+[32mProtocol: Update observers.[0m
+Buffer pointer before: 0x5555c7725290
+[32mStarting NIC...[0m
+[32mProtocol: Update observers.[0m
+Created child process 14 with PID: 408345
+mac string 77:6b:5d:22:22:27
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mProtocol: Update observers.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+nic - mac string 0x5555c7724ee0
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mNIC: Allocating buffer.[0m
+Protocol condition set: 34952
+[32mNIC: Free buffer.[0m
+[32mNIC: SIGIO handler set[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+Children process: 408345
+[32mRaw Socker Engine: Receive started.[0m
+PROCESS ID: 408343
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mNIC: Free buffer.[0m
+[32mConcurrent_Observed: Attach[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mProtocol: Registering NIC[0m
+Condition value: 0
+MAC ADDRESS SEND: 5e:d7:6a:cd:50:f2
+PROTO: 34952
+mac string fa:01:9a:ca:1d:cf
+Starting Vehicle -> 0
+[32mRaw Socker Engine:: Setting interface index.[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+Buffer pointer before: 0x5555c7725ed0
+Thread running.
+nic - mac string 0x5555c7724ee0
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mNIC: Sending frame.[0m
+[32mProtocol: Update observers.[0m
+[32mCommunicator: Sending message.[0m
+Protocol condition set: 34952
+[32mRaw Socker Engine: Sending frame.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mProtocol: Sending message.[0m
+[32mConditionally_Data_Observed: Initializing instance.[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+PROTO -> 34952
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+SIZES -> 50 | 18 | 32
+[32mConcurrent_Observed: Attach[0m
+MAC Address: d0:39:57:20:1a:7b
+[32mNIC: Allocating buffer.[0m
+MAC ADDRESS SEND BEFORE: 77:6b:5d:22:22:27
+[32mRaw Socker Engine:: Setting interface index.[0m
+[32mConcurrent_Observed: Attach[0m
+SIGIO RECEIVED: 29
+[32mStarting NIC...[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mRaw Socker Engine: Frame sent.[0m
+MAC ADDRESS SEND BEFORE: 77:6b:5d:22:22:27
+SIGIO RECEIVED: 29
+[32mRaw Socker Engine:: Getting MAC Address.[0m
+[32mNIC: Allocating buffer.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mNIC: Frame sent.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+PROTO: 34952
+[32mNIC: Free buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+Buffer pointer before: 0x5555c77264f0
+[32mNIC: SIGIO handler set[0m
+MAC Address: d0:39:57:20:1a:7b
+Vehicle NIC408338 created
+[32mConditionally_Data_Observed: Notifying observers.[0m
+PROTO: 34952
+[32mProtocol: Update observers.[0m
+[32mStarting NIC...[0m
+PROCESS ID: 408344
+PROTO: 34952
+Buffer pointer before: 0x5555c7725290
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mProtocol: Registering NIC[0m
+Buffer pointer before: 0x5555c7725290
+[32mProtocol: Update observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mProtocol: Update observers.[0m
+mac string db:ca:61:3c:4f:11
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mNIC: Allocating buffer.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mNIC: SIGIO handler set[0m
+[32mNIC: Free buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+nic - mac string 0x5555c7724ee0
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+PROCESS ID: 408345
+[32mNIC: Free buffer.[0m
+Protocol condition set: 34952
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mProtocol: Registering NIC[0m
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+mac string e6:3a:d1:48:24:18
+[32mConcurrent_Observed: Attach[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+Condition value: 0
+nic - mac string 0x5555c7724ee0
+[32mNIC: Free buffer.[0m
+PROTO: 34952
+Starting Vehicle -> 0
+Protocol condition set: 34952
+Buffer pointer before: 0x5555c77258b0
+MAC ADDRESS SEND: a4:18:ad:98:55:2d
+Thread running.
+[32mConcurrent_Observer: Initializing instance.[0m
+[32mProtocol: Update observers.[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mConcurrent_Observed: Attach[0m
+[32mCommunicator: Sending message.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mNIC: Sending frame.[0m
+Condition value: 0
+[32mProtocol: Sending message.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mRaw Socker Engine: Sending frame.[0m
+Starting Vehicle -> 0
+SIZES -> 50 | 18 | 32
+[32mNIC: Allocating buffer.[0m
+PROTO -> 34952
+Thread running.
+[32mRaw Socker Engine: Receive started.[0m
+MAC ADDRESS SEND BEFORE: db:ca:61:3c:4f:11
+[32mCommunicator: Sending message.[0m
+[32mNIC: Free buffer.[0m
+[32mNIC: Allocating buffer.[0m
+[32mCommunicator: Sending message.[0m
+SIGIO RECEIVED: 29
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Allocating buffer.[0m
+SIGIO RECEIVED: 29
+[32mRaw Socker Engine: Frame sent.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Allocating buffer.[0m
+[32mNIC: Frame sent.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+PROTO: 34952
+Vehicle NIC408340 created
+[32mConditionally_Data_Observed: Notifying observers.[0m
+PROTO: 34952
+Buffer pointer before: 0x5555c7725290
+PROTO: 34952
+Buffer pointer before: 0x5555c7725ed0
+[32mProtocol: Update observers.[0m
+Buffer pointer before: 0x5555c7725290
+[32mProtocol: Update observers.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mProtocol: Update observers.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mNIC: Allocating buffer.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+[32mProtocol: Sending message.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mNIC: Allocating buffer.[0m
+SIZES -> 50 | 18 | 32
+PROTO: 34952
+[32mProtocol: Buffer allocated.[0m
+MAC ADDRESS SEND BEFORE: e6:3a:d1:48:24:18
+Buffer pointer before: 0x5555c77258b0
+MAC ADDRESS SEND: 77:6b:5d:22:22:27
+[32mNIC: Allocating buffer.[0m
+[32mProtocol: Update observers.[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mProtocol: Buffer allocated.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mNIC: Sending frame.[0m
+MAC ADDRESS SEND: e6:3a:d1:48:24:18
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mRaw Socker Engine: Sending frame.[0m
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mNIC: Allocating buffer.[0m
+PROTO -> 34952
+[32mNIC: Sending frame.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mRaw Socker Engine: Sending frame.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mRaw Socker Engine: Sending frame.[0m
+SIGIO RECEIVED: 29
+PROTO: 34952
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Frame sent.[0m
+Buffer pointer before: 0x5555c7725ed0
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Frame sent.[0m
+[32mProtocol: Update observers.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+[32mNIC: Free buffer.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+PROTO: 34952
+Vehicle NIC408342 created
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+Buffer pointer before: 0x5555c7725ed0
+[32mNIC: Allocating buffer.[0m
+[32mProtocol: Update observers.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mNIC: Free buffer.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+SIGIO RECEIVED: 29
+[32mNIC: Free buffer.[0m
+[32mNIC: Allocating buffer.[0m
+PROTO -> 34952
+[32mRaw Socker Engine: Receive started.[0m
+[32mConditionally_Data_Observed: Notifying observers.[0m
+PROTO: 34952
+[32mRaw Socker Engine: Frame sent.[0m
+Buffer pointer before: 0x5555c77264f0
+[32mNIC: Frame sent.[0m
+[32mProtocol: Update observers.[0m
+[32mNIC: Free buffer.[0m
+[32mConcurrent_Observed: Starting to notify concurrent observers.[0m
+Vehicle NIC408345 created
+[32mConcurrent_Observed: Notifying concurrent observers.[0m
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+SIGIO RECEIVED: 29
+[32mNIC: Allocating buffer.[0m
+[32mRaw Socker Engine: Receive started.[0m
+[32mNIC: Free buffer.[0m
+[32mProtocol: Buffer allocated.[0m
+MAC ADDRESS SEND: db:ca:61:3c:4f:11
+MAC ADDRESS SEND: ff:ff:ff:ff:ff:ff
+[32mNIC: Sending frame.[0m
+[32mRaw Socker Engine: Sending frame.[0m
+PROTO -> 34952
+[32mRaw Socker Engine: Frame sent.[0m
+[32mNIC: Frame sent.[0m
+[32mNIC: Free buffer.[0m
+Vehicle NIC408344 created
+Child process (PID: 408329) has finished with status: 0
+Child process (PID: 408330) has finished with status: 0
+Child process (PID: 408331) has finished with status: 0
+Child process (PID: 408332) has finished with status: 0
+Child process (PID: 408333) has finished with status: 0
+Child process (PID: 408334) has finished with status: 0
+Child process (PID: 408335) has finished with status: 0
+Child process (PID: 408337) has finished with status: 0
+Child process (PID: 408338) has finished with status: 0
+Child process (PID: 408340) has finished with status: 0
+Child process (PID: 408341) has finished with status: 0
+Child process (PID: 408342) has finished with status: 0
+Child process (PID: 408343) has finished with status: 0
+Child process (PID: 408344) has finished with status: 0
+Child process (PID: 408345) has finished with status: 0
+Parent process (PID: 408328) finished.
