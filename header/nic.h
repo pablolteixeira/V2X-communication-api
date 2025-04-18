@@ -14,7 +14,7 @@
 #include <algorithm>
 
 template <typename Engine>
-class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,
+class NIC: public Ethernet, public Conditionally_Data_Observed<Ethernet::Address,Buffer<Ethernet::Frame>,
             Ethernet::Protocol>, private Engine
 {
 public:
@@ -24,15 +24,14 @@ public:
     typedef Ethernet::Protocol Protocol_Number;
     typedef Buffer<Ethernet::Frame> NICBuffer;
     
-    typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
-    typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
+    typedef Conditional_Data_Observer<Address,Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
+    typedef Conditionally_Data_Observed<Address,Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
 
     // Global signal handler needs access to all NICs
     static std::vector<NIC*> active_nics;
 public:
     NIC(const std::string& id) : _buffer_count(0) {
         ConsoleLogger::print("Starting NIC...");
-        
         MacAddressGenerator::generate_mac_from_seed(id, _address);
 
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
@@ -69,16 +68,17 @@ public:
             active_nics.erase(it);
         }
         
+        /*
         for(unsigned int i = 0; i < BUFFER_SIZE; i++) {
             delete _buffer[i];
-        }
+        }*/
     }
 
     NICBuffer * alloc(const Address dst, Protocol_Number prot, unsigned int size) {
-        ConsoleLogger::print("NIC: Allocating buffer.");
+        //ConsoleLogger::print("NIC: Allocating buffer.");
         
         if (_buffer_count >= BUFFER_SIZE) {
-            ConsoleLogger::error("NIC: _buffer_count >= BUFFER_SIZE");
+            //ConsoleLogger::error("NIC: _buffer_count >= BUFFER_SIZE");
             return nullptr;
         }
 
@@ -93,7 +93,7 @@ public:
     }
 
     int send(NICBuffer * buf) {
-        ConsoleLogger::print("NIC: Sending frame.");
+        //ConsoleLogger::print("NIC: Sending frame.");
         Ethernet::Frame* frame = buf->frame();
         int result = Engine::raw_send(
             frame->header()->h_dest, 
@@ -102,12 +102,12 @@ public:
             buf->size() - sizeof(Ethernet::Header)
         );
 
-        ConsoleLogger::print("NIC: Frame sent.");
+        //ConsoleLogger::print("NIC: Frame sent.");
         return result;
     }
 
     void free(NICBuffer * buf) {
-        ConsoleLogger::print("NIC: Free buffer.");
+        //ConsoleLogger::print("NIC: Free buffer.");
         for(unsigned int i = 0; i < _buffer_count; i++) {
             if(_buffer[i] == buf) {
                 if(i < _buffer_count - 1) {
@@ -119,17 +119,9 @@ public:
         }
     }
 
-    int receive(NICBuffer * buf, Address * src, Address * dst, void * data, unsigned int size) {
+    void receive(NICBuffer * buf, Address * src) {
         Ethernet::Frame* frame = buf->frame();
         memcpy(src, frame->header()->h_source, ETH_ALEN);
-        memcpy(dst, frame->header()->h_dest, ETH_ALEN);
-        
-        unsigned int data_size = buf->size() - sizeof(Ethernet::Header);
-        unsigned int copy_size = (data_size > size) ? size : data_size;
-        
-        memcpy(data, frame->data(), copy_size);
-        
-        return copy_size;
     }
 
     Address& address() {
@@ -176,7 +168,10 @@ private:
             if (size > 0) {
                 // Successful read
                 buf->size(size + sizeof(Ethernet::Header));
-                notify(prot, buf);
+                std::cout << "FRAME PROTO RECEIVED: " << prot << std::endl;
+                if (!notify(_address, prot, buf)) {
+                    free(buf);
+                }
             } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
                 // No more data available
                 free(buf);
