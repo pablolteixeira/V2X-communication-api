@@ -8,14 +8,15 @@
 #include "console_logger.h"
 
 // Fundamentals for Observer X Observed
-template <typename T, typename Condition = void>
+template <typename A, typename T, typename Condition = void>
 class Conditional_Data_Observer 
 {
 public:
+    typedef A NIC_Address;
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
 
-    virtual void update(Condition c, T* d) {};
+    virtual void update(A& a, Condition c, T* d) {};
 
     void set_condition(Condition condition) {
         _condition = condition;
@@ -27,36 +28,36 @@ private:
     Condition _condition;
 };
 
-template <typename T, typename Condition = void>
+template <typename A, typename T, typename Condition = void>
 class Conditionally_Data_Observed 
 {
 public:
+    typedef A NIC_Address;
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
-    typedef Ordered_List<Conditional_Data_Observer<T, Condition>, Condition> Observers;
+    typedef Ordered_List<Conditional_Data_Observer<A, T, Condition>, Condition> Observers;
 
     Conditionally_Data_Observed() {
-        ConsoleLogger::print("Conditionally_Data_Observed: Initializing instance.");
+        //ConsoleLogger::print("Conditionally_Data_Observed: Initializing instance.");
     }
     ~Conditionally_Data_Observed() {}
 
-    void attach(Conditional_Data_Observer<T, Condition>* o, Condition c) {
-        std::cout << "Protocol condition set: " << c << std::endl;
+    void attach(Conditional_Data_Observer<A, T, Condition>* o, Condition c) {
+        //std::cout << "Protocol condition set: " << c << std::endl;
         o->set_condition(c);
         _observers.insert(o);
     }
 
-    void detach(Conditional_Data_Observer<T, Condition>* o, Condition c) {
+    void detach(Conditional_Data_Observer<A, T, Condition>* o, Condition c) {
         _observers.remove(o);
     }
 
-    bool notify(Condition c, T* d) {
-        ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
+    bool notify(A& a, Condition c, T* d) {
+        //ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            std::cout << "PROTO: " << c << std::endl;
             if ((*obs)->rank() == c) {
-                (*obs)->update(c, d);
+                (*obs)->update(a, c, d);
                 notified = true;
             }
         }
@@ -87,8 +88,8 @@ public:
     ~Concurrent_Observed() {}
     
     void attach(Concurrent_Observer<D, C> * o, C c) {
-        ConsoleLogger::print("Concurrent_Observed: Attach");
-        std::cout << "Condition value: " << c << std::endl;
+        //ConsoleLogger::print("Concurrent_Observed: Attach");
+        //std::cout << "Condition value: " << c << std::endl;
         o->set_condition(c);
         _observers.insert(o);
     }
@@ -99,14 +100,14 @@ public:
     
     bool notify(C c, D * d) {
         ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
-        
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            if((*obs)->rank() == c) {
+            std::cout << "Rank: " << (*obs)->rank() << " AND c: " << c << std::endl; 
+            //if((*obs)->rank() == c) {
                 ConsoleLogger::print("Concurrent_Observed: Notifying concurrent observers.");
                 (*obs)->update(c, d);
                 notified = true;
-            }
+            //}
         }
         return notified;
     }
@@ -126,7 +127,7 @@ public:
 
 public:
     Concurrent_Observer(): _semaphore(0) {
-        ConsoleLogger::print("Concurrent_Observer: Initializing instance.");
+        //ConsoleLogger::print("Concurrent_Observer: Initializing instance.");
     }
     ~Concurrent_Observer() {}
     
