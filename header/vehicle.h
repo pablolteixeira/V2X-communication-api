@@ -17,7 +17,7 @@ typedef Communicator<EthernetProtocol> EthernetCommunicator;
 class Vehicle
 {
 public:
-    Vehicle(int id, EthernetNIC* nic, EthernetProtocol* protocol);
+    Vehicle(EthernetNIC* nic, EthernetProtocol* protocol);
     ~Vehicle();
 
     void start();
