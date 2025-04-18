@@ -36,8 +36,7 @@ public:
         if (!buf) return false;
         
         typename Channel::Address from;
-        int size = _channel->receive(buf, from, message->data(), message->size());
-
+        int size = _channel->receive(buf, from, message->data(), message->max_size());
         if(size > 0) {
             message->size(size);
             return true;
