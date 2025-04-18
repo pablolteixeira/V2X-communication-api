@@ -46,7 +46,7 @@ void Vehicle::start() {
     TestMessage* data = msg->get_data<TestMessage>();
     data->text = "Mensagem de teste";
     msg->size(sizeof(TestMessage));
-    //_communicator->send(msg);
+    _communicator->send(msg);
 }
 
 void Vehicle::stop() {

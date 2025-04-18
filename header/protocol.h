@@ -93,7 +93,10 @@ public:
     } __attribute__((packed));
     
     static const unsigned int MTU;
-    typedef unsigned char Data[MTU];
+    static constexpr unsigned int get_mtu() {
+        return NIC::MTU - sizeof(Header);
+    }
+    typedef unsigned char Data[get_mtu()];
 
     class Packet: public Header
     {
@@ -158,7 +161,7 @@ public:
             return -1;
         }
         ConsoleLogger::print("Protocol: Sending message.");
-        std::cout << "SIZES -> " << sizeof(Header) + size << " " << sizeof(Header) << " " << size << std::endl;
+        std::cout << "SIZES -> " << sizeof(Header) + size << " | " << sizeof(Header) << " | " << size << std::endl;
 
         NIC* nic = get_nic(from.paddr());
         std::cout << "MAC ADDRESS SEND BEFORE: " << mac_to_string(from.paddr()) << std::endl;
