@@ -5,6 +5,7 @@
 #include "ethernet.h"
 #include "console_logger.h"
 #include "mac_address_generator.h"
+#include "protocol.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -12,6 +13,7 @@
 #include <list>
 #include <vector>
 #include <algorithm>
+#include <string>
 
 template <typename Engine>
 class NIC: public Ethernet, public Conditionally_Data_Observed<Ethernet::Address,Buffer<Ethernet::Frame>,
@@ -31,8 +33,9 @@ public:
     static std::vector<NIC*> active_nics;
 public:
     NIC(const std::string& id) : _buffer_count(0) {
-        ConsoleLogger::print("Starting NIC...");
+        ConsoleLogger::print("NIC " + id + ": Starting...");
         MacAddressGenerator::generate_mac_from_seed(id, _address);
+        ConsoleLogger::print("NIC " + id + ": Logical MAC created");
 
         for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
             _buffer[i] = new Buffer<Ethernet::Frame>(Ethernet::MTU);
@@ -52,14 +55,15 @@ public:
                 ConsoleLogger::error("sigaction");
                 exit(EXIT_FAILURE);
             }
-            ConsoleLogger::print("NIC: SIGIO handler set");
+            ConsoleLogger::print("NIC " + id + ": SIGIO handler set");
         }
         
         int flags = fcntl(Engine::_socket, F_GETFL, 0);
         fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
         fcntl(Engine::_socket, F_SETOWN, getpid());
         
-        std::cout << "PROCESS ID: " << getpid() << std::endl;
+        ConsoleLogger::print("NIC " + id + ": Process ID = " + std::to_string(getpid()));
+        // std::cout << "PROCESS ID: " << getpid() << std::endl;
     }
     ~NIC() {
         // Remove this NIC from the active NICs list

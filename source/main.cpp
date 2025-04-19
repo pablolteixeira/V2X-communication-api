@@ -11,6 +11,8 @@
 const unsigned int NUM_VEHICLE = 2;
 
 int main() {
+    ConsoleLogger::print("STARTING CREATE OF INSTANCES");
+
     pid_t children_pids[NUM_VEHICLE];
 
     EthernetProtocol* protocol = EthernetProtocol::get_instance();
@@ -22,6 +24,12 @@ int main() {
 
     Vehicle* vehicle1 = new Vehicle(nic1, protocol);
     Vehicle* vehicle2 = new Vehicle(nic2, protocol);
+    
+    ConsoleLogger::print("FINISHING CREATION OF INSTANCES");
+
+
+    std::cout << std::endl;
+
     
     vehicle1->start();
     vehicle2->start();

@@ -125,8 +125,9 @@ public:
     static Protocol* get_instance() {
         if (_instance == nullptr) {
             _instance = new Protocol();
+            ConsoleLogger::print("Protocol: Instance of protocol created");
         }
-
+            
         return _instance;
     }
 
@@ -135,10 +136,10 @@ public:
             ConsoleLogger::print("Protocol: Registering NIC");
             _nics.push_back(nic);
             std::string mac_string = mac_to_string(nic->address());
-            std::cout << "mac string " << mac_string << std::endl;
+            std::cout << "MAC string " << mac_string << std::endl;
 
             _mac_table[mac_string] = nic;
-            std::cout << "nic - mac string " << nic << std::endl;
+            std::cout << "NIC: MAC string " << nic << std::endl;
             nic->attach(_instance, PROTO);
         }
     }
