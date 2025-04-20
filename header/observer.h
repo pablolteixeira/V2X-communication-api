@@ -53,7 +53,7 @@ public:
     }
 
     bool notify(A& a, Condition c, T* d) {
-        //ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
+        ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
             if ((*obs)->rank() == c) {
@@ -99,15 +99,15 @@ public:
     }
     
     bool notify(C c, D * d) {
-        ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
+        //ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
             std::cout << "Rank: " << (*obs)->rank() << " AND c: " << c << std::endl; 
-            //if((*obs)->rank() == c) {
+            if((*obs)->rank() == c) {
                 ConsoleLogger::print("Concurrent_Observed: Notifying concurrent observers.");
                 (*obs)->update(c, d);
                 notified = true;
-            //}
+            }
         }
         return notified;
     }
