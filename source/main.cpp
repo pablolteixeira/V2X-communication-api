@@ -11,6 +11,8 @@
 const unsigned int NUM_VEHICLE = 10;
 
 int main() {
+    ConsoleLogger::print("STARTING CREATE OF INSTANCES");
+
     std::cout.setf(std::ios_base::unitbuf);
 
     pid_t children_pids[NUM_VEHICLE];

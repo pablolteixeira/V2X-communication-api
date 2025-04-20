@@ -8,12 +8,15 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <cstring>
-#include "ethernet.h"
-#include "console_logger.h"
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <ifaddrs.h>
+#include <set>
+#include <string>
+
+#include "ethernet.h"
+#include "console_logger.h"
 
 class RawSocketEngine 
 {
@@ -26,11 +29,13 @@ protected:
         }
         
         // Get interface index
-        ConsoleLogger::print("Raw Socker Engine:: Setting interface index.");
+        ConsoleLogger::print("Raw Socker Engine: Setting interface index.");
         
+        std::string interface_name = get_interface();
+
         struct ifreq ifr;
         memset(&ifr, 0, sizeof(ifr));
-        strcpy(ifr.ifr_name, "wlp4s0"); // Default interface, can be configurable
+        strcpy(ifr.ifr_name, interface_name.c_str()); // Default interface, can be configurable
                 
         if(ioctl(_socket, SIOCGIFINDEX, &ifr) < 0) {
             ConsoleLogger::error("SIOCGIFINDEX");
@@ -40,7 +45,7 @@ protected:
         _ifindex = ifr.ifr_ifindex;
 
         // Get MAC address
-        ConsoleLogger::print("Raw Socker Engine:: Getting MAC Address.");
+        ConsoleLogger::print("Raw Socket Engine: Getting MAC Address.");
 
         if(ioctl(_socket, SIOCGIFHWADDR, &ifr) < 0) {
             ConsoleLogger::error("SIOCGIFHWADDR");
@@ -57,7 +62,7 @@ protected:
             }
         }
 
-        std::cout << "MAC Address: " << mac.str() << std::endl;
+        ConsoleLogger::print("Raw Socket Engine: MAC Address = " + mac.str());
         memcpy(_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
     }
     
@@ -106,7 +111,30 @@ protected:
         
         return 0;
     }
+
+    std::string get_interface() {
+        struct ifaddrs* ifaddr;
     
+        if (getifaddrs(&ifaddr) == -1) {
+            ConsoleLogger::error("Interfaces not recognized");
+            throw std::runtime_error("Falha ao carregar interfaces");
+        }
+    
+        std::string name;
+        std::set<std::string> interfaces;
+    
+        for (struct ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+            if (ifa->ifa_name) {
+                name = ifa->ifa_name;
+                if (name.find("wl") != std::string::npos) {
+                    break;
+                }
+            }
+        }
+        freeifaddrs(ifaddr);
+        return name;
+    }
+
 protected:
     int _socket;
     int _ifindex;
