@@ -13,6 +13,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <thread>
+
 template <typename Engine>
 class NIC: public Ethernet, public Conditionally_Data_Observed<Ethernet::Address,Buffer<Ethernet::Frame>,
             Ethernet::Protocol>, private Engine
@@ -40,7 +42,7 @@ public:
 
         // Register this NIC instance
         active_nics.push_back(this);
-        
+    
         // Set up SIGIO handling if this is the first NIC
         if (active_nics.size() == 1) {
             // Register the signal handler for SIGIO
@@ -54,7 +56,7 @@ public:
             }
             ConsoleLogger::print("NIC: SIGIO handler set");
         }
-        
+
         int flags = fcntl(Engine::_socket, F_GETFL, 0);
         fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
         fcntl(Engine::_socket, F_SETOWN, getpid());
@@ -67,7 +69,7 @@ public:
         if (it != active_nics.end()) {
             active_nics.erase(it);
         }
-        
+
         /*
         for(unsigned int i = 0; i < BUFFER_SIZE; i++) {
             delete _buffer[i];
@@ -75,10 +77,10 @@ public:
     }
 
     NICBuffer * alloc(const Address dst, Protocol_Number prot, unsigned int size) {
-        //ConsoleLogger::print("NIC: Allocating buffer.");
+        ConsoleLogger::print("NIC: Allocating buffer.");
         
         if (_buffer_count >= BUFFER_SIZE) {
-            //ConsoleLogger::error("NIC: _buffer_count >= BUFFER_SIZE");
+            ConsoleLogger::error("NIC: _buffer_count >= BUFFER_SIZE");
             return nullptr;
         }
 
@@ -93,7 +95,7 @@ public:
     }
 
     int send(NICBuffer * buf) {
-        //ConsoleLogger::print("NIC: Sending frame.");
+        ConsoleLogger::print("NIC: Sending frame.");
         Ethernet::Frame* frame = buf->frame();
         int result = Engine::raw_send(
             frame->header()->h_dest, 
@@ -102,12 +104,12 @@ public:
             buf->size() - sizeof(Ethernet::Header)
         );
 
-        //ConsoleLogger::print("NIC: Frame sent.");
+        ConsoleLogger::print("NIC: Frame sent.");
         return result;
     }
 
     void free(NICBuffer * buf) {
-        //ConsoleLogger::print("NIC: Free buffer.");
+        ConsoleLogger::print("NIC OG: Free buffer.");
         for(unsigned int i = 0; i < _buffer_count; i++) {
             if(_buffer[i] == buf) {
                 if(i < _buffer_count - 1) {
@@ -132,26 +134,32 @@ public:
 
     //const Statistics & statistics();
 
-    //void attach(Observer * obs, Protocol_Number prot); // possibly inherited
-    //void detach(Observer * obs, Protocol_Number prot); // possibly inherited
-
     using Observed::attach;
     using Observed::detach;
 
 private:
-    // SIGIO handler (static function shared by all NICs)
     static void sigio_handler(int signum) {
-        std::cout << "SIGIO RECEIVED: " << signum << std::endl;
-        // Check all active NICs for data
+        std::cout << "STARTING A SIGIO HANDLER: " << getpid() << std::endl;
+
+        std::vector<std::thread> threads_sigio;
+
         for (auto nic : active_nics) {
-            nic->process_incoming_data();
+            threads_sigio.push_back(std::thread(&NIC::process_incoming_data, nic));
+        }   
+
+        for (auto& thread_sigio : threads_sigio) {
+            if (thread_sigio.joinable()) {
+                thread_sigio.join();
+            }
         }
     }
 
     // Process incoming data when SIGIO is received
     void process_incoming_data() {
+        std::cout << "STARTING A PROCESSING INCOMING DATA: " << getpid() << std::endl;
         // Keep reading while there's data available (non-blocking)
         while (true) {
+            std::cout << "LOOP: " << getpid() << std::endl;
             Address src;
             Protocol_Number prot;
 
@@ -161,14 +169,13 @@ private:
                 // No buffers available, we'll have to try again later when buffer is freed
                 break;
             }
-            
             Ethernet::Frame* frame = buf->frame();
             int size = Engine::raw_receive(&src, &prot, frame->data(), Ethernet::MTU - sizeof(Ethernet::Header));
             
             if (size > 0) {
                 // Successful read
                 buf->size(size + sizeof(Ethernet::Header));
-                std::cout << "FRAME PROTO RECEIVED: " << prot << std::endl;
+                //std::cout << "FRAME PROTO RECEIVED: " << prot << std::endl;
                 if (!notify(_address, prot, buf)) {
                     free(buf);
                 }
