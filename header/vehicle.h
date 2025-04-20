@@ -9,6 +9,7 @@
 #include "message.h"
 
 #include <thread>
+#include <atomic>
 
 typedef NIC<RawSocketEngine> EthernetNIC;
 typedef Protocol<EthernetNIC> EthernetProtocol;
@@ -23,7 +24,8 @@ public:
     void start();
     void stop();
 private:
-    void run();
+    void receive();
+    void send();
 
 private:
     int _id;
@@ -31,8 +33,10 @@ private:
     EthernetProtocol* _protocol;
     EthernetCommunicator* _communicator;
 
-    bool _running = false;
-    std::thread _thread;
+    std::atomic<bool> _running;
+    
+    std::thread _receive_thread;
+    std::thread _send_thread;
 };
 
 #endif // VEHICLE_H
