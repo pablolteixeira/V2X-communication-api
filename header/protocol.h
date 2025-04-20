@@ -11,6 +11,10 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
 
 template <typename NIC>
 class Protocol: private NIC::Observer
@@ -113,18 +117,29 @@ public:
     } __attribute__((packed));
 
 protected:
-    Protocol() {}
+    Protocol() {
+        if (!_instance_mutex) {
+            _instance_mutex = sem_open("/eth_protocol_instance_mutex", O_CREAT, 0666, 1);
+        }    
+    }
 
 public:
     ~Protocol() {
         for (auto nic : _nics) {
             nic->detach(this, PROTO);
         }
+
+        sem_close(_instance_mutex);
+        sem_unlink("/eth_protocol_instance_mutex");
     }
     
-    static Protocol* get_instance() {
-        if (_instance == nullptr) {
-            _instance = new Protocol();
+    static Protocol* get_instance() {  
+        if (!_instance) {
+            void* _shared_mem = mmap(NULL, sizeof(Protocol), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+            if (_shared_mem != MAP_FAILED) {
+                _instance = new (_shared_mem) Protocol();
+            }
         }
 
         return _instance;
@@ -160,7 +175,7 @@ public:
         if (size > MTU) {
             return -1;
         }
-        ConsoleLogger::print("Protocol: Sending message.");
+        //ConsoleLogger::print("Protocol: Sending message.");
         
         NIC* nic = get_nic(from.paddr());
         NICBuffer* buf = nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
@@ -168,7 +183,7 @@ public:
             return -1;
         }
 
-        ConsoleLogger::print("Protocol: Buffer allocated.");
+        //ConsoleLogger::print("Protocol: Buffer allocated.");
 
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         packet->Header::operator=(Header(from, to, size));
@@ -198,10 +213,10 @@ public:
     }
 
     static void attach(Observer * obs, Address address) {
-        _observed.attach(obs, address.port());
+        _observed.attach(obs, PROTO);
     }
     static void detach(Observer * obs, Address address) {
-        _observed.detach(obs, address.port());
+        _observed.detach(obs, PROTO);
     }
 
 private:
@@ -212,7 +227,7 @@ private:
         
         if(!_observed.notify(prot, buf)) {
             NIC* nic = get_nic(paddr);
-
+            ConsoleLogger::print("Protocol: Calling free buffer.");
             nic->free(buf);
         }
     }
@@ -230,13 +245,15 @@ private:
     }
 
     static NIC* get_nic(Physical_Address& paddr) {
-
         std::string key = mac_to_string(paddr);
         return _mac_table[key];
     }
 
 private:
     static Protocol* _instance;
+    static sem_t* _instance_mutex;
+    static void* _shared_mem;
+
     static std::vector<NIC*> _nics;
     static std::unordered_map<std::string, NIC*> _mac_table;
     // Channel protocols are usually singletons
@@ -263,5 +280,11 @@ std::unordered_map<std::string, NIC*> Protocol<NIC>::_mac_table;
 
 template <typename NIC>
 Protocol<NIC>* Protocol<NIC>::_instance = nullptr;
+
+template <typename NIC>
+sem_t* Protocol<NIC>::_instance_mutex = nullptr;
+
+template <typename NIC>
+void* Protocol<NIC>::_shared_mem = nullptr;
 
 #endif // PROTOCOL_H
