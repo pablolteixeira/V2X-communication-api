@@ -69,7 +69,7 @@ protected:
     int raw_send(Ethernet::Address dst, Ethernet::Protocol prot, const void* data, unsigned int size) {
         ConsoleLogger::print("Raw Socker Engine: Sending frame.");
         Ethernet::Frame frame(dst, _addr, prot);
-        std::cout << "PROTO -> " << prot << std::endl;
+        //std::cout << "PROTO -> " << prot << std::endl;
         memcpy(frame.data(), data, size);
         
         struct sockaddr_ll socket_address;
@@ -87,7 +87,7 @@ protected:
     }
     
     int raw_receive(Ethernet::Address* src, Ethernet::Protocol* prot, void* data, unsigned int size) {
-        ConsoleLogger::print("Raw Socker Engine: Receive started.");  
+        //ConsoleLogger::print("Raw Socker Engine: Receive started.");  
         Ethernet::Frame frame;
         int bytes_received = recvfrom(_socket, &frame, sizeof(frame), 0, NULL, NULL);
         
