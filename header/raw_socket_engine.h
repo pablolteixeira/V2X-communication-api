@@ -74,7 +74,7 @@ protected:
     int raw_send(Ethernet::Address dst, Ethernet::Protocol prot, const void* data, unsigned int size) {
         ConsoleLogger::print("Raw Socket Engine: Sending frame.");
         Ethernet::Frame frame(dst, _addr, prot);
-        //std::cout << "PROTO -> " << prot << std::endl;
+        //ConsoleLogger::print("Raw Socket Engine:PROTO -> " + std::to_string(prot));
         memcpy(frame.data(), data, size);
         
         struct sockaddr_ll socket_address;
@@ -86,13 +86,13 @@ protected:
         
         int bytes_sent = sendto(_socket, &frame, sizeof(Ethernet::Header) + size, 0,
                                (struct sockaddr*)&socket_address, sizeof(socket_address));
-        
+
         ConsoleLogger::print("Raw Socker Engine: Frame sent.");                  
         return bytes_sent - sizeof(Ethernet::Header);
     }
     
     int raw_receive(Ethernet::Address* src, Ethernet::Protocol* prot, void* data, unsigned int size) {
-        //ConsoleLogger::print("Raw Socker Engine: Receive started.");  
+        ConsoleLogger::print("Raw Socker Engine: Receive started.");  
         Ethernet::Frame frame;
         int bytes_received = recvfrom(_socket, &frame, sizeof(frame), 0, NULL, NULL);
         
@@ -101,7 +101,7 @@ protected:
         
         memcpy(src, frame.header()->h_source, ETH_ALEN);
         *prot = ntohs(frame.header()->h_proto);
-        
+        ConsoleLogger::print("Raw Socket Engine: Receive PROTO -> " + std::to_string(*prot));
         int data_size = bytes_received - sizeof(Ethernet::Header);
         if(data_size > 0) {
             int copy_size = (data_size > (int)size) ? size : data_size;

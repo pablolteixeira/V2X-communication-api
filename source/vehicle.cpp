@@ -2,6 +2,7 @@
 #include "../header/nic.h"
 
 #include <iostream>
+#include <pthread.h>
 
 struct TestMessage {
     std::string from;
@@ -47,12 +48,14 @@ void Vehicle::start() {
 void Vehicle::stop() {
     ConsoleLogger::log("Stopping Vehicle -> " + std::to_string(_id));
     
-    if (_receive_thread.joinable()) {
-        _receive_thread.join();
-    }
-    
+    //_running = false;
+
     if (_send_thread.joinable()) {
         _send_thread.join();
+    }
+
+    if (_receive_thread.joinable()) {
+        _receive_thread.join();
     }
 }
 
@@ -61,24 +64,31 @@ void Vehicle::receive() {
     std::string vehicle_mac = Ethernet::address_to_string(_nic->address());
 
     while (_running) {
-        Message* msg = new Message();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         ConsoleLogger::log("RUNNING RECEIVE THREAD");
-        //std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        /*Message* msg = new Message();
+        //
         if (_communicator->receive(msg)) {
             
             TestMessage* data = msg->get_data<TestMessage>();
-            ConsoleLogger::log(vehicle_mac);
-            ConsoleLogger::log(data->from);
-            ConsoleLogger::log(data->text);
-            ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " from: " + data->from + " - text = " + data->text);
+            if (data != nullptr) {
+                ConsoleLogger::log(vehicle_mac);
+                ConsoleLogger::log(data->from);
+                ConsoleLogger::log(data->text);
+                ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " from: " + data->from + " - text = " + data->text);
+            } else {
+                ConsoleLogger::log("Error: Received null message data");
+            }
         }
 
-        delete msg;
+        delete msg;*/
     }
+
+    return;
 }
 
 void Vehicle::send() {
-    //ConsoleLogger::log("RUNNING SEND THREAD");
+    ConsoleLogger::log("RUNNING SEND THREAD");
 
     while (_running) {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -94,4 +104,6 @@ void Vehicle::send() {
         
         delete msg;*/
     }
+
+    return;
 }
