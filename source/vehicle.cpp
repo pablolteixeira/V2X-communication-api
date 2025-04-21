@@ -33,19 +33,19 @@ Vehicle::~Vehicle() {
 }
 
 void Vehicle::start() {
-    std::cout << "Starting Vehicle -> " << _id << std::endl;
+    ConsoleLogger::log("Starting Vehicle -> " + std::to_string(_id));
     
     if (_running) {
-        std::cout << "Running: " << _running << std::endl;
+        ConsoleLogger::log("Running: " + std::to_string(_running));
     }
     _running = true;
     _receive_thread = std::thread(&Vehicle::receive, this);
     _send_thread = std::thread(&Vehicle::send, this);
-    std::cout << "Threads running." << std::endl;
+    ConsoleLogger::log("Threads running.");
 }
 
 void Vehicle::stop() {
-    std::cout << "Stopping Vehicle -> " << _id << std::endl;
+    ConsoleLogger::log("Stopping Vehicle -> " + std::to_string(_id));
     
     if (_receive_thread.joinable()) {
         _receive_thread.join();
@@ -57,30 +57,41 @@ void Vehicle::stop() {
 }
 
 void Vehicle::receive() {
+    //ConsoleLogger::log("RUNNING RECEIVE THREAD");
     std::string vehicle_mac = Ethernet::address_to_string(_nic->address());
 
-    std::cout << "VEHICLE[" << _id << "] - RUNNING RECEIVE THREAD" << '\n';
     while (_running) {
         Message* msg = new Message();
-
+        ConsoleLogger::log("RUNNING RECEIVE THREAD");
+        //std::this_thread::sleep_for(std::chrono::milliseconds(500));
         if (_communicator->receive(msg)) {
             
             TestMessage* data = msg->get_data<TestMessage>();
-            std::cout << "Test Message - Vehicle -> " << vehicle_mac << " from: " << data->from << " - text = " << data->text << std::endl;
+            ConsoleLogger::log(vehicle_mac);
+            ConsoleLogger::log(data->from);
+            ConsoleLogger::log(data->text);
+            ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " from: " + data->from + " - text = " + data->text);
         }
+
+        delete msg;
     }
 }
 
 void Vehicle::send() {
-    std::cout << "VEHICLE[" << _id << "] - RUNNING SEND THREAD" << '\n';
+    //ConsoleLogger::log("RUNNING SEND THREAD");
 
     while (_running) {
-        Message* msg = new Message();
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        ConsoleLogger::log("RUNNING SEND THREAD");
+
+        /*Message* msg = new Message();
         TestMessage* data = msg->get_data<TestMessage>();
         std::string from = Ethernet::address_to_string(_nic->address());
         data->from = from;
         data->text = "Mensagem de teste";
         msg->size(sizeof(TestMessage));
         _communicator->send(msg);
+        
+        delete msg;*/
     }
 }
