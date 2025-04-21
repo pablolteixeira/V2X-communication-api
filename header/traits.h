@@ -5,8 +5,8 @@ template<typename T>
 class Traits 
 {
 public:
-    static const unsigned int SEND_BUFFERS = 15;
-    static const unsigned int RECEIVE_BUFFERS = 15;
+    static const unsigned int SEND_BUFFERS = 16;
+    static const unsigned int RECEIVE_BUFFERS = 16;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 0x8888;
 };
 
