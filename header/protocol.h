@@ -150,10 +150,9 @@ public:
             ConsoleLogger::print("Protocol: Registering NIC");
             _nics.push_back(nic);
             std::string mac_string = mac_to_string(nic->address());
-            std::cout << "MAC string " << mac_string << std::endl;
+            //ConsoleLogger::log("MAC string " + mac_string);
 
             _mac_table[mac_string] = nic;
-            std::cout << "NIC: MAC string " << nic << std::endl;
             nic->attach(_instance, PROTO);
         }
     }

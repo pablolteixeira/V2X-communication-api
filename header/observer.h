@@ -102,7 +102,7 @@ public:
         //ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            std::cout << "Rank: " << (*obs)->rank() << " AND c: " << c << std::endl; 
+            ConsoleLogger::log("Rank: " + std::to_string((*obs)->rank()) + " AND c: " + std::to_string(c)); 
             if((*obs)->rank() == c) {
                 ConsoleLogger::print("Concurrent_Observed: Notifying concurrent observers.");
                 (*obs)->update(c, d);
