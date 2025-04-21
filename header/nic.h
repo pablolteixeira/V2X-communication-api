@@ -6,6 +6,7 @@
 #include "console_logger.h"
 #include "mac_address_generator.h"
 #include "protocol.h"
+#include "buffer_pool.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -33,19 +34,18 @@ public:
 
     // Global signal handler needs access to all NICs
     static std::vector<NIC*> active_nics;
+    static std::mutex _nic_mutex;
 public:
-    NIC(const std::string& id) : _buffer_count(0) {
-        ConsoleLogger::print("NIC " + id + ": Starting...");
+    NIC(const std::string& id) : _buffer_pool(Ethernet::MTU) {
+        //ConsoleLogger::print("NIC " + id + ": Starting...");
         MacAddressGenerator::generate_mac_from_seed(id, _address);
-        ConsoleLogger::print("NIC " + id + ": Logical MAC created");
-
-        for (unsigned int i = 0; i < BUFFER_SIZE; i++) {
-            _buffer[i] = new Buffer<Ethernet::Frame>(Ethernet::MTU);
-        }
+        //ConsoleLogger::print("NIC " + id + ": Logical MAC created");
 
         // Register this NIC instance
+        _nic_mutex.lock();
         active_nics.push_back(this);
-    
+        _nic_mutex.unlock();
+
         // Set up SIGIO handling if this is the first NIC
         if (active_nics.size() == 1) {
             // Register the signal handler for SIGIO
@@ -57,38 +57,31 @@ public:
                 ConsoleLogger::error("sigaction");
                 exit(EXIT_FAILURE);
             }
-            ConsoleLogger::print("NIC " + id + ": SIGIO handler set");
+            //ConsoleLogger::print("NIC " + id + ": SIGIO handler set");
         }
 
         int flags = fcntl(Engine::_socket, F_GETFL, 0);
         fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
         fcntl(Engine::_socket, F_SETOWN, getpid());
         
-        ConsoleLogger::print("NIC " + id + ": Process ID = " + std::to_string(getpid()));
+        //ConsoleLogger::print("NIC " + id + ": Process ID = " );
         // std::cout << "PROCESS ID: " << getpid() << std::endl;
     }
     ~NIC() {
         // Remove this NIC from the active NICs list
+        _nic_mutex.lock();
         auto it = std::find(active_nics.begin(), active_nics.end(), this);
         if (it != active_nics.end()) {
             active_nics.erase(it);
         }
-
-        /*
-        for(unsigned int i = 0; i < BUFFER_SIZE; i++) {
-            delete _buffer[i];
-        }*/
+        _nic_mutex.unlock();
     }
 
-    NICBuffer * alloc(const Address dst, Protocol_Number prot, unsigned int size) {
-        ConsoleLogger::print("NIC: Allocating buffer.");
+    NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
+        ConsoleLogger::print("NIC: Allocating buffer. ");
         
-        if (_buffer_count >= BUFFER_SIZE) {
-            ConsoleLogger::error("NIC: _buffer_count >= BUFFER_SIZE");
-            return nullptr;
-        }
+        NICBuffer* buf = _buffer_pool.alloc();
 
-        NICBuffer* buf = _buffer[_buffer_count++];
         buf->size(size + sizeof(Ethernet::Header));
         Ethernet::Frame* frame = buf->frame();
         memcpy(frame->header()->h_dest, dst, ETH_ALEN);
@@ -98,8 +91,9 @@ public:
         return buf;
     }
 
-    int send(NICBuffer * buf) {
+    int send(NICBuffer* buf) {
         ConsoleLogger::print("NIC: Sending frame.");
+        
         Ethernet::Frame* frame = buf->frame();
         int result = Engine::raw_send(
             frame->header()->h_dest, 
@@ -112,20 +106,12 @@ public:
         return result;
     }
 
-    void free(NICBuffer * buf) {
+    void free(NICBuffer* buf) {
         ConsoleLogger::print("NIC OG: Free buffer.");
-        for(unsigned int i = 0; i < _buffer_count; i++) {
-            if(_buffer[i] == buf) {
-                if(i < _buffer_count - 1) {
-                    _buffer[i] = _buffer[_buffer_count - 1];
-                }
-                _buffer_count--;
-                break;
-            }
-        }
+        _buffer_pool.free(buf);
     }
 
-    void receive(NICBuffer * buf, Address * src) {
+    void receive(NICBuffer* buf, Address* src) {
         Ethernet::Frame* frame = buf->frame();
         memcpy(src, frame->header()->h_source, ETH_ALEN);
     }
@@ -143,7 +129,7 @@ public:
 
 private:
     static void sigio_handler(int signum) {
-        std::cout << "STARTING A SIGIO HANDLER: " << getpid() << std::endl;
+        ConsoleLogger::log("STARTING A SIGIO HANDLER:");
 
         std::vector<std::thread> threads_sigio;
 
@@ -160,10 +146,9 @@ private:
 
     // Process incoming data when SIGIO is received
     void process_incoming_data() {
-        std::cout << "STARTING A PROCESSING INCOMING DATA: " << getpid() << std::endl;
+        ConsoleLogger::log("STARTING A PROCESSING INCOMING DATA");
         // Keep reading while there's data available (non-blocking)
         while (true) {
-            std::cout << "LOOP: " << getpid() << std::endl;
             Address src;
             Protocol_Number prot;
 
@@ -198,12 +183,14 @@ private:
 
 private:
     //Statistics _statistics;
-    NICBuffer* _buffer[BUFFER_SIZE];
-    unsigned int _buffer_count;
+    BufferPool<Ethernet::Frame, BUFFER_SIZE> _buffer_pool;
     Address _address;
 };
 
 template <typename Engine>
 std::vector<NIC<Engine>*> NIC<Engine>::active_nics;
+
+template <typename Engine>
+std::mutex NIC<Engine>::_nic_mutex;
 
 #endif // NIC_H
