@@ -26,14 +26,17 @@ public:
     }
 
     BufferType* alloc() {
+        ConsoleLogger::log("Buffer Pool: Requesting Buffer - Semaphore P -> " + std::to_string(_free_buffers.count()));
         _free_buffers.p();
         
-        std::lock_guard<std::mutex> lock(_mutex);
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
         
-        for (size_t i = 0; i < SIZE; i++) {
-            if (!_in_use[i]) {
-                _in_use[i] = true;
-                return _buffers[i];
+            for (size_t i = 0; i < SIZE; i++) {
+                if (!_in_use[i]) {
+                    _in_use[i] = true;
+                    return _buffers[i];
+                }
             }
         }
         
@@ -41,6 +44,7 @@ public:
     }
 
     void free(BufferType* buf) {
+        ConsoleLogger::log("Buffer Pool: Free Buffer");
         bool was_in_use = false;
         
         {
@@ -54,9 +58,10 @@ public:
                 }
             }
         }
-        
+        ConsoleLogger::log("Buffer Pool: Freed Buffer");
         // If the buffer was in use, increment the semaphore
         if (was_in_use) {
+            ConsoleLogger::log("Buffer Pool: Buffer was in use - Semaphore V -> " + std::to_string(_free_buffers.count()));
             _free_buffers.v();
         }
     }

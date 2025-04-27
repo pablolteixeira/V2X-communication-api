@@ -150,10 +150,11 @@ public:
             ConsoleLogger::print("Protocol: Registering NIC");
             _nics.push_back(nic);
             std::string mac_string = mac_to_string(nic->address());
-            //ConsoleLogger::log("MAC string " + mac_string);
-
+            ConsoleLogger::log("MAC string " + mac_string);
             _mac_table[mac_string] = nic;
             nic->attach(_instance, PROTO);
+
+            std::cout << "NICS SIZE: " << _nics.size() << std::endl;
         }
     }
 
@@ -174,7 +175,7 @@ public:
         if (size > MTU) {
             return -1;
         }
-        //ConsoleLogger::print("Protocol: Sending message.");
+        ConsoleLogger::print("Protocol: Sending message.");
         
         NIC* nic = get_nic(from.paddr());
         NICBuffer* buf = nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
@@ -182,7 +183,7 @@ public:
             return -1;
         }
 
-        //ConsoleLogger::print("Protocol: Buffer allocated.");
+        ConsoleLogger::print("Protocol: Buffer allocated.");
 
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         packet->Header::operator=(Header(from, to, size));
@@ -201,14 +202,23 @@ public:
             return -1;
         }
 
-        NIC* nic = get_nic(from.paddr());
-        
-        Physical_Address paddr_source;
-        nic->receive(buf, &paddr_source);
-        from = Address(paddr_source, packet->from_port());
-        memcpy(data, packet->template data<void>(), packet->length());
+        std::cout << "MAC TABLE SIZE: " << _mac_table.size() << std::endl;
 
-        return packet->length();
+        NIC* nic = get_nic(packet->from_paddr());
+
+        if (nic) {
+            std::cout << "NOT WORKING!" << std::endl;
+            
+            Physical_Address paddr_source;
+            nic->receive(buf, &paddr_source);
+            from = Address(paddr_source, packet->from_port());
+            memcpy(data, packet->template data<void>(), packet->length());
+            nic->free(buf);
+            return packet->length();
+        }
+
+        std::cout << "NIC NOT FOUND!" << std::endl;
+        return 0;
     }
 
     static void attach(Observer * obs, Address address) {
@@ -220,9 +230,7 @@ public:
 
 private:
     void update(Physical_Address& paddr, typename NIC::Protocol_Number prot, NICBuffer * buf) override {
-        // std::cout << "Buffer pointer before: " << buf << std::endl;
         ConsoleLogger::print("Protocol: Update observers.");
-        Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
         
         if(!_observed.notify(prot, buf)) {
             NIC* nic = get_nic(paddr);
@@ -245,6 +253,7 @@ private:
 
     static NIC* get_nic(Physical_Address& paddr) {
         std::string key = mac_to_string(paddr);
+        std::cout << "NIC KEY: " << key << std::endl;
         return _mac_table[key];
     }
 

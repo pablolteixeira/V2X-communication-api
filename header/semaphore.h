@@ -1,7 +1,9 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include <pthread.h>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
 
 // Semaphore implementation for thread synchronization
 class Semaphore 
@@ -12,13 +14,15 @@ public:
     ~Semaphore();
 
     void p();
+    bool try_p();
 
     void v();
 
+    int count();
 private:
     int _count;
-    pthread_mutex_t _mutex;
-    pthread_cond_t _condition;
+    std::mutex _mutex;
+    std::condition_variable _condition;
 };
 
 #endif

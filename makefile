@@ -7,6 +7,7 @@ LDFLAGS = -pthread
 SRC_DIR = source
 INC_DIR = include
 BIN_DIR = bin
+LOGS_DIR = logs
 
 # Create bin directory if it doesn't exist
 $(shell mkdir -p $(BIN_DIR))
@@ -33,5 +34,8 @@ clean:
 # Run the main program
 run: $(BIN_DIR)/main
 	./$(BIN_DIR)/main
+
+clean_logs:
+	rm -f $(LOGS_DIR)/*.log
 
 .PHONY: all clean run

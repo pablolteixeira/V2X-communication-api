@@ -56,6 +56,7 @@ public:
         ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
+            ConsoleLogger::print(std::to_string((*obs)->rank()) + " - " + std::to_string(c));
             if ((*obs)->rank() == c) {
                 (*obs)->update(a, c, d);
                 notified = true;
@@ -132,6 +133,7 @@ public:
     ~Concurrent_Observer() {}
     
     void update(C c, D * d) {
+        std::cout << "OBSERVED BUFFER POINTER ADDED: " << d << std::endl;
         _data.insert(d);
         _semaphore.v();
     }

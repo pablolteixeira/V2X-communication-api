@@ -34,7 +34,6 @@ public:
     bool receive(Message * message) {
         Buffer * buf = Observer::updated(); // block until a notification is triggered
         if (!buf) return false;
-        
         typename Channel::Address from;
         int size = _channel->receive(buf, from, message->data(), message->max_size());
         if(size > 0) {

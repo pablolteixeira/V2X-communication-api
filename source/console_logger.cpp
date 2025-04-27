@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 
 const std::string ConsoleLogger::RED = "\033[31m";
 const std::string ConsoleLogger::GREEN = "\033[32m";
@@ -11,12 +12,22 @@ std::mutex ConsoleLogger::thread_mutex;
 std::ofstream ConsoleLogger::log_file;
 
 void ConsoleLogger::init() {
+    if (log_file.is_open()) {
+        log_file.close();
+    }
+    mkdir("logs", 0755);
+
     std::stringstream filename;
     filename << "logs/process_" << getpid() << ".log";
     log_file.open(filename.str(), std::ios::out);
     
     if (!log_file.is_open()) {
-        std::cerr << "Failed to open log file: " << filename.str() << std::endl;
+        // Add error handling here
+        // Check system file descriptor limits
+        struct rlimit rlim;
+        getrlimit(RLIMIT_NOFILE, &rlim);
+        std::cerr << "Current fd limit: " << rlim.rlim_cur << "/" << rlim.rlim_max << std::endl;
+
         // Fallback to current directory
         filename.str("");
         filename << "process_" << getpid() << ".log";
@@ -55,9 +66,9 @@ void ConsoleLogger::log(const std::string& message) {
     if (!log_file.is_open()) init();
 
     std::string timestamp = get_current_timestamp();
-    log_file << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << message << std::endl;
+    log_file << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
     // Also print to console
-    std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << message << std::endl;
+    std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
 }
 
 void ConsoleLogger::print(const std::string& message) {
@@ -65,9 +76,9 @@ void ConsoleLogger::print(const std::string& message) {
     if (!log_file.is_open()) init();
 
     std::string timestamp = get_current_timestamp();
-    log_file << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << message << std::endl;
+    log_file << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
     // Console gets colors
-    std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << GREEN << message << RESET << std::endl;
+    std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << GREEN << message << RESET << std::endl;
 }
 
 void ConsoleLogger::error(const std::string& message) {

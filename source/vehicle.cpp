@@ -48,7 +48,7 @@ void Vehicle::start() {
 void Vehicle::stop() {
     ConsoleLogger::log("Stopping Vehicle -> " + std::to_string(_id));
     
-    //_running = false;
+    _running = false;
 
     if (_send_thread.joinable()) {
         _send_thread.join();
@@ -60,14 +60,13 @@ void Vehicle::stop() {
 }
 
 void Vehicle::receive() {
-    //ConsoleLogger::log("RUNNING RECEIVE THREAD");
     std::string vehicle_mac = Ethernet::address_to_string(_nic->address());
 
+    Message* msg = new Message();
+
     while (_running) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         ConsoleLogger::log("RUNNING RECEIVE THREAD");
-        /*Message* msg = new Message();
-        //
+        
         if (_communicator->receive(msg)) {
             
             TestMessage* data = msg->get_data<TestMessage>();
@@ -80,30 +79,29 @@ void Vehicle::receive() {
                 ConsoleLogger::log("Error: Received null message data");
             }
         }
-
-        delete msg;*/
     }
+
+    delete msg;
 
     return;
 }
 
 void Vehicle::send() {
-    ConsoleLogger::log("RUNNING SEND THREAD");
+    Message* msg = new Message();
+    TestMessage* data = msg->get_data<TestMessage>();
 
-    while (_running) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    //while (_running) {
         ConsoleLogger::log("RUNNING SEND THREAD");
+        std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
 
-        /*Message* msg = new Message();
-        TestMessage* data = msg->get_data<TestMessage>();
         std::string from = Ethernet::address_to_string(_nic->address());
         data->from = from;
         data->text = "Mensagem de teste";
         msg->size(sizeof(TestMessage));
         _communicator->send(msg);
-        
-        delete msg;*/
-    }
+    //}
+
+    delete msg;
 
     return;
 }
