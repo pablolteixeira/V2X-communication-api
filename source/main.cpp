@@ -58,7 +58,7 @@ int main() {
             vehicle->start();
             ConsoleLogger::log("Vehicle " + id + " started");
             
-            std::this_thread::sleep_for(std::chrono::seconds(120));
+            std::this_thread::sleep_for(std::chrono::seconds(5));
 
             vehicle->stop();
             ConsoleLogger::log("Vehicle " + id + " stopped");
@@ -91,8 +91,6 @@ int main() {
         }
     }
 
-    //delete protocol;
-    
     ConsoleLogger::log("Parent process (PID: " + std::to_string(getpid()) + ") finished.");
     ConsoleLogger::close();
 

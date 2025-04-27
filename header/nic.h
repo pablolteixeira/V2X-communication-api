@@ -19,7 +19,7 @@
 #include <thread>
 
 template <typename Engine>
-class NIC: public Ethernet, public Conditionally_Data_Observed<Ethernet::Address,Buffer<Ethernet::Frame>,
+class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,
             Ethernet::Protocol>, private Engine
 {
 public:
@@ -29,8 +29,8 @@ public:
     typedef Ethernet::Protocol Protocol_Number;
     typedef Buffer<Ethernet::Frame> NICBuffer;
     
-    typedef Conditional_Data_Observer<Address,Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
-    typedef Conditionally_Data_Observed<Address,Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
+    typedef Conditional_Data_Observer<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observer;
+    typedef Conditionally_Data_Observed<Buffer<Ethernet::Frame>, Ethernet::Protocol> Observed;
 
     static NIC<Engine>* _instance;
 public:
@@ -58,7 +58,9 @@ public:
 
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
-    ~NIC() {
+    ~NIC() {}
+
+    void stop() {
         cleanup_nic();
     }
 
@@ -167,18 +169,16 @@ private:
         if (size > 0) {
             // Successful read
             buf->size(size + sizeof(Ethernet::Header));
-            if (!notify(_address, prot, buf)) {
+            if (!notify(prot, buf)) {
                 free(buf);
             }
         } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
             // No more data available
             free(buf);
-            //break;
         } else {
             // Error
             free(buf);
-            //perror("Error reading from socket");
-            //break;
+            perror("Error reading from socket");
         }
 
         return;

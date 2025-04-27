@@ -117,29 +117,16 @@ public:
     } __attribute__((packed));
 
 protected:
-    Protocol() {
-        if (!_instance_mutex) {
-            _instance_mutex = sem_open("/eth_protocol_instance_mutex", O_CREAT, 0666, 1);
-        }    
-    }
+    Protocol() {}
 
 public:
     ~Protocol() {
-        for (auto nic : _nics) {
-            nic->detach(this, PROTO);
-        }
-
-        sem_close(_instance_mutex);
-        sem_unlink("/eth_protocol_instance_mutex");
+        unregister_nic(_nic);
     }
     
     static Protocol* get_instance() {  
         if (!_instance) {
-            void* _shared_mem = mmap(NULL, sizeof(Protocol), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-
-            if (_shared_mem != MAP_FAILED) {
-                _instance = new (_shared_mem) Protocol();
-            }
+            _instance = new Protocol();
         }
 
         return _instance;
@@ -148,26 +135,19 @@ public:
     static void register_nic(NIC* nic) {
         if (_instance) {
             ConsoleLogger::print("Protocol: Registering NIC");
-            _nics.push_back(nic);
-            std::string mac_string = mac_to_string(nic->address());
-            ConsoleLogger::log("MAC string " + mac_string);
-            _mac_table[mac_string] = nic;
+            //std::string mac_string = mac_to_string(nic->address());
+            //ConsoleLogger::log("MAC string " + mac_string);
+            //_mac_table[mac_string] = nic;
             nic->attach(_instance, PROTO);
-
-            std::cout << "NICS SIZE: " << _nics.size() << std::endl;
+            _nic = nic;
         }
     }
 
     static void unregister_nic(NIC* nic) {
         if (_instance) {
             ConsoleLogger::print("Protocol: Unregistering NIC");
-            for (auto it = _nics.begin(); it != _nics.end(); ++it) {
-                if (*it == nic) {
-                    nic->detach(_instance, PROTO);
-                    _nics.erase(it);
-                    return;
-                }
-            }
+            nic->detach(_instance, PROTO);
+            _nic = nullptr;
         }
     }
 
@@ -177,23 +157,26 @@ public:
         }
         ConsoleLogger::print("Protocol: Sending message.");
         
-        NIC* nic = get_nic(from.paddr());
-        NICBuffer* buf = nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
-        if (!buf) {
-            return -1;
+        if (_nic) {
+            NICBuffer* buf = _nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
+            if (!buf) {
+                return -1;
+            }
+
+            ConsoleLogger::print("Protocol: Buffer allocated.");
+
+            Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
+            packet->Header::operator=(Header(from, to, size));
+
+            memcpy(packet->template data<void>(), data, size);
+            
+            int result = _nic->send(buf);
+            _nic->free(buf);
+
+            return result;
         }
 
-        ConsoleLogger::print("Protocol: Buffer allocated.");
-
-        Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
-        packet->Header::operator=(Header(from, to, size));
-
-        memcpy(packet->template data<void>(), data, size);
-        
-        int result = nic->send(buf);
-        nic->free(buf);
-
-        return result;
+        return -1;
     }
 
     int receive(NICBuffer * buf, Address from, void * data, unsigned int size) {
@@ -202,23 +185,16 @@ public:
             return -1;
         }
 
-        std::cout << "MAC TABLE SIZE: " << _mac_table.size() << std::endl;
-
-        NIC* nic = get_nic(packet->from_paddr());
-
-        if (nic) {
-            std::cout << "NOT WORKING!" << std::endl;
-            
+        if (_nic) {
             Physical_Address paddr_source;
-            nic->receive(buf, &paddr_source);
+            _nic->receive(buf, &paddr_source);
             from = Address(paddr_source, packet->from_port());
             memcpy(data, packet->template data<void>(), packet->length());
-            nic->free(buf);
+            _nic->free(buf);
             return packet->length();
         }
 
-        std::cout << "NIC NOT FOUND!" << std::endl;
-        return 0;
+        return -1;
     }
 
     static void attach(Observer * obs, Address address) {
@@ -229,41 +205,19 @@ public:
     }
 
 private:
-    void update(Physical_Address& paddr, typename NIC::Protocol_Number prot, NICBuffer * buf) override {
+    void update(typename NIC::Protocol_Number prot, NICBuffer * buf) override {
         ConsoleLogger::print("Protocol: Update observers.");
         
         if(!_observed.notify(prot, buf)) {
-            NIC* nic = get_nic(paddr);
             ConsoleLogger::print("Protocol: Calling free buffer.");
-            nic->free(buf);
+            _nic->free(buf);
         }
-    }
-
-    static std::string mac_to_string(Physical_Address& addr) {
-        std::stringstream ss;
-        ss << std::hex << std::setfill('0');
-        
-        for (size_t i = 0; i < sizeof(Physical_Address); ++i) {
-            if (i > 0) ss << ":";
-            ss << std::setw(2) << static_cast<int>(addr[i]);
-        }
-        
-        return ss.str();
-    }
-
-    static NIC* get_nic(Physical_Address& paddr) {
-        std::string key = mac_to_string(paddr);
-        std::cout << "NIC KEY: " << key << std::endl;
-        return _mac_table[key];
     }
 
 private:
     static Protocol* _instance;
-    static sem_t* _instance_mutex;
-    static void* _shared_mem;
+    static NIC* _nic;
 
-    static std::vector<NIC*> _nics;
-    static std::unordered_map<std::string, NIC*> _mac_table;
     // Channel protocols are usually singletons
     static Observed _observed;
 };
@@ -281,18 +235,9 @@ template <typename NIC>
 typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
 
 template <typename NIC>
-std::vector<NIC*> Protocol<NIC>::_nics;
-
-template <typename NIC>
-std::unordered_map<std::string, NIC*> Protocol<NIC>::_mac_table;
+NIC* Protocol<NIC>::_nic = nullptr;
 
 template <typename NIC>
 Protocol<NIC>* Protocol<NIC>::_instance = nullptr;
-
-template <typename NIC>
-sem_t* Protocol<NIC>::_instance_mutex = nullptr;
-
-template <typename NIC>
-void* Protocol<NIC>::_shared_mem = nullptr;
 
 #endif // PROTOCOL_H

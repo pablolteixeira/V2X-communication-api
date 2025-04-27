@@ -47,7 +47,9 @@ void Vehicle::start() {
 
 void Vehicle::stop() {
     ConsoleLogger::log("Stopping Vehicle -> " + std::to_string(_id));
-    
+
+    _nic->stop();
+
     _running = false;
 
     if (_send_thread.joinable()) {
@@ -67,7 +69,7 @@ void Vehicle::receive() {
     while (_running) {
         ConsoleLogger::log("RUNNING RECEIVE THREAD");
         
-        if (_communicator->receive(msg)) {
+        if (_running && _communicator->receive(msg)) {
             
             TestMessage* data = msg->get_data<TestMessage>();
             if (data != nullptr) {
@@ -90,7 +92,7 @@ void Vehicle::send() {
     Message* msg = new Message();
     TestMessage* data = msg->get_data<TestMessage>();
 
-    //while (_running) {
+    while (_running) {
         ConsoleLogger::log("RUNNING SEND THREAD");
         std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
 
@@ -99,7 +101,7 @@ void Vehicle::send() {
         data->text = "Mensagem de teste";
         msg->size(sizeof(TestMessage));
         _communicator->send(msg);
-    //}
+    }
 
     delete msg;
 
