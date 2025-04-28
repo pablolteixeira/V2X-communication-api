@@ -8,7 +8,7 @@ class Message
 public:
     // Constructor with a specified maximum size
     Message(size_t max_size = 1500);
-    
+
     // Destructor
     ~Message();
 

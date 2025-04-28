@@ -36,6 +36,7 @@ public:
 public:
     NIC(const std::string& id) : _buffer_pool(Ethernet::MTU), _data_semaphore(0), _running(true) {
         //ConsoleLogger::print("NIC " + id + ": Starting...");
+        // MAC ADDRESS + PID + COMPONENT ID
         MacAddressGenerator::generate_mac_from_seed(id, _address);
         //ConsoleLogger::print("NIC " + id + ": Logical MAC created");
 
@@ -82,13 +83,17 @@ public:
         ConsoleLogger::print("NIC: Sending frame.");
         std::cout << buf << std::endl;
 
+        Protocol_Number prot;
         Ethernet::Frame* frame = buf->frame();
+        prot = ntohs(frame->header()->h_proto);
         int result = Engine::raw_send(
             frame->header()->h_dest, 
-            ntohs(frame->header()->h_proto), 
+            prot, 
             frame->data(),
             buf->size() - sizeof(Ethernet::Header)
         );
+        
+        notify(prot, buf);
 
         ConsoleLogger::print("NIC: Frame sent.");
         return result;
@@ -137,7 +142,7 @@ private:
             if (_data_semaphore.try_p()) {
                 process_incoming_data();
             } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
 
             if (!_running) {
