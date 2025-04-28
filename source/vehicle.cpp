@@ -4,9 +4,10 @@
 #include <iostream>
 #include <pthread.h>
 
+
 struct TestMessage {
-    std::string from;
-    std::string text;
+    unsigned char from[6] = {0x0};
+    unsigned char to[6] = {0x0};
 };
 
 std::string mac_to_string(EthernetNIC::Address& addr) {
@@ -72,11 +73,13 @@ void Vehicle::receive() {
         if (_running && _communicator->receive(msg)) {
             
             TestMessage* data = msg->get_data<TestMessage>();
+
             if (data != nullptr) {
                 ConsoleLogger::log(vehicle_mac);
-                ConsoleLogger::log(data->from);
-                ConsoleLogger::log(data->text);
-                ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " from: " + data->from + " - text = " + data->text);
+
+                std::string origin = mac_to_string(data->from);
+
+                ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " origin: " + origin);
             } else {
                 ConsoleLogger::log("Error: Received null message data");
             }
@@ -95,13 +98,14 @@ void Vehicle::send() {
     while (_running) {
         ConsoleLogger::log("RUNNING SEND THREAD");
         std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
+        
+        memcpy(data->from, _nic->address(), sizeof(data->from));
+        //memcpy(data->to, _nic->address(), sizeof(data->from));
 
-        std::string from = Ethernet::address_to_string(_nic->address());
-        data->from = from;
-        data->text = "Mensagem de teste";
         msg->size(sizeof(TestMessage));
+
         _communicator->send(msg);
-    }
+    }    
 
     delete msg;
 
