@@ -61,6 +61,10 @@ run_test: $(BIN_DIR)/test_$(TEST)
 clean:
 	rm -f $(SRC_DIR)/*.o $(BIN_DIR)/main
 
+# Clean test artifacts
+clean_tests:
+	rm -f $(TEST_DIR)/*.o
+
 # Run the main program
 run: $(BIN_DIR)/main
 	./$(BIN_DIR)/main
