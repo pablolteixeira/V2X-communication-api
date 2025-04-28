@@ -1,0 +1,3 @@
+[2025-04-28 10:27:13.693] - [PID:4549] [THREAD ID:125243749128000] Created child process 0 with PID: 4550
+[2025-04-28 10:27:13.693] - [PID:4549] [THREAD ID:125243749128000] Created child process 1 with PID: 4551
+[2025-04-28 10:27:13.693] - [PID:4549] [THREAD ID:125243749128000] Parent waiting for all child processes

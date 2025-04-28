@@ -1,0 +1,8 @@
+[2025-04-28 10:25:53.351] - [PID:3951] [THREAD ID:140440325285696] Created child process 0 with PID: 3952
+[2025-04-28 10:25:53.351] - [PID:3951] [THREAD ID:140440325285696] Created child process 1 with PID: 3953
+[2025-04-28 10:25:53.351] - [PID:3951] [THREAD ID:140440325285696] Parent waiting for all child processes
+[2025-04-28 10:25:58.511] - [PID:3951] [THREAD ID:140440325285696] Child process (PID: 3952) has finished with status: 0
+[2025-04-28 10:25:58.511] - [PID:3951] [THREAD ID:140440325285696] Child process (PID: 3952) exited normally with status: 0
+[2025-04-28 10:25:58.511] - [PID:3951] [THREAD ID:140440325285696] Child process (PID: 3953) has finished with status: 0
+[2025-04-28 10:25:58.511] - [PID:3951] [THREAD ID:140440325285696] Child process (PID: 3953) exited normally with status: 0
+[2025-04-28 10:25:58.511] - [PID:3951] [THREAD ID:140440325285696] Parent process (PID: 3951) finished.

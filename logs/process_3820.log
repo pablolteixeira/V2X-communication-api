@@ -1,0 +1,8 @@
+[2025-04-28 10:25:41.850] - [PID:3820] [THREAD ID:135498178856768] Created child process 0 with PID: 3821
+[2025-04-28 10:25:41.851] - [PID:3820] [THREAD ID:135498178856768] Created child process 1 with PID: 3822
+[2025-04-28 10:25:41.851] - [PID:3820] [THREAD ID:135498178856768] Parent waiting for all child processes
+[2025-04-28 10:25:41.993] - [PID:3820] [THREAD ID:135498178856768] Child process (PID: 3821) has finished with status: 0
+[2025-04-28 10:25:41.993] - [PID:3820] [THREAD ID:135498178856768] Child process (PID: 3821) killed by signal: 6
+[2025-04-28 10:25:42.005] - [PID:3820] [THREAD ID:135498178856768] Child process (PID: 3822) has finished with status: 0
+[2025-04-28 10:25:42.005] - [PID:3820] [THREAD ID:135498178856768] Child process (PID: 3822) killed by signal: 6
+[2025-04-28 10:25:42.005] - [PID:3820] [THREAD ID:135498178856768] Parent process (PID: 3820) finished.

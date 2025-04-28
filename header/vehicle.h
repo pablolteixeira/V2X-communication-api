@@ -7,6 +7,7 @@
 #include "protocol.h"
 #include "communicator.h"
 #include "message.h"
+#include "components/component.h"
 
 #include <thread>
 #include <atomic>
@@ -37,6 +38,7 @@ private:
     
     std::thread _receive_thread;
     std::thread _send_thread;
+    std::list<Component*> _components;
 };
 
 #endif // VEHICLE_H
