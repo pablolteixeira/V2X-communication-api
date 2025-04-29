@@ -87,7 +87,9 @@ public:
         Protocol_Number prot;
         prot = ntohs(frame->header()->h_proto);
 
-        if (memcmp(frame->data(), frame->data() + 8, 6) == 0) {
+        bool is_local_broadcast = memcmp(frame->data(), frame->data() + 8, 6) == 0;
+
+        if (is_local_broadcast) {
             ConsoleLogger::log("IT'S EQUAL");
             notify(prot, buf);
             ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
