@@ -5,9 +5,10 @@
 #include <pthread.h>
 
 
+
 struct TestMessage {
-    unsigned char from[6] = {0x0};
-    unsigned char to[6] = {0x0};
+    EthernetProtocol::Address from;
+    EthernetProtocol::Address to;
 };
 
 std::string mac_to_string(EthernetNIC::Address& addr) {
@@ -77,7 +78,7 @@ void Vehicle::receive() {
             if (data != nullptr) {
                 ConsoleLogger::log(vehicle_mac);
 
-                std::string origin = mac_to_string(data->from);
+                std::string origin = mac_to_string(data->from.paddr());
 
                 ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " origin: " + origin);
             } else {
@@ -98,13 +99,17 @@ void Vehicle::send() {
     while (_running) {
         ConsoleLogger::log("RUNNING SEND THREAD");
         std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
-        
-        memcpy(data->from, _nic->address(), sizeof(data->from));
-        //memcpy(data->to, _nic->address(), sizeof(data->from));
 
+        unsigned char BROADCAST[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+        EthernetProtocol::Address from(_nic->address(), 1);
+        EthernetProtocol::Address to(BROADCAST, 2);
+
+        data->from = from;
+        data->to = to;
         msg->size(sizeof(TestMessage));
 
-        _communicator->send(msg);
+        _communicator->send(msg, data->from, data->to);
     }    
 
     delete msg;

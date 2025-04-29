@@ -89,10 +89,10 @@ public:
         }
         
     private:
-        Port _from_port;
-        Port _to_port;
         Physical_Address _from_paddr;
+        Port _from_port;
         Physical_Address _to_paddr;
+        Port _to_port;
         unsigned short _length;
     } __attribute__((packed));
     
@@ -158,7 +158,7 @@ public:
         ConsoleLogger::print("Protocol: Sending message.");
         
         if (_nic) {
-            NICBuffer* buf = _nic->alloc(to.paddr(), PROTO, sizeof(Header) + size);
+            NICBuffer* buf = _nic->alloc(Address::BROADCAST_MAC, PROTO, sizeof(Header) + size);
             if (!buf) {
                 return -1;
             }
@@ -171,7 +171,6 @@ public:
             memcpy(packet->template data<void>(), data, size);
             
             int result = _nic->send(buf);
-            _nic->free(buf);
 
             return result;
         }

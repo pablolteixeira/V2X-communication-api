@@ -1,8 +1,0 @@
-[2025-04-27 13:31:02.909] - [PID:35294] [THREAD ID:132669758641984] Created child process 0 with PID: 35295
-[2025-04-27 13:31:02.909] - [PID:35294] [THREAD ID:132669758641984] Created child process 1 with PID: 35296
-[2025-04-27 13:31:02.910] - [PID:35294] [THREAD ID:132669758641984] Parent waiting for all child processes
-[2025-04-27 13:31:03.070] - [PID:35294] [THREAD ID:132669758641984] Child process (PID: 35295) has finished with status: 0
-[2025-04-27 13:31:03.070] - [PID:35294] [THREAD ID:132669758641984] Child process (PID: 35295) killed by signal: 6
-[2025-04-27 13:31:03.070] - [PID:35294] [THREAD ID:132669758641984] Child process (PID: 35296) has finished with status: 0
-[2025-04-27 13:31:03.070] - [PID:35294] [THREAD ID:132669758641984] Child process (PID: 35296) killed by signal: 6
-[2025-04-27 13:31:03.071] - [PID:35294] [THREAD ID:132669758641984] Parent process (PID: 35294) finished.

@@ -26,7 +26,7 @@ class Sensor : public Component {
                 // Simulate different sensor readings
                 for (int i = 0; i < 16; i++) {
                     // Generate some pseudo-random but consistent readings
-                    data->readings[i] = sin(get_timestamp() * 0.001 + i * 0.5) * 10.0 + 20.0;
+                    //data->readings[i] = sin(get_timestamp_t() * 0.001 + i * 0.5) * 10.0 + 20.0;
                 }
                 
                 msg.size(sizeof(SensorMessage));

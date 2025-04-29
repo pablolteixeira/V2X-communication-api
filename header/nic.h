@@ -83,20 +83,28 @@ public:
         ConsoleLogger::print("NIC: Sending frame.");
         std::cout << buf << std::endl;
 
-        Protocol_Number prot;
         Ethernet::Frame* frame = buf->frame();
+        Protocol_Number prot;
         prot = ntohs(frame->header()->h_proto);
-        int result = Engine::raw_send(
-            frame->header()->h_dest, 
-            prot, 
-            frame->data(),
-            buf->size() - sizeof(Ethernet::Header)
-        );
-        
-        notify(prot, buf);
 
-        ConsoleLogger::print("NIC: Frame sent.");
-        return result;
+        if (memcmp(frame->data(), frame->data() + 8, 6) == 0) {
+            ConsoleLogger::log("IT'S EQUAL");
+            notify(prot, buf);
+            ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
+            return 0;
+        } else {
+            int result = Engine::raw_send(
+                frame->header()->h_dest, 
+                prot, 
+                frame->data(),
+                buf->size() - sizeof(Ethernet::Header)
+            );
+            
+            free(buf);
+
+            ConsoleLogger::print("NIC: Frame sent BROADCAST EXTERNAL.");
+            return result;
+        }
     }
 
     void free(NICBuffer* buf) {

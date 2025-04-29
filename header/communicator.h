@@ -25,9 +25,9 @@ public:
 
     ~Communicator() { Channel::detach(this, _address); }
     
-    bool send(const Message * message) {
+    bool send(const Message * message, Address from, Address to) {
         ConsoleLogger::print("Communicator: Sending message.");
-        return (_channel->send(_address, Channel::Address::BROADCAST, message->data(),
+        return (_channel->send(from, to, message->data(),
             message->size()) > 0);
     }
 

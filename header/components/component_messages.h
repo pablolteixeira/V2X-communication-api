@@ -40,8 +40,8 @@ struct ControlMessage {
     double brake;     // 0.0 to 1.0
 };
 
-uint64_t get_timestamp() {
+/*uint64_t get_timestamp_t() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()
     ).count();
-}
+}*/
