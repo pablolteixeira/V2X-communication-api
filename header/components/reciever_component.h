@@ -2,23 +2,23 @@
 #define RECIEVER_COMPONENT_H
 
 #include "component.h"
-#include "vehicle.h"
+#include "../vehicle.h"
 
 // Message receiver component
 class MessageReceiver : public Component {
     public:
-        MessageReceiver(const std::string& name, EthernetCommunicator* comm) 
-            : Component(name), _communicator(comm), _msg_count(0) {}
+        MessageReceiver(const std::string& id, EthernetCommunicator* comm) 
+            : Component(id), _communicator(comm), _msg_count(0) {}
         
         int message_count() const { return _msg_count; }
     
     protected:
         void run() override {
-            std::cout << "MessageReceiver " << _name << " started\n";
+            std::cout << "MessageReceiver " << _id << " started\n";
             
             Message msg(1024); // Buffer to hold incoming messages
             
-            while (_running && running) {
+            while (_running) {
                 if (_communicator->receive(&msg)) {
                     _msg_count++;
                     
@@ -34,7 +34,7 @@ class MessageReceiver : public Component {
                 }
             }
             
-            std::cout << "MessageReceiver " << _name << " stopped\n";
+            std::cout << "MessageReceiver " << _id << " stopped\n";
             std::cout << "Received " << _msg_count << " messages in total\n";
         }
         

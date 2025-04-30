@@ -6,7 +6,7 @@
 // Component base class
 class Component {
     public:
-        Component(const std::string& name) : _name(name), _running(false) {}
+        Component(const std::string& name) : _id(name), _running(false) {}
         virtual ~Component() {
             stop();
         }
@@ -25,12 +25,12 @@ class Component {
             }
         }
     
-        const std::string& name() const { return _name; }
+        const std::string& name() const { return _id; }
     
     protected:
         virtual void run() = 0;
     
-        std::string _name;
+        std::string _id;
         std::atomic<bool> _running;
         std::thread _thread;
     };
