@@ -1,5 +1,5 @@
-#ifndef RING_POOL_H
-#define RING_POOL_H
+#ifndef BUFFER_POOL_H
+#define BUFFER_POOL_H
 
 #include "semaphore.h"
 #include "buffer.h"
@@ -74,4 +74,4 @@ private:
     std::mutex _mutex;
 };
 
-#endif // RING_POOL_H
+#endif // BUFFER_POOL_H

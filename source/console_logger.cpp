@@ -62,7 +62,7 @@ std::string ConsoleLogger::get_current_timestamp() {
 }
 
 void ConsoleLogger::log(const std::string& message) {
-    std::lock_guard<std::mutex> lock_guard(thread_mutex);
+    //std::lock_guard<std::mutex> lock_guard(thread_mutex);
     if (!log_file.is_open()) init();
 
     std::string timestamp = get_current_timestamp();
@@ -72,7 +72,7 @@ void ConsoleLogger::log(const std::string& message) {
 }
 
 void ConsoleLogger::print(const std::string& message) {
-    std::lock_guard<std::mutex> lock_guard(thread_mutex);
+    //std::lock_guard<std::mutex> lock_guard(thread_mutex);
     if (!log_file.is_open()) init();
 
     std::string timestamp = get_current_timestamp();
@@ -82,7 +82,7 @@ void ConsoleLogger::print(const std::string& message) {
 }
 
 void ConsoleLogger::error(const std::string& message) {
-    std::lock_guard<std::mutex> lock_guard(thread_mutex);
+    //std::lock_guard<std::mutex> lock_guard(thread_mutex);
     if (!log_file.is_open()) init();
 
     std::string timestamp = get_current_timestamp();

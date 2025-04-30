@@ -35,3 +35,22 @@ void Message::size(size_t s) {
 size_t Message::max_size() const {
     return _max_size;
 }
+
+Message::Message(const Message& other)
+    : _size(other._size), _max_size(other._max_size)
+{
+    _buffer = new unsigned char[_max_size];
+    std::memcpy(_buffer, other._buffer, _size);
+}
+
+Message& Message::operator=(const Message& other)
+{
+    if (this != &other) {
+        delete[] _buffer;
+        _max_size = other._max_size;
+        _size = other._size;
+        _buffer = new unsigned char[_max_size];
+        std::memcpy(_buffer, other._buffer, _size);
+    }
+    return *this;
+}

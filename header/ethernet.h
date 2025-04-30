@@ -17,6 +17,7 @@ class Ethernet
 {
 public:
     static const unsigned int MTU = ETH_FRAME_LEN;
+    static const unsigned char BROADCAST_MAC[ETH_ALEN];
     
     typedef struct ethhdr Header;
     typedef unsigned char Address[ETH_ALEN];

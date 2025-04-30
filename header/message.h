@@ -12,6 +12,9 @@ public:
     // Destructor
     ~Message();
 
+    Message(const Message& other);
+    Message& operator=(const Message& other);
+
     // Get access to the raw data buffer
     unsigned char* data();
     const unsigned char* data() const;

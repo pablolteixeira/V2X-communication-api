@@ -1,23 +1,14 @@
 #include "../header/vehicle.h"
 #include "../header/nic.h"
-#include "../header/components/sensor_component.h"
-#include "../header/components/reciever_component.h"
 
 #include <iostream>
 #include <pthread.h>
 
-
-
-struct TestMessage {
-    EthernetProtocol::Address from;
-    EthernetProtocol::Address to;
-};
-
-std::string mac_to_string(EthernetNIC::Address& addr) {
+std::string mac_to_string(Ethernet::Address& addr) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
     
-    for (size_t i = 0; i < sizeof(EthernetNIC::Address); ++i) {
+    for (size_t i = 0; i < sizeof(Ethernet::Address); ++i) {
         if (i > 0) ss << ":";
         ss << std::setw(2) << static_cast<int>(addr[i]);
     }
@@ -25,18 +16,16 @@ std::string mac_to_string(EthernetNIC::Address& addr) {
     return ss.str();
 }
 
-Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), _nic(nic), _protocol(protocol) {
+Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), _nic(nic), _protocol(protocol), _semaphore(0) {
     _protocol->register_nic(_nic);
 
     EthernetProtocol::Address addr(_nic->address(), 0);
 
     _communicator = new EthernetCommunicator(_protocol, addr);
 
-    Sensor *sensor = new Sensor(_id+":1", SensorMessage::LIDAR, 1);
-    MessageReceiver *reciever = new MessageReceiver(_id+":2", _communicator);
-    _components.push_back(sensor);
-    _components.push_back(reciever);
-    
+    for(int i = 0; i < 5; i++){
+        _components[i] = new Component(this, i+1);
+    }
 }
 
 Vehicle::~Vehicle() {
@@ -45,7 +34,6 @@ Vehicle::~Vehicle() {
     for(Component* component: _components) {
         delete component;
     }
-    _components.clear();
 }
 
 void Vehicle::start() {
@@ -78,61 +66,115 @@ void Vehicle::stop() {
         _send_thread.join();
     }
 
+    _semaphore.v();
+
     if (_receive_thread.joinable()) {
         _receive_thread.join();
     }
 }
 
 void Vehicle::receive() {
+    ConsoleLogger::log("Vehicle receive started.");
     std::string vehicle_mac = Ethernet::address_to_string(_nic->address());
 
     Message* msg = new Message();
-
+    
     while (_running) {
         ConsoleLogger::log("RUNNING RECEIVE THREAD");
         
         if (_running && _communicator->receive(msg)) {
-            
-            TestMessage* data = msg->get_data<TestMessage>();
+            ConsoleLogger::log("MESSAGE RECEIVE FROM COMMUNICATOR");    
+            ComponentMessage* component_message = msg->get_data<ComponentMessage>();
+            // Verify the destination address
 
-            if (data != nullptr) {
-                ConsoleLogger::log(vehicle_mac);
-
-                std::string origin = mac_to_string(data->from.paddr());
-
-                ConsoleLogger::log("Test Message - Vehicle -> " + vehicle_mac + " origin: " + origin);
-            } else {
-                ConsoleLogger::log("Error: Received null message data");
+            ConsoleLogger::log("ARRIVED MESSAGE!");
+            /*
+            BROADCAST LOCAL (COMPONENT TO LOCAL COMPONENTS) - MESMO MAC E PORTA DE DESTINO 0
+            UNICAST LOCAL (COMPONENT TO COMPONENT) - MESMO MAC E PORTA DE DESTINO > 0
+            BROADCAST EXTERNO (COMPONENT TO ALL EXTERNAL COMPONENTS) - BROADCAST MAC E PORTA DE DESTINO 0
+            UNICAST EXTERNO (COMPONENT TO EXTERNAL COMPONENT) - MAC DIFERENTE DE LOCAL E BROACAST 
+            */
+            if (memcmp(component_message->to_addr, _nic->address(), sizeof(Ethernet::Address)) || memcmp(component_message->to_addr, Ethernet::BROADCAST_MAC, sizeof(Ethernet::Address))) {
+                Message* data;
+                // Broadcast
+                if(component_message->to_port == 0) {
+                    data = _reference_buffer.alloc(5);
+                    if (data) {
+                        data = msg;
+                        for(Component* component: _components){
+                            component->notify(data);
+                        }
+                    }
+                } else {
+                    // Unicast
+                    ConsoleLogger::log("UNICAST TO COMPONENT: " + std::to_string(component_message->to_port));
+                    data = _reference_buffer.alloc(1);
+                    if (data) {
+                        data = msg;
+                        for(Component* component: _components){
+                            if (component_message->to_port == component->id()) {
+                                component->notify(data);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     delete msg;
 
-    return;
+    ConsoleLogger::log("Vehicle receive started.");
 }
 
 void Vehicle::send() {
-    Message* msg = new Message();
-    TestMessage* data = msg->get_data<TestMessage>();
+    ConsoleLogger::log("Vehicle send started.");
 
     while (_running) {
         ConsoleLogger::log("RUNNING SEND THREAD");
-        std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
+        // std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
+        _semaphore.p();
+        ConsoleLogger::log("VEHICLE SEND P");
+        
+        if (!_running) {
+            break;
+        }
+        Message* msg = _queue.remove();      
 
-        unsigned char BROADCAST[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+        if (msg) {
+            ComponentMessage* data = msg->get_data<ComponentMessage>();
+        
+            EthernetProtocol::Address from(data->from_addr, data->from_port);
+            EthernetProtocol::Address to(data->to_addr, data->to_port);
 
-        EthernetProtocol::Address from(_nic->address(), 1);
-        EthernetProtocol::Address to(BROADCAST, 2);
+            _communicator->send(msg, from, to);
 
-        data->from = from;
-        data->to = to;
-        msg->size(sizeof(TestMessage));
+            delete msg;
+        }
+    }
 
-        _communicator->send(msg, data->from, data->to);
-    }    
-
-    delete msg;
-
-    return;
+    ConsoleLogger::log("Vehicle send finished.");
 }
+
+void Vehicle::free(Message* msg) {
+    ConsoleLogger::log("FREE REFERENCE BUFFER");
+
+    _reference_buffer.free(msg);
+}
+
+void Vehicle::notify(Message* msg) {
+    if (!_running) {
+        return;
+    }
+
+    ConsoleLogger::log("NOTIFY VEHICLE");
+    Message* data;
+    data = msg;
+    
+    bool added = _queue.add(data);
+    if (added) {
+        _semaphore.v();
+    }
+}
+

@@ -35,10 +35,11 @@ public:
     static NIC<Engine>* _instance;
 public:
     NIC(const std::string& id) : _buffer_pool(Ethernet::MTU), _data_semaphore(0), _running(true) {
-        //ConsoleLogger::print("NIC " + id + ": Starting...");
+        ConsoleLogger::print("NIC " + id + ": Starting...");
         // MAC ADDRESS + PID + COMPONENT ID
         MacAddressGenerator::generate_mac_from_seed(id, _address);
-        //ConsoleLogger::print("NIC " + id + ": Logical MAC created");
+        ConsoleLogger::print("NIC " + id + ": Logical MAC created");
+        ConsoleLogger::print("NIC " + id + ": MAC ADDRESS -> "+  mac_to_string(_address));
 
         // Register the signal handler for SIGIO
         struct sigaction sa;
@@ -139,17 +140,16 @@ private:
         }
     }
 
-    static void signal_handler_void(int sig) {
-        ConsoleLogger::log("Received signal: " + std::to_string(sig));
-        if (sig == SIGIO) {
-            ConsoleLogger::error("Received SIGIO (29) - I/O notification issue");
-            // Handle appropriately
-        }
-    }
-
     void data_processing_thread() {
         while (_running) {
-            if (_data_semaphore.try_p()) {
+            _data_semaphore.p();
+
+            if (!_running) {
+                break;
+            }
+            
+            process_incoming_data();
+            /*if (_data_semaphore.try_p()) {
                 process_incoming_data();
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -157,7 +157,7 @@ private:
 
             if (!_running) {
                 break;
-            }
+            }*/
         }
     }
 
@@ -207,6 +207,18 @@ private:
         if (_worker_thread.joinable()) {
             _worker_thread.join();
         }
+    }
+
+    std::string mac_to_string(Ethernet::Address& addr) {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        
+        for (size_t i = 0; i < sizeof(Ethernet::Address); ++i) {
+            if (i > 0) ss << ":";
+            ss << std::setw(2) << static_cast<int>(addr[i]);
+        }
+        
+        return ss.str();
     }
 
 private:
