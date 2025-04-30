@@ -1,5 +1,7 @@
 #include "../header/vehicle.h"
 #include "../header/nic.h"
+#include "../header/components/sensor_component.h"
+#include "../header/components/reciever_component.h"
 
 #include <iostream>
 #include <pthread.h>
@@ -29,10 +31,21 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), 
     EthernetProtocol::Address addr(_nic->address(), 0);
 
     _communicator = new EthernetCommunicator(_protocol, addr);
+
+    Sensor *sensor = new Sensor(_id+":1", SensorMessage::LIDAR, 1);
+    MessageReceiver *reciever = new MessageReceiver(_id+":2", _communicator);
+    _components.push_back(sensor);
+    _components.push_back(reciever);
+    
 }
 
 Vehicle::~Vehicle() {
     delete _communicator;
+    
+    for(Component* component: _components) {
+        delete component;
+    }
+    _components.clear();
 }
 
 void Vehicle::start() {
@@ -41,6 +54,10 @@ void Vehicle::start() {
     if (_running) {
         ConsoleLogger::log("Running: " + std::to_string(_running));
     }
+    for(Component* component : _components) {
+        component->start();
+    }
+
     _running = true;
     _receive_thread = std::thread(&Vehicle::receive, this);
     _send_thread = std::thread(&Vehicle::send, this);
@@ -53,6 +70,9 @@ void Vehicle::stop() {
     _nic->stop();
 
     _running = false;
+    for(Component* component: _components) {
+        component->stop();
+    }
 
     if (_send_thread.joinable()) {
         _send_thread.join();
