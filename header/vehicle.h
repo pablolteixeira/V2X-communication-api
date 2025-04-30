@@ -13,6 +13,7 @@
 
 #include <thread>
 #include <atomic>
+#include <random>
 
 typedef NIC<RawSocketEngine> EthernetNIC;
 typedef Protocol<EthernetNIC> EthernetProtocol;
@@ -48,9 +49,8 @@ private:
     std::thread _send_thread;
     Component* _components[5];
 
-    ReferenceBuffer<Message, 32> _reference_buffer;
     Semaphore _semaphore;
-    Queue<Message, 32> _queue;
+    Queue<Message, 16> _queue;
 };
 
 struct ComponentMessage {
@@ -64,8 +64,7 @@ struct ComponentMessage {
 // Component base class
 class Component {
     public:
-        Component(Vehicle* vehicle, const unsigned short& id) : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {
-        }
+        Component(Vehicle* vehicle, const unsigned short& id) : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {}
         ~Component() {
             stop();
         }
@@ -97,10 +96,9 @@ class Component {
             if (!_running) {
                 return;
             }
-            bool added = _queue.add(data);
-            if (added) {
-                _semaphore.v();
-            }
+            Message* new_data = data;
+            _receive_queue.add(new_data);
+            _semaphore.v();
         };
 
         void receive() {
@@ -108,20 +106,21 @@ class Component {
             
             while (_running) {
                 _semaphore.p();
-
+                ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Component P.");
+                
                 if (!_running) {
                     break;
                 }
                 // Process message based on type
-                Message* msg = _queue.remove();
+                Message* msg = _receive_queue.remove();
                 if (msg) {
                     ComponentMessage* component_msg = msg->get_data<ComponentMessage>();
 
                     std::string origin = mac_to_string(component_msg->from_addr);
 
-                    ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] RECEIVED MESSAGE FROM: MAC = " + origin + " - ORIGIN COMPONENT ID = " + std::to_string(component_msg->from_port) + " - COUNT = " + std::to_string(component_msg->id));
+                    ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] RECEIVED MESSAGE FROM: MAC = " + origin + " - ORIGIN COMPONENT ID = " + std::to_string(component_msg->from_port));
                     
-                    _vehicle->free(msg);
+                    //delete msg;
                 }
             }
 
@@ -145,11 +144,14 @@ class Component {
                 data->from_port = _id;
                 memcpy(data->to_addr, _vehicle->nic()->address(), sizeof(Ethernet::Address));
                 data->to_port = 0;
-                data->id = _count++;
+                
+                
                 msg->size(sizeof(ComponentMessage));
 
                 ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Notify vehicle.");
                 _vehicle->notify(msg);
+
+                //delete msg;
             }
             
 
@@ -176,8 +178,7 @@ class Component {
         std::atomic<bool> _running;
         std::thread _send_thread;
         std::thread _receive_thread;
-        Semaphore _semaphore;
-        Queue<Message, 32> _queue;
+        Semaphore _semaphore;        Queue<Message, 16> _receive_queue;
         std::atomic<int> _count;
 
         Vehicle* _vehicle;

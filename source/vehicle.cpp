@@ -98,17 +98,14 @@ void Vehicle::receive() {
                 Message* data;
                 // Broadcast
                 if(component_message->to_port == 0) {
-                    data = _reference_buffer.alloc(5);
-                    if (data) {
-                        data = msg;
-                        for(Component* component: _components){
-                            component->notify(data);
-                        }
+                    ConsoleLogger::log("BROADCAST: " + std::to_string(component_message->to_port));
+                    data = msg;
+                    for(Component* component: _components){
+                        component->notify(data);
                     }
                 } else {
                     // Unicast
                     ConsoleLogger::log("UNICAST TO COMPONENT: " + std::to_string(component_message->to_port));
-                    data = _reference_buffer.alloc(1);
                     if (data) {
                         data = msg;
                         for(Component* component: _components){
@@ -117,6 +114,8 @@ void Vehicle::receive() {
                                 break;
                             }
                         }
+                    } else {
+                        ConsoleLogger::log("REFFERENCE BUFFER IS FULL!");
                     }
                 }
             }
@@ -157,11 +156,11 @@ void Vehicle::send() {
     ConsoleLogger::log("Vehicle send finished.");
 }
 
-void Vehicle::free(Message* msg) {
+/*void Vehicle::free(Message* msg) {
     ConsoleLogger::log("FREE REFERENCE BUFFER");
 
     _reference_buffer.free(msg);
-}
+}*/
 
 void Vehicle::notify(Message* msg) {
     if (!_running) {

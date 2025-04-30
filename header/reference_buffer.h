@@ -59,7 +59,7 @@ public:
 
 private:
     T* _data_buffer[SIZE];
-    std::atomic<int> _ref_counts[SIZE];
+    int _ref_counts[SIZE];
     std::mutex _mutex;
 };
 
