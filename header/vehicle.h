@@ -30,7 +30,6 @@ public:
     void start();
     void stop();
     void free(Message* msg);
-    void notify(Message* msg);
 
     EthernetNIC* nic() const { return _nic; }
 private:
@@ -56,15 +55,13 @@ private:
 struct ComponentMessage {
     Ethernet::Address from_addr;
     unsigned short from_port;
-    Ethernet::Address to_addr;
-    unsigned short to_port;
     int id;
 };
 
 // Component base class
 class Component {
     public:
-        Component(Vehicle* vehicle, const unsigned short& id) : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {}
+        Component(Vehicle* vehicle, const unsigned short& id, EthernetCommunicator* communicator) : _id(id), _running(false), _semaphore(0), _vehicle(vehicle), _communicator(communicator) {}
         ~Component() {
             stop();
         }
@@ -104,25 +101,25 @@ class Component {
         void receive() {
             ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Component receive started.");
             
+            Message* msg = new Message();
+
             while (_running) {
-                _semaphore.p();
-                ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Component P.");
+                _communicator->receive(msg);
                 
                 if (!_running) {
                     break;
                 }
                 // Process message based on type
-                Message* msg = _receive_queue.remove();
                 if (msg) {
                     ComponentMessage* component_msg = msg->get_data<ComponentMessage>();
 
                     std::string origin = mac_to_string(component_msg->from_addr);
 
                     ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] RECEIVED MESSAGE FROM: MAC = " + origin + " - ORIGIN COMPONENT ID = " + std::to_string(component_msg->from_port));
-                    
-                    //delete msg;
                 }
             }
+
+            delete msg;
 
             ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Component receive stopped.");
         }
@@ -134,24 +131,17 @@ class Component {
                 Message* msg = new Message();
                 ComponentMessage* data = msg->get_data<ComponentMessage>();
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                /*ComponentMessage* component_msg = msg->get_data<ComponentMessage>();
-
-                std::string origin = mac_to_string(component_msg->from.paddr());
-
-                ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] RECEIVED MESSAGE FROM: MAC = " + origin + " - COMPONENT ID = " + std::to_string(component_msg->from.port()));*/
                 
                 memcpy(data->from_addr, _vehicle->nic()->address(), sizeof(Ethernet::Address));
                 data->from_port = _id;
-                memcpy(data->to_addr, _vehicle->nic()->address(), sizeof(Ethernet::Address));
-                data->to_port = 0;
                 
-                
+                EthernetProtocol::Address from(_vehicle->nic()->address(), _id);
+                EthernetProtocol::Address to(_vehicle->nic()->address(), 0);
+
                 msg->size(sizeof(ComponentMessage));
 
                 ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Notify vehicle.");
-                _vehicle->notify(msg);
-
-                //delete msg;
+                _communicator->send(msg, from, to);
             }
             
 
@@ -159,6 +149,9 @@ class Component {
         }
     
         const unsigned short& id() const { return _id; }
+
+        // virtual void process_data();
+        // virtual void create_message();
         
     private:
         std::string mac_to_string(Ethernet::Address& addr) {
@@ -180,6 +173,7 @@ class Component {
         std::thread _receive_thread;
         Semaphore _semaphore;        Queue<Message, 16> _receive_queue;
         std::atomic<int> _count;
+        EthernetCommunicator* _communicator;
 
         Vehicle* _vehicle;
 };

@@ -19,12 +19,11 @@ std::string mac_to_string(Ethernet::Address& addr) {
 Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), _nic(nic), _protocol(protocol), _semaphore(0) {
     _protocol->register_nic(_nic);
 
-    EthernetProtocol::Address addr(_nic->address(), 0);
-
-    _communicator = new EthernetCommunicator(_protocol, addr);
-
     for(int i = 0; i < 5; i++){
-        _components[i] = new Component(this, i+1);
+        EthernetProtocol::Address component_addr(_nic->address(), i+1);
+
+        _communicator = new EthernetCommunicator(_protocol, component_addr);
+        _components[i] = new Component(this, i+1, _communicator);
     }
 }
 
@@ -47,8 +46,8 @@ void Vehicle::start() {
     }
 
     _running = true;
-    _receive_thread = std::thread(&Vehicle::receive, this);
-    _send_thread = std::thread(&Vehicle::send, this);
+    // _receive_thread = std::thread(&Vehicle::receive, this);
+    // _send_thread = std::thread(&Vehicle::send, this);
     ConsoleLogger::log("Threads running.");
 }
 
@@ -62,15 +61,15 @@ void Vehicle::stop() {
         component->stop();
     }
 
-    if (_send_thread.joinable()) {
-        _send_thread.join();
-    }
+    // if (_send_thread.joinable()) {
+    //     _send_thread.join();
+    // }
 
-    _semaphore.v();
+    // _semaphore.v();
 
-    if (_receive_thread.joinable()) {
-        _receive_thread.join();
-    }
+    // if (_receive_thread.joinable()) {
+    //     _receive_thread.join();
+    // }
 }
 
 void Vehicle::receive() {
@@ -81,19 +80,17 @@ void Vehicle::receive() {
     
     while (_running) {
         ConsoleLogger::log("RUNNING RECEIVE THREAD");
-        
+        /*
         if (_running && _communicator->receive(msg)) {
             ConsoleLogger::log("MESSAGE RECEIVE FROM COMMUNICATOR");    
             ComponentMessage* component_message = msg->get_data<ComponentMessage>();
             // Verify the destination address
 
             ConsoleLogger::log("ARRIVED MESSAGE!");
-            /*
             BROADCAST LOCAL (COMPONENT TO LOCAL COMPONENTS) - MESMO MAC E PORTA DE DESTINO 0
             UNICAST LOCAL (COMPONENT TO COMPONENT) - MESMO MAC E PORTA DE DESTINO > 0
             BROADCAST EXTERNO (COMPONENT TO ALL EXTERNAL COMPONENTS) - BROADCAST MAC E PORTA DE DESTINO 0
             UNICAST EXTERNO (COMPONENT TO EXTERNAL COMPONENT) - MAC DIFERENTE DE LOCAL E BROACAST 
-            */
             if (memcmp(component_message->to_addr, _nic->address(), sizeof(Ethernet::Address)) || memcmp(component_message->to_addr, Ethernet::BROADCAST_MAC, sizeof(Ethernet::Address))) {
                 Message* data;
                 // Broadcast
@@ -119,7 +116,7 @@ void Vehicle::receive() {
                     }
                 }
             }
-        }
+        }*/
     }
 
     delete msg;
@@ -133,7 +130,7 @@ void Vehicle::send() {
     while (_running) {
         ConsoleLogger::log("RUNNING SEND THREAD");
         // std::cout << "[PID:" << getpid() << "] RUNNING SEND THREAD" << std::endl;
-        _semaphore.p();
+        /*_semaphore.p();
         ConsoleLogger::log("VEHICLE SEND P");
         
         if (!_running) {
@@ -150,7 +147,7 @@ void Vehicle::send() {
             _communicator->send(msg, from, to);
 
             delete msg;
-        }
+        }*/
     }
 
     ConsoleLogger::log("Vehicle send finished.");
@@ -162,7 +159,7 @@ void Vehicle::send() {
     _reference_buffer.free(msg);
 }*/
 
-void Vehicle::notify(Message* msg) {
+/* void Vehicle::notify(Message* msg) {
     if (!_running) {
         return;
     }
@@ -176,4 +173,4 @@ void Vehicle::notify(Message* msg) {
         _semaphore.v();
     }
 }
-
+ */

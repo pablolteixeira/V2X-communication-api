@@ -15,6 +15,7 @@ public:
         _free_buffers(SIZE) {
         for (size_t i = 0; i < SIZE; i++) {
             _buffers[i] = new BufferType(buffer_size);
+            _buffers[i]->set_reference_counter(0);
             _in_use[i] = false;
         }
     }
@@ -35,6 +36,7 @@ public:
             for (size_t i = 0; i < SIZE; i++) {
                 if (!_in_use[i]) {
                     _in_use[i] = true;
+                    _buffers[i]->set_reference_counter(1);
                     return _buffers[i];
                 }
             }
@@ -42,7 +44,7 @@ public:
         
         return nullptr; // Should never reach here
     }
-
+    
     void free(BufferType* buf) {
         ConsoleLogger::log("Buffer Pool: Free Buffer");
         bool was_in_use = false;
@@ -52,8 +54,12 @@ public:
             
             for (size_t i = 0; i < SIZE; i++) {
                 if (_buffers[i] == buf) {
-                    was_in_use = _in_use[i];
-                    _in_use[i] = false;
+                    int reference_counter = _buffers[i]->decrease_reference_counter();
+                    
+                    if (reference_counter == 0) {
+                        was_in_use = _in_use[i];
+                        _in_use[i] = false;
+                    }
                     break;
                 }
             }

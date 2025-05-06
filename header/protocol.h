@@ -24,8 +24,8 @@ public:
     
     typedef typename NIC::Address Physical_Address;
     typedef unsigned short Port;
-    typedef Concurrent_Observer<Buffer<Ethernet::Frame>, Port> Observer;
-    typedef Concurrent_Observed<Buffer<Ethernet::Frame>, Port> Observed;
+    typedef Concurrent_Observer<Buffer<Ethernet::Frame>> Observer;
+    typedef Concurrent_Observed<Buffer<Ethernet::Frame>> Observed;
     typedef typename NIC::NICBuffer NICBuffer;
 
     class Address
@@ -196,18 +196,18 @@ public:
         return -1;
     }
 
-    static void attach(Observer * obs, Address address) {
-        _observed.attach(obs, PROTO);
+    static void attach(Observer * obs) {
+        _observed.attach(obs);
     }
-    static void detach(Observer * obs, Address address) {
-        _observed.detach(obs, PROTO);
+    static void detach(Observer * obs) {
+        _observed.detach(obs);
     }
 
 private:
-    void update(typename NIC::Protocol_Number prot, NICBuffer * buf) override {
+    void update(NICBuffer * buf) override {
         ConsoleLogger::print("Protocol: Update observers.");
         
-        if(!_observed.notify(prot, buf)) {
+        if(!_observed.notify(buf)) {
             ConsoleLogger::print("Protocol: Calling free buffer.");
             _nic->free(buf);
         }
