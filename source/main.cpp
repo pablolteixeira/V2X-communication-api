@@ -11,20 +11,7 @@
 
 const unsigned int NUM_VEHICLE = 2;
 
-#include <signal.h>
-
-void signal_handler(int signal_num) {
-    std::cerr << "Signal " << signal_num << " received.\n";
-    // Print stack trace
-    void *array[10];
-    size_t size = backtrace(array, 10);
-    backtrace_symbols_fd(array, size, STDERR_FILENO);
-    exit(1);
-}
-
 int main() {
-    signal(SIGSEGV, signal_handler);
-
     ConsoleLogger::init();
     ConsoleLogger::print("STARTING CREATE OF INSTANCES");
     ConsoleLogger::print("Parent process: " + std::to_string(getpid()));
@@ -41,7 +28,7 @@ int main() {
         
         if (pid < 0) {
             // Fork failed
-            //ConsoleLogger::log("Fork failed for process: " + std::to_string(i));
+            ConsoleLogger::log("Fork failed for process: " + std::to_string(i));
             continue;
         } else if (pid == 0) {
             ConsoleLogger::close();
@@ -58,7 +45,7 @@ int main() {
             vehicle->start();
             ConsoleLogger::log("Vehicle " + id + " started");
             
-            std::this_thread::sleep_for(std::chrono::seconds(15));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000*60*60));
 
             vehicle->stop();
             ConsoleLogger::log("Vehicle " + id + " stopped");
@@ -84,7 +71,6 @@ int main() {
         if (WIFEXITED(status)) {
             ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") exited normally with status: " + std::to_string(WEXITSTATUS(status)));
         } else if (WIFSIGNALED(status)) {
-            std::cout << "Child process (PID: " << std::to_string(child_pid) << ") killed by signal: " << std::to_string(WTERMSIG(status)) << std::endl;
             ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") killed by signal: " + std::to_string(WTERMSIG(status)));
         } else {
             ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") terminated with unknown status: " + std::to_string(status));

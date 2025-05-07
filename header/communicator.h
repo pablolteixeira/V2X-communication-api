@@ -8,9 +8,9 @@
 #include "console_logger.h"
 
 template <typename Channel>
-class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data>
+class Communicator: public Concurrent_Observer<typename Channel::Observer::Observed_Data, typename Channel::Observer::Observing_Condition>
 {
-    typedef Concurrent_Observer<typename Channel::Observer::Observed_Data> Observer;
+    typedef Concurrent_Observer<typename Channel::Observer::Observed_Data,  typename Channel::Observer::Observing_Condition> Observer;
 
 public:
     typedef typename Channel::NICBuffer Buffer;
@@ -18,10 +18,10 @@ public:
 
 public:
     Communicator(Channel* channel, Address address): _channel(channel), _address(address) {
-        _channel->attach(this);
+        _channel->attach(this, address.port());
     }
 
-    ~Communicator() { Channel::detach(this); }
+    ~Communicator() { Channel::detach(this, _address.port()); }
     
     bool send(const Message * message, Address from, Address to) {
         ConsoleLogger::print("Communicator: Sending message.");
@@ -40,6 +40,10 @@ public:
         }
 
         return false;
+    }
+
+    void stop() {
+        Observer::stop();
     }
 
 private:

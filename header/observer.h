@@ -37,7 +37,7 @@ public:
     typedef Ordered_List<Conditional_Data_Observer<T, Condition>, Condition> Observers;
 
     Conditionally_Data_Observed() {
-        //ConsoleLogger::print("Conditionally_Data_Observed: Initializing instance.");
+        ConsoleLogger::print("Conditionally_Data_Observed: Initializing instance.");
     }
     ~Conditionally_Data_Observed() {}
 
@@ -70,40 +70,50 @@ private:
 
 // Conditional Observer x Conditionally Observed with Data decoupled by a Semaphore
 
-template<typename D>
+template<typename D, typename C>
 class Concurrent_Observer;
  
-template<typename D>
+template<typename D, typename C>
 class Concurrent_Observed
 {
-    friend class Concurrent_Observer<D>;
+    friend class Concurrent_Observer<D, C>;
 
 public:
     typedef D Observed_Data;
-    typedef Ordered_List<Concurrent_Observer<D>> Observers;
+    typedef Ordered_List<Concurrent_Observer<D, C>, C> Observers;
 
 public:
     Concurrent_Observed() {}
     ~Concurrent_Observed() {}
     
-    void attach(Concurrent_Observer<D> * o) {
+    void attach(Concurrent_Observer<D, C> * o, C c) {
+        o->set_condition(c);
         _observers.insert(o);
     }
     
-    void detach(Concurrent_Observer<D> * o) {
+    void detach(Concurrent_Observer<D, C> * o, C c) {
         _observers.remove(o);
     }
     
-    bool notify(D * d) {
-        //ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
+    bool notify(C c, D * d) {
+        ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
         bool notified = false;
+        Observers tmp_observers;
 
-        d->set_reference_counter(_observers.size());
-        
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
-            ConsoleLogger::print("Concurrent_Observed: Notifying concurrent observers."); 
-            (*obs)->update(d);
-            notified = true;
+            if ((*obs)->rank() == c || c == 0) {
+                tmp_observers.insert((*obs));
+                ConsoleLogger::print("Concurrent_Observed: Notifying concurrent observers.");
+                notified = true;
+            }
+        }
+
+        if (notified) {
+            d->set_reference_counter(tmp_observers.size());
+
+            for (auto observer : tmp_observers) {
+                observer->update(c, d);
+            }
         }
 
         return notified;
@@ -113,13 +123,14 @@ private:
     Observers _observers;
 };
 
-template<typename D>
+template<typename D, typename C>
 class Concurrent_Observer
 {
-    friend class Concurrent_Observed<D>;
+    friend class Concurrent_Observed<D, C>;
 
 public:
     typedef D Observed_Data;
+    typedef C Observing_Condition;
 
 public:
     Concurrent_Observer(): _semaphore(0) {
@@ -127,8 +138,7 @@ public:
     }
     ~Concurrent_Observer() {}
     
-    void update(D * d) {
-        std::cout << "OBSERVED BUFFER POINTER ADDED: " << d << std::endl;
+    void update(C c, D * d) {
         _data.insert(d);
         _semaphore.v();
     }
@@ -137,9 +147,22 @@ public:
         _semaphore.p();
         return _data.remove();
     }
+
+    void stop() {
+        _semaphore.v();
+    }
+
+    void set_condition(C condition) {
+        _condition = condition;
+    }
+
+    C rank() {
+        return _condition;
+    }
 private:
     Semaphore _semaphore;
     List<D> _data;
+    C _condition;
 };
 
 #endif // OBSERVER_H

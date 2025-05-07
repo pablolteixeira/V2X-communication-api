@@ -45,7 +45,7 @@ protected:
         _ifindex = ifr.ifr_ifindex;
 
         // Get MAC address
-        //ConsoleLogger::print("Raw Socket Engine: Getting MAC Address.");
+        ConsoleLogger::print("Raw Socket Engine: Getting MAC Address.");
 
         if(ioctl(_socket, SIOCGIFHWADDR, &ifr) < 0) {
             ConsoleLogger::error("SIOCGIFHWADDR");
@@ -62,7 +62,7 @@ protected:
             }
         }
 
-        //ConsoleLogger::print("Raw Socket Engine: MAC Address = " + mac.str());
+        ConsoleLogger::print("Raw Socket Engine: MAC Address = " + mac.str());
         memcpy(_addr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
     }
     
@@ -74,7 +74,7 @@ protected:
     int raw_send(Ethernet::Address dst, Ethernet::Protocol prot, const void* data, unsigned int size) {
         ConsoleLogger::print("Raw Socket Engine: Sending frame.");
         Ethernet::Frame frame(dst, _addr, prot);
-        //ConsoleLogger::print("Raw Socket Engine:PROTO -> " + std::to_string(prot));
+        ConsoleLogger::print("Raw Socket Engine:PROTO -> " + std::to_string(prot));
         memcpy(frame.data(), data, size);
         
         struct sockaddr_ll socket_address;

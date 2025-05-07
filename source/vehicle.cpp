@@ -57,19 +57,14 @@ void Vehicle::stop() {
     _nic->stop();
 
     _running = false;
+
     for(Component* component: _components) {
-        component->stop();
+        component->stop_send();
     }
 
-    // if (_send_thread.joinable()) {
-    //     _send_thread.join();
-    // }
-
-    // _semaphore.v();
-
-    // if (_receive_thread.joinable()) {
-    //     _receive_thread.join();
-    // }
+    for(Component* component: _components) {
+        component->stop_receive();
+    }
 }
 
 void Vehicle::receive() {

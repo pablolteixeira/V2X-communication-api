@@ -41,28 +41,29 @@ public:
         ConsoleLogger::print("NIC " + id + ": Logical MAC created");
         ConsoleLogger::print("NIC " + id + ": MAC ADDRESS -> "+  mac_to_string(_address));
 
+        _instance = this;
+
         // Register the signal handler for SIGIO
         struct sigaction sa;
         memset(&sa, 0, sizeof(sa));
         sa.sa_flags = SA_RESTART;
         sa.sa_handler = &NIC::sigio_handler;
-        //sa.sa_handler = &NIC::signal_handler_void;
         if (sigaction(SIGIO, &sa, NULL) < 0) {
             ConsoleLogger::error("sigaction");
             exit(EXIT_FAILURE);
         }
 
+        // Configure socket for async I/O
         int flags = fcntl(Engine::_socket, F_GETFL, 0);
         fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
         fcntl(Engine::_socket, F_SETOWN, getpid());
         
-        _instance = this;
-
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
     ~NIC() {}
 
     void stop() {
+        ConsoleLogger::log("NIC: Stopping");
         cleanup_nic();
     }
 
@@ -82,7 +83,6 @@ public:
 
     int send(NICBuffer* buf) {
         ConsoleLogger::print("NIC: Sending frame.");
-        std::cout << buf << std::endl;
 
         Ethernet::Frame* frame = buf->frame();
         Protocol_Number prot;
@@ -91,7 +91,7 @@ public:
         bool is_local_broadcast = memcmp(frame->data(), frame->data() + 8, 6) == 0;
 
         if (is_local_broadcast) {
-            ConsoleLogger::log("IT'S EQUAL");
+            //ConsoleLogger::log("IT'S EQUAL");
             notify(prot, buf);
             ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
@@ -112,7 +112,6 @@ public:
 
     void free(NICBuffer* buf) {
         ConsoleLogger::print("NIC: Free buffer");
-        std::cout << buf << std::endl;
         _buffer_pool.free(buf);
     }
 
@@ -135,9 +134,7 @@ public:
 
 private:
     static void sigio_handler(int signum) {
-        if (_instance) {
-            _instance->_data_semaphore.v();
-        }
+        _instance->_data_semaphore.v();
     }
 
     void data_processing_thread() {
@@ -149,60 +146,48 @@ private:
             }
             
             process_incoming_data();
-            /*if (_data_semaphore.try_p()) {
-                process_incoming_data();
-            } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-
-            if (!_running) {
-                break;
-            }*/
         }
     }
 
     void process_incoming_data() {
-        ConsoleLogger::log("PROCESSING INCOMING DATA");
-        ConsoleLogger::log(std::to_string(pthread_self()));
-        // Keep reading while there's data available (non-blocking)
-        Address src;
-        Protocol_Number prot;
-        
-        // Get a free buffer
-        NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
-        if (!buf) {
-            // No buffers available, we'll have to try again later
-            return;
-        }
-        
-        Ethernet::Frame* frame = buf->frame();
-        int size = Engine::raw_receive(&src, &prot, frame->data(), 
-                                    Ethernet::MTU - sizeof(Ethernet::Header));
-
-        ConsoleLogger::log("SIZE RAW RECEIVE: " + std::to_string(size));
-
-        if (size > 0) {
-            // Successful read
-            buf->size(size + sizeof(Ethernet::Header));
-            if (!notify(prot, buf)) {
-                free(buf);
+        while (true) {
+            ConsoleLogger::log("PROCESS INCOMING DATA");
+            Address src;
+            Protocol_Number prot;
+            
+            // Get a free buffer
+            NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
+            if (!buf) {
+                ConsoleLogger::error("No buffers available for incoming data");
+                return;
             }
-        } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
-            // No more data available
-            free(buf);
-        } else {
-            // Error
-            free(buf);
-            perror("Error reading from socket");
-        }
+            
+            Ethernet::Frame* frame = buf->frame();
+            int size = Engine::raw_receive(&src, &prot, frame->data(), 
+                                        Ethernet::MTU - sizeof(Ethernet::Header));
 
-        return;
+            if (size > 0) {
+                // Successful read
+                buf->size(size + sizeof(Ethernet::Header));
+                if (!notify(prot, buf)) {
+                    free(buf);
+                }
+            } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
+                // No more data available
+                free(buf);
+                break;
+            } else {
+                // Error
+                free(buf);
+                perror("Error reading from socket");
+                break;
+            }
+        }
     }
 
     void cleanup_nic() {
         _running = false;
-        
-        _data_semaphore.v();
+        _data_semaphore.v();  // Wake up the processing thread
         
         if (_worker_thread.joinable()) {
             _worker_thread.join();

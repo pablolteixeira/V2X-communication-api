@@ -53,8 +53,8 @@ private:
 };
 
 struct ComponentMessage {
-    Ethernet::Address from_addr;
-    unsigned short from_port;
+    Ethernet::Address origin_addr;
+    unsigned short origin_port;
     int id;
 };
 
@@ -62,9 +62,7 @@ struct ComponentMessage {
 class Component {
     public:
         Component(Vehicle* vehicle, const unsigned short& id, EthernetCommunicator* communicator) : _id(id), _running(false), _semaphore(0), _vehicle(vehicle), _communicator(communicator) {}
-        ~Component() {
-            stop();
-        }
+        ~Component() {}
     
         void start() {
             if (_running) return;
@@ -73,30 +71,21 @@ class Component {
             _send_thread = std::thread(&Component::send, this);
         }
     
-        void stop() {
+        void stop_send() {
             if (!_running) return;
             _running = false;
-            
             if (_send_thread.joinable()) {
                 _send_thread.join();
             }
+        }
 
-            _semaphore.v();
+        void stop_receive() {
+            if (_running) return;
+            _communicator->stop();
             if (_receive_thread.joinable()) {
                 _receive_thread.join();
             }
         }
-
-        void notify(Message* data) {
-            ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Received notify.");
-            // _buffer add data
-            if (!_running) {
-                return;
-            }
-            Message* new_data = data;
-            _receive_queue.add(new_data);
-            _semaphore.v();
-        };
 
         void receive() {
             ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Component receive started.");
@@ -105,18 +94,16 @@ class Component {
 
             while (_running) {
                 _communicator->receive(msg);
-                
                 if (!_running) {
                     break;
                 }
+                
                 // Process message based on type
-                if (msg) {
-                    ComponentMessage* component_msg = msg->get_data<ComponentMessage>();
+                ComponentMessage* component_msg = msg->get_data<ComponentMessage>();
 
-                    std::string origin = mac_to_string(component_msg->from_addr);
+                std::string origin = mac_to_string(component_msg->origin_addr);
 
-                    ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] RECEIVED MESSAGE FROM: MAC = " + origin + " - ORIGIN COMPONENT ID = " + std::to_string(component_msg->from_port));
-                }
+                ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] RECEIVED MESSAGE FROM: MAC = " + origin + " - ORIGIN COMPONENT ID = " + std::to_string(component_msg->origin_port));
             }
 
             delete msg;
@@ -132,15 +119,18 @@ class Component {
                 ComponentMessage* data = msg->get_data<ComponentMessage>();
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 
-                memcpy(data->from_addr, _vehicle->nic()->address(), sizeof(Ethernet::Address));
-                data->from_port = _id;
-                
+                if (!_running) {
+                    break;
+                }
+
+                memcpy(data->origin_addr, _vehicle->nic()->address(), sizeof(Ethernet::Address));
+                data->origin_port = _id;
+
                 EthernetProtocol::Address from(_vehicle->nic()->address(), _id);
-                EthernetProtocol::Address to(_vehicle->nic()->address(), 0);
+                EthernetProtocol::Address to(EthernetProtocol::Address::BROADCAST_MAC, 0);
 
                 msg->size(sizeof(ComponentMessage));
 
-                ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Notify vehicle.");
                 _communicator->send(msg, from, to);
             }
             
@@ -171,7 +161,8 @@ class Component {
         std::atomic<bool> _running;
         std::thread _send_thread;
         std::thread _receive_thread;
-        Semaphore _semaphore;        Queue<Message, 16> _receive_queue;
+        Semaphore _semaphore;
+        Queue<Message, 16> _receive_queue;
         std::atomic<int> _count;
         EthernetCommunicator* _communicator;
 

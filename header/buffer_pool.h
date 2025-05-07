@@ -56,7 +56,7 @@ public:
                 if (_buffers[i] == buf) {
                     int reference_counter = _buffers[i]->decrease_reference_counter();
                     
-                    if (reference_counter == 0) {
+                    if (reference_counter <= 0) {
                         was_in_use = _in_use[i];
                         _in_use[i] = false;
                     }
@@ -64,7 +64,7 @@ public:
                 }
             }
         }
-        ConsoleLogger::log("Buffer Pool: Freed Buffer");
+        //ConsoleLogger::log("Buffer Pool: Freed Buffer");
         // If the buffer was in use, increment the semaphore
         if (was_in_use) {
             ConsoleLogger::log("Buffer Pool: Buffer was in use - Semaphore V -> " + std::to_string(_free_buffers.count()));
