@@ -3,10 +3,7 @@
 
 #include "ethernet.h"
 #include "traits.h"
-#include "nic.h"
-#include "raw_socket_engine.h"
-#include "protocol.h"
-#include "communicator.h"
+#include "type_definitions.h"
 #include "message.h"
 #include "reference_buffer.h"
 #include "queue.h"
@@ -14,10 +11,6 @@
 #include <thread>
 #include <atomic>
 #include <random>
-
-typedef NIC<RawSocketEngine> EthernetNIC;
-typedef Protocol<EthernetNIC> EthernetProtocol;
-typedef Communicator<EthernetProtocol> EthernetCommunicator;
 
 class Component;
 
@@ -137,7 +130,11 @@ class Component {
 
             ConsoleLogger::log("[COMPONENT ID: [" + std::to_string(_id) + "] Component send stopped.");
         }
-    
+        
+        Ethernet::Address& get_address() {
+            return _vehicle->nic()->address();
+        }
+
         const unsigned short& id() const { return _id; }
 
         // virtual void process_data();
