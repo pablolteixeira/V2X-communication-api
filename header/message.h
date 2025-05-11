@@ -2,10 +2,38 @@
 #define MESSAGE_H
 
 #include <cstddef>
+#include "ethernet.h"
+#include <chrono>
+
+struct Origin {
+    Ethernet::Address mac;
+    unsigned short port;
+};
 
 class Message 
 {
 public:
+    enum Type {
+        UNDEFINED,
+        INTEREST,
+        RESPONSE,
+        PTP,
+        JOIN,
+        EXIT
+    };
+
+    struct InterestMessage {
+        struct Origin origin;
+        int type;
+        std::chrono::microseconds period;
+    };
+
+    struct ResponseMessage {
+        struct Origin origin;
+        int type;
+        int value;
+    };
+
     // Constructor with a specified maximum size
     Message(size_t max_size = 1500);
 
@@ -43,10 +71,15 @@ public:
         return reinterpret_cast<T*>(_buffer);
     }
 
+    Type get_type();
+
+    void set_type(Type type);
+
 private:
     unsigned char* _buffer;     // Dynamic array of bytes
     size_t _size;               // Current message size
     size_t _max_size;           // Maximum capacity
+    Type _type;
 };
 
 #endif // MESSAGE_H

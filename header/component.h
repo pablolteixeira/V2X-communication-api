@@ -1,0 +1,68 @@
+#ifndef COMPONENT_H
+#define COMPONENT_H
+
+#include <thread>
+#include <atomic>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include "console_logger.h"
+#include "queue.h"
+#include "semaphore.h"
+#include "type_definitions.h"
+#include "smart_data.h"
+
+struct ComponentMessage {
+    Ethernet::Address origin_addr;
+    unsigned short origin_port;
+    int id;
+};
+
+
+// Forward declarations
+class Vehicle;
+
+class Component 
+{
+public:
+    typedef std::pair<ComponentDataType, std::chrono::microseconds> ComponentInterest;
+    
+    Component(Vehicle* vehicle, const unsigned short& id, EthernetCommunicator* communicator);
+    virtual ~Component();
+
+    void start();
+    void stop();
+    void run();
+    
+    virtual void set_interests();
+    virtual void process_data(Message::ResponseMessage data);
+    virtual void generate_data();
+
+    Ethernet::Address& get_address();
+    const unsigned short& id() const;
+
+    ComponentDataType get_data_type();
+    int get_value();
+
+    std::vector<InterestData> get_interests();
+
+protected:
+    unsigned short _id;
+    std::atomic<bool> _running;
+    std::thread _running_thread;
+    Semaphore _semaphore;
+
+    Queue<Message, 16> _receive_queue;
+    ComponentDataType _data_type;
+    std::vector<ComponentInterest> _interests;
+
+    std::atomic<int> _value;
+
+    EthernetCommunicator* _communicator;
+    Vehicle* _vehicle;
+
+private:
+    std::string mac_to_string(Ethernet::Address& addr);
+};
+
+#endif // COMPONENT_H
