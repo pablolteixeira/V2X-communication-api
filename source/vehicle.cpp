@@ -59,11 +59,7 @@ void Vehicle::stop() {
     _running = false;
 
     for(Component* component: _components) {
-        component->stop_send();
-    }
-
-    for(Component* component: _components) {
-        component->stop_receive();
+        component->stop();
     }
 }
 

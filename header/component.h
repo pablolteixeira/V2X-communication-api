@@ -10,7 +10,6 @@
 #include "queue.h"
 #include "semaphore.h"
 #include "type_definitions.h"
-#include "smart_data.h"
 
 struct ComponentMessage {
     Ethernet::Address origin_addr;

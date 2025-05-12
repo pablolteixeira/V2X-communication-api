@@ -12,6 +12,12 @@ typedef Communicator<EthernetProtocol> EthernetCommunicator;
 
 typedef unsigned int ComponentDataType;
 
+struct InterestData {
+    ComponentDataType data_type;
+    std::chrono::microseconds period;
+    std::chrono::microseconds next_receive;
+};
+
 // Bit      31  29   27    24     21     18     15     12      9      6      3      0
 //         +--+----+----+------+------+------+------+------+------+------+------+------+
 // SI      |1 |NUM |MOD |sr+4  |rad+4 |m+4   |kg+4  |s+4   |A+4   |K+4   |mol+4 |cd+4  |

@@ -1,0 +1,8 @@
+[2025-04-29 13:46:13.701] - [PID:58274] [THREAD ID:136271531165504] Created child process 0 with PID: 58275
+[2025-04-29 13:46:13.701] - [PID:58274] [THREAD ID:136271531165504] Created child process 1 with PID: 58276
+[2025-04-29 13:46:13.701] - [PID:58274] [THREAD ID:136271531165504] Parent waiting for all child processes
+[2025-04-29 13:46:13.723] - [PID:58274] [THREAD ID:136271531165504] Child process (PID: 58275) has finished with status: 1
+[2025-04-29 13:46:13.723] - [PID:58274] [THREAD ID:136271531165504] Child process (PID: 58275) exited normally with status: 1
+[2025-04-29 13:46:13.723] - [PID:58274] [THREAD ID:136271531165504] Child process (PID: 58276) has finished with status: 1
+[2025-04-29 13:46:13.723] - [PID:58274] [THREAD ID:136271531165504] Child process (PID: 58276) exited normally with status: 1
+[2025-04-29 13:46:13.723] - [PID:58274] [THREAD ID:136271531165504] Parent process (PID: 58274) finished.

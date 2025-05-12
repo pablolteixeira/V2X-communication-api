@@ -7,12 +7,6 @@
 #include <numeric>
 #include <thread>
 
-struct InterestData {
-    ComponentDataType data_type;
-    std::chrono::microseconds period;
-    std::chrono::microseconds next_receive;
-};
-
 class SmartData {
 public:
     SmartData(Component* component, EthernetCommunicator* communicator) : 
