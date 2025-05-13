@@ -17,7 +17,6 @@ struct ComponentMessage {
     int id;
 };
 
-
 // Forward declarations
 class Vehicle;
 
@@ -26,7 +25,7 @@ class Component
 public:
     typedef std::pair<ComponentDataType, std::chrono::microseconds> ComponentInterest;
     
-    Component(Vehicle* vehicle, const unsigned short& id, EthernetCommunicator* communicator);
+    Component(Vehicle* vehicle, const unsigned short& id);
     virtual ~Component();
 
     void start();
@@ -34,7 +33,7 @@ public:
     void run();
     
     virtual void set_interests();
-    virtual void process_data(Message::ResponseMessage data);
+    virtual void process_data(Message::ResponseMessage* data);
     virtual void generate_data();
 
     Ethernet::Address& get_address();
@@ -57,7 +56,6 @@ protected:
 
     std::atomic<int> _value;
 
-    EthernetCommunicator* _communicator;
     Vehicle* _vehicle;
 
 private:

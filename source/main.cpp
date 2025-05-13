@@ -9,7 +9,6 @@
 #include <sys/wait.h>
 #include <execinfo.h>
 
-const unsigned int NUM_VEHICLE = 2;
 
 int main() {
     ConsoleLogger::init();
@@ -18,12 +17,12 @@ int main() {
     
     std::cout.setf(std::ios_base::unitbuf);
 
-    pid_t children_pids[NUM_VEHICLE];
+    pid_t children_pids[Traits<Vehicle>::NUM_VEHICLE];
 
     EthernetProtocol* protocol = EthernetProtocol::get_instance();
     
     ConsoleLogger::close();
-    for (int i = 0; i < NUM_VEHICLE; i++) {
+    for (int i = 0; i < Traits<Vehicle>::NUM_VEHICLE; i++) {
         pid_t pid = fork();
         
         if (pid < 0) {

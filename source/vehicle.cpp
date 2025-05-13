@@ -1,5 +1,6 @@
 #include "../header/vehicle.h"
 #include "../header/nic.h"
+#include "../header/smart_data.h"
 
 #include <iostream>
 #include <pthread.h>
@@ -22,16 +23,21 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), 
     for(int i = 0; i < 5; i++){
         EthernetProtocol::Address component_addr(_nic->address(), i+1);
 
-        _communicator = new EthernetCommunicator(_protocol, component_addr);
-        _components[i] = new Component(this, i+1, _communicator);
+        _communicator[i] = new EthernetCommunicator(_protocol, component_addr);
+        _components[i] = new Component(this, i+1);
+        _smart_datas[i] = new SmartData(_components[i], _communicator[i]);
     }
 }
 
 Vehicle::~Vehicle() {
-    delete _communicator;
-    
     for(Component* component: _components) {
         delete component;
+    }
+    for(SmartData* smart_data: _smart_datas) {
+        delete smart_data;
+    }
+    for(EthernetCommunicator* communicator: _communicator) {
+        delete communicator;
     }
 }
 
