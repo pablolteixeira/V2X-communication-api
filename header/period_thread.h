@@ -57,6 +57,7 @@ private:
         while (running.load()) {
             // Execute the provided function
             task_func();
+            sched_yield();
             
             // Check if period has been updated
             __u64 current_period = period_ns.load();
@@ -74,11 +75,16 @@ private:
     
 public:
     // Constructor
-    PeriodicThread(std::function<void ()> function, __u64 period_microseconds, __u64 runtime_microseconds = 300 * 1000) 
+    PeriodicThread(std::function<void ()> function, __u64 period_microseconds, __u64 runtime_microseconds) 
         : running(false), runtime_ns(runtime_microseconds), task_func(function) {
-            if(period_microseconds < 100) {
-                period_microseconds = 500;
+            if(period_microseconds < 1000) {
+                period_microseconds = 1000;
             }
+            if (runtime_microseconds > period_microseconds) {
+                runtime_microseconds = period_microseconds;
+            }
+
+            runtime_ns = runtime_microseconds * 1000;
             period_ns = period_microseconds * 1000;
     }
     

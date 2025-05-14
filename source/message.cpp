@@ -3,7 +3,7 @@
 
 // Constructor
 Message::Message(size_t max_size) 
-    : _buffer(new unsigned char[max_size]), _size(0), _max_size(max_size), _type(Message::Type::UNDEFINED) {
+    : _buffer(new unsigned char[max_size]), _size(0), _max_size(max_size) {
 }
 
 // Destructor
@@ -53,14 +53,4 @@ Message& Message::operator=(const Message& other)
         std::memcpy(_buffer, other._buffer, _size);
     }
     return *this;
-}
-
-Message::Type Message::get_type() 
-{
-    return _type;
-}
-
-void Message::set_type(Message::Type type)
-{
-    _type = type;
 }

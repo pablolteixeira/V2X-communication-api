@@ -27,7 +27,6 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), 
 
         _communicator[i] = new EthernetCommunicator(_protocol, component_addr);
         _components[i] = new LidarComponent(this, i+1);
-        std::cout << _components[i] << std::endl;
         _smart_datas[i] = new SmartData(_components[i], _communicator[i]);
     }
 }
@@ -51,15 +50,13 @@ void Vehicle::start() {
         ConsoleLogger::log("Running: " + std::to_string(_running));
     }
     ConsoleLogger::log("Starting Components");
-    for(Component* component : _components) {
-        std::cout << component << std::endl;
-        component->start();
+    for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
+        _components[i]->start();
+        _smart_datas[i]->start();
     }
     ConsoleLogger::log("Components started");
 
     _running = true;
-    // _receive_thread = std::thread(&Vehicle::receive, this);
-    // _send_thread = std::thread(&Vehicle::send, this);
     ConsoleLogger::log("Threads running.");
 }
 

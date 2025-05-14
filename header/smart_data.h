@@ -33,6 +33,7 @@ private:
     std::thread _receive_thread;
     std::thread _send_thread;
     PeriodicThread* _response_thread;
+    PeriodicThread* _interest_thread;
 
     std::chrono::microseconds _period_time;
     std::vector<InterestData> _interests;

@@ -22,15 +22,74 @@ public:
         EXIT
     };
 
+    struct MessageHeader {
+        Type type;
+        size_t payload_size;
+    };
+
+    // Structure that combines header and payload
+    template <typename T>
+    struct TypedMessage {
+        MessageHeader header;
+        T payload;
+    };
+
+    // Get header pointer (const version)
+    const MessageHeader* get_header() const {
+        return reinterpret_cast<const MessageHeader*>(_buffer);
+    }
+    
+    // Get header pointer (non-const version)
+    MessageHeader* get_header() {
+        return reinterpret_cast<MessageHeader*>(_buffer);
+    }
+
+    // Get type directly from the header in the buffer
+    Type get_type() const {
+        return get_header()->type;
+    }
+    
+    // Set type in the header
+    void set_type(Type type) {
+        get_header()->type = type;
+    }
+
+    // New methods for typed messages
+    template <typename T>
+    void set_payload(const T& data) {
+        if (sizeof(MessageHeader) + sizeof(T) <= _max_size) {
+            // Get header
+            MessageHeader* header = get_header();
+            
+            // Copy payload data after the header
+            unsigned char* payload_ptr = _buffer + sizeof(MessageHeader);
+            memcpy(payload_ptr, &data, sizeof(T));
+            
+            // Update header's payload size
+            header->payload_size = sizeof(T);
+            
+            // Update total message size
+            _size = sizeof(MessageHeader) + sizeof(T);
+        }
+    }
+    
+    template <typename T>
+    T* get_payload() {
+        if (_size >= sizeof(MessageHeader)) {
+            return reinterpret_cast<T*>(_buffer + sizeof(MessageHeader));
+        }
+        return nullptr;
+    }
+
     struct InterestMessage {
-        struct Origin origin;
-        int type;
+        Origin origin;
+        unsigned int type;
         std::chrono::microseconds period;
     };
 
     struct ResponseMessage {
-        struct Origin origin;
-        int type;
+        Origin origin;
+        unsigned int type;
         int value;
     };
 
@@ -71,15 +130,10 @@ public:
         return reinterpret_cast<T*>(_buffer);
     }
 
-    Type get_type();
-
-    void set_type(Type type);
-
 private:
-    unsigned char* _buffer;     // Dynamic array of bytes
     size_t _size;               // Current message size
     size_t _max_size;           // Maximum capacity
-    Type _type;
+    unsigned char* _buffer;     // Dynamic array of bytes
 };
 
 #endif // MESSAGE_H

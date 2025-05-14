@@ -3,19 +3,21 @@
 
 Component::Component(Vehicle* vehicle, const unsigned short& id)
     : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {
-}
+    }
 
 Component::~Component() {}
 
 void Component::start() {
     if (_running) return;
+    set_interests();
+
     _running = true;
     _running_thread = new PeriodicThread(
             std::bind(&Component::run, this), 
-            static_cast<__u64>(100000)
+            static_cast<__u64>(std::chrono::microseconds(100 * 1000).count()),
+            static_cast<__u64>(std::chrono::microseconds(40 * 1000).count())
         );
     _running_thread->start();
-    //_running_thread = std::thread(&Component::run, this);
 }
 
 void Component::stop() {

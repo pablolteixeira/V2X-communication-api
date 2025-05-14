@@ -26,8 +26,8 @@ void LidarComponent::generate_data() {
 
 void LidarComponent::set_interests() {
     ComponentDataType _control_data_type = 0b0 << 31;
-    _interests.push_back({_control_data_type, std::chrono::milliseconds(10) });
-    _interests.push_back({_data_type, std::chrono::milliseconds(10)});
+    //_interests.push_back({_control_data_type, std::chrono::milliseconds(10) });
+    _interests.push_back({_data_type, std::chrono::milliseconds(250)});
 }
 
 void LidarComponent::process_data(Message::ResponseMessage* data) {
