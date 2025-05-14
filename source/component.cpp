@@ -10,20 +10,17 @@ Component::~Component() {}
 void Component::start() {
     if (_running) return;
     _running = true;
-    _running_thread = std::thread(&Component::run, this);
+    _running_thread = new PeriodicThread(
+            std::bind(&Component::run, this), 
+            static_cast<__u64>(100000)
+        );
+    _running_thread->start();
+    //_running_thread = std::thread(&Component::run, this);
 }
 
 void Component::stop() {
     _running = false;
-    if (_running_thread.joinable()) {
-        _running_thread.join();
-    }
-}
-
-void Component::run() {
-    while(_running) {
-        generate_data();
-    }
+    delete _running_thread;
 }
 
 Ethernet::Address& Component::get_address() {

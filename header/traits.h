@@ -8,7 +8,7 @@ public:
     static const unsigned int SEND_BUFFERS = 16;
     static const unsigned int RECEIVE_BUFFERS = 16;
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 0x8888;
-    static const unsigned int NUM_COMPONENTS = 5;
+    static const unsigned int NUM_COMPONENTS = 1;
     static const unsigned int NUM_VEHICLE = 2;
 
 };

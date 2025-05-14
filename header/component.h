@@ -10,6 +10,8 @@
 #include "queue.h"
 #include "semaphore.h"
 #include "type_definitions.h"
+#include "period_thread.h"
+#include <chrono>
 
 struct ComponentMessage {
     Ethernet::Address origin_addr;
@@ -29,12 +31,12 @@ public:
     virtual ~Component();
 
     void start();
+
     void stop();
-    void run();
-    
-    virtual void set_interests();
-    virtual void process_data(Message::ResponseMessage* data);
-    virtual void generate_data();
+    virtual void run() = 0;
+    virtual void set_interests() = 0;
+    virtual void process_data(Message::ResponseMessage* data) = 0;
+    virtual void generate_data() = 0;
 
     Ethernet::Address& get_address();
     const unsigned short& id() const;
@@ -47,7 +49,8 @@ public:
 protected:
     unsigned short _id;
     std::atomic<bool> _running;
-    std::thread _running_thread;
+    //std::thread _running_thread;
+    PeriodicThread* _running_thread;
     Semaphore _semaphore;
 
     Queue<Message, 16> _receive_queue;

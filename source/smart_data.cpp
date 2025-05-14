@@ -1,7 +1,7 @@
-#include "smart_data.h"
-#include "console_logger.h"
-#include "message"
-#include "period_thread.h"
+#include "../header/smart_data.h"
+#include "../header/console_logger.h"
+#include "../header/message.h"
+#include "../header/period_thread.h"
 
 SmartData::SmartData(Component* component, EthernetCommunicator* communicator) 
     : _running(false), _component(component), _communicator(communicator), _semaphore(0), _period_time(0) {
@@ -38,18 +38,22 @@ void SmartData::receive() {
             case Message::Type::INTEREST: {
                 auto* interest_message = msg->get_data<Message::InterestMessage>();
                 if (interest_message->type == _component->get_data_type()) {
-                    if (!_response_thread.joinable()) {
+                    if (!_response_thread) {
                         _period_time = interest_message->period;
 
-                        _response_thread = new PeriodicThread(send_response, _period_time * 1000);
+                        _response_thread = new PeriodicThread(
+                            std::bind(&SmartData::send_response, this), 
+                            static_cast<__u64>(_period_time.count() * 1000)
+                        );
+                        
                         _response_thread->start();
                     } else {
                         if (_period_time != interest_message->period) {
                             _period_time = std::chrono::microseconds(std::__gcd(_period_time.count(), interest_message->period.count()));                            
-                            _response_thread->update(_period_time);
+                            _response_thread->update(_period_time.count());
                         }
                     }
-                }interest_message->type == _component->get_data_type()
+                }
                 break;
             }
             case Message::Type::RESPONSE: {

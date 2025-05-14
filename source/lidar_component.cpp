@@ -1,6 +1,14 @@
 #include "../header/component/lidar_component.h"
 #include <random>
 
+
+void LidarComponent::run() 
+{
+    ConsoleLogger::log("About to generate data");
+    generate_data();
+    ConsoleLogger::log("Data generation completed");
+}
+
 LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned short& id)
     : Component(vehicle, id) {
     // SI unit: meter => m+1 => 0b101 (5) => m+4 = 9
@@ -13,13 +21,17 @@ void LidarComponent::generate_data() {
     std::uniform_int_distribution<> dist(1, 100); // Lidar range in meters
 
     _value = dist(gen);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ConsoleLogger::log("Data generated: " + std::to_string(_value));
 }
 
 void LidarComponent::set_interests() {
-    ComponentDataType _control_data_type = 0b0 << 31 | ;
+    ComponentDataType _control_data_type = 0b0 << 31;
     _interests.push_back({_control_data_type, std::chrono::milliseconds(10) });
     _interests.push_back({_data_type, std::chrono::milliseconds(10)});
+}
+
+void LidarComponent::process_data(Message::ResponseMessage* data) {
+
 }
 
 /*

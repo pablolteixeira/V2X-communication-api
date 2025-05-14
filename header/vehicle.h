@@ -15,6 +15,8 @@
 #include <atomic>
 #include <random>
 
+class SmartData;
+
 class Vehicle
 {
 public:

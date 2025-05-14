@@ -1,6 +1,7 @@
 #include "../header/vehicle.h"
 #include "../header/nic.h"
 #include "../header/smart_data.h"
+#include "../header/component/lidar_component.h"
 
 #include <iostream>
 #include <pthread.h>
@@ -20,11 +21,13 @@ std::string mac_to_string(Ethernet::Address& addr) {
 Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), _nic(nic), _protocol(protocol), _semaphore(0) {
     _protocol->register_nic(_nic);
 
-    for(int i = 0; i < 5; i++){
+    for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++){
+        ConsoleLogger::log("New component");
         EthernetProtocol::Address component_addr(_nic->address(), i+1);
 
         _communicator[i] = new EthernetCommunicator(_protocol, component_addr);
-        _components[i] = new Component(this, i+1);
+        _components[i] = new LidarComponent(this, i+1);
+        std::cout << _components[i] << std::endl;
         _smart_datas[i] = new SmartData(_components[i], _communicator[i]);
     }
 }
@@ -47,9 +50,12 @@ void Vehicle::start() {
     if (_running) {
         ConsoleLogger::log("Running: " + std::to_string(_running));
     }
+    ConsoleLogger::log("Starting Components");
     for(Component* component : _components) {
+        std::cout << component << std::endl;
         component->start();
     }
+    ConsoleLogger::log("Components started");
 
     _running = true;
     // _receive_thread = std::thread(&Vehicle::receive, this);

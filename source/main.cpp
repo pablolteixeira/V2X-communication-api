@@ -44,7 +44,7 @@ int main() {
             vehicle->start();
             ConsoleLogger::log("Vehicle " + id + " started");
             
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000*60*60));
+            std::this_thread::sleep_for(std::chrono::seconds(60));
 
             vehicle->stop();
             ConsoleLogger::log("Vehicle " + id + " stopped");

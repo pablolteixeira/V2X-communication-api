@@ -9,6 +9,8 @@
 #include <pthread.h>
 #include <thread>
 #include "period_thread.h"
+#include "observer.h"
+#include <functional>
 
 class SmartData {
 public:
