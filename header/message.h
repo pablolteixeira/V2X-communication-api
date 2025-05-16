@@ -27,48 +27,38 @@ public:
         size_t payload_size;
     };
 
-    // Structure that combines header and payload
     template <typename T>
     struct TypedMessage {
         MessageHeader header;
         T payload;
     };
 
-    // Get header pointer (const version)
     const MessageHeader* get_header() const {
         return reinterpret_cast<const MessageHeader*>(_buffer);
     }
     
-    // Get header pointer (non-const version)
     MessageHeader* get_header() {
         return reinterpret_cast<MessageHeader*>(_buffer);
     }
 
-    // Get type directly from the header in the buffer
     Type get_type() const {
         return get_header()->type;
     }
     
-    // Set type in the header
     void set_type(Type type) {
         get_header()->type = type;
     }
 
-    // New methods for typed messages
     template <typename T>
     void set_payload(const T& data) {
         if (sizeof(MessageHeader) + sizeof(T) <= _max_size) {
-            // Get header
             MessageHeader* header = get_header();
             
-            // Copy payload data after the header
             unsigned char* payload_ptr = _buffer + sizeof(MessageHeader);
             memcpy(payload_ptr, &data, sizeof(T));
             
-            // Update header's payload size
             header->payload_size = sizeof(T);
             
-            // Update total message size
             _size = sizeof(MessageHeader) + sizeof(T);
         }
     }

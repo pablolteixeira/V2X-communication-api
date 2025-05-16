@@ -57,14 +57,14 @@ void SmartData::receive() {
 
                         _response_thread = new PeriodicThread(
                             std::bind(&SmartData::send_response, this), 
-                            static_cast<__u64>(_period_time.count() * 1000),
-                            static_cast<__u64>((_period_time.count() / 2) * 1000)
+                            static_cast<__u64>(_period_time.count()),
+                            static_cast<__u64>((unsigned long long)(_period_time.count() * 0.7))
                         );
                         
                         _response_thread->start();
                     } else {
                         ConsoleLogger::log("SmartData: Interest arrived and response thread initialized");
-
+                        ConsoleLogger::log(std::to_string(_period_time.count()) + " - " + std::to_string(interest_payload->period.count()));
                         if (_period_time != interest_payload->period) {
                             _period_time = std::chrono::microseconds(std::__gcd(_period_time.count(), interest_payload->period.count()));
                             ConsoleLogger::log("SmartData: Updating response period -> " + std::to_string(_period_time.count()) + " microseconds.");
@@ -76,20 +76,19 @@ void SmartData::receive() {
             }
             case Message::Type::RESPONSE: {
                 Message::ResponseMessage* response_payload = msg->get_payload<Message::ResponseMessage>();
-                InterestData interest;
+                ConsoleLogger::log("SmartData: Response arrived");
 
-                for (InterestData data : _interests) {
+                for (InterestData data : _component->get_interests()) {
                     if (response_payload->type == data.data_type) {
-                        interest = data;
                         
                         auto now = std::chrono::system_clock::now();
                         auto now_micro = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
 
-                        if (now_micro >= interest.next_receive) {
-                            interest.next_receive += interest.period;
-                            ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: received interest message - value = " + std::to_string(response_payload->value) + " and using it.");
+                        if (now_micro >= data.next_receive) {
+                            data.next_receive += data.period;
+                            ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: received response message - value = " + std::to_string(response_payload->value) + " and using it.");
                         } else {
-                            ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: received interest message - value = " + std::to_string(response_payload->value) +  " but descarting it.");
+                            ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: received response message - value = " + std::to_string(response_payload->value) +  " but descarting it.");
                         }
 
                         //_component->process_data(response_message);
@@ -97,6 +96,8 @@ void SmartData::receive() {
                         break;
                     }
                 }
+
+                ConsoleLogger::log("SmartData: Not interest found in this type");
                 break;
             }
             default:
@@ -111,28 +112,28 @@ void SmartData::receive() {
 
 void SmartData::send_response() {
     ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: Sending Response");
-    Message* msg = new Message();
-
-    int value = _component->get_value();
-    
     EthernetProtocol::Address from(_component->get_address(), _component->id());
     EthernetProtocol::Address to(EthernetProtocol::Address::BROADCAST_MAC, 0);
 
-    /*Message::ResponseMessage* response_message = msg->get_data<Message::ResponseMessage>();
+    int value = _component->get_value();
+
+    Message* msg = new Message();
+
+    Message::ResponseMessage response_payload;
 
     Origin origin = Origin {
         *_component->get_address(),
         _component->id()
     };
 
-    response_message->origin = origin;
-    response_message->type = _component->get_data_type();
-    response_message->value = value;
+    response_payload.origin = origin;
+    response_payload.type = _component->get_data_type();
+    response_payload.value = value;
 
     msg->set_type(Message::Type::RESPONSE);
-    msg->size(sizeof(Message::ResponseMessage));
+    msg->set_payload(response_payload);
 
-    _communicator->send(msg, from, to);*/
+    _communicator->send(msg, from, to);
 
     delete msg;
 }
@@ -160,5 +161,5 @@ void SmartData::send_interest(InterestData& interest) {
 
     _communicator->send(msg, from, to);
 
-    //delete msg;
+    delete msg;
 }
