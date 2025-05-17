@@ -8,43 +8,64 @@
 
 #include <sys/wait.h>
 #include <execinfo.h>
+#include <unistd.h>
+#include <chrono>
+#include <thread>
+#include <csignal>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 
+constexpr int MAX_RUNTIME_SECONDS = 30; // total simulation time for the parent process (e.g., 5 min)
+constexpr int SPAWN_INTERVAL_MS = 2000;  // interval between spawns (in milliseconds)
+constexpr int MIN_LIFETIME = 5;         // min vehicle lifetime (in seconds)
+constexpr int MAX_LIFETIME = 10;         // max vehicle lifetime (in seconds)
 
 int main() {
+    srand(time(nullptr));
     ConsoleLogger::init();
-    ConsoleLogger::print("STARTING CREATE OF INSTANCES");
+    ConsoleLogger::print("DYNAMIC VEHICLE SPAWNER STARTED");
     ConsoleLogger::print("Parent process: " + std::to_string(getpid()));
-    
     std::cout.setf(std::ios_base::unitbuf);
 
-    pid_t children_pids[Traits<Vehicle>::NUM_VEHICLE];
-
     EthernetProtocol* protocol = EthernetProtocol::get_instance();
-    
-    ConsoleLogger::close();
-    for (int i = 0; i < Traits<Vehicle>::NUM_VEHICLE; i++) {
+
+    auto start_time = std::chrono::steady_clock::now();
+
+    while (true) {
+        // Check if the parent should stop
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::steady_clock::now() - start_time).count();
+
+        if (elapsed >= MAX_RUNTIME_SECONDS) {
+            ConsoleLogger::log("Max runtime reached. Stopping dynamic spawner.");
+            break;
+        }
+
         pid_t pid = fork();
-        
+
         if (pid < 0) {
-            // Fork failed
-            ConsoleLogger::log("Fork failed for process: " + std::to_string(i));
-            continue;
+            ConsoleLogger::log("Fork failed.");
         } else if (pid == 0) {
+            // --- Child process ---
             ConsoleLogger::close();
             ConsoleLogger::init();
-            ConsoleLogger::log("Children process: " + std::to_string(getpid()));
 
-            std::string id = "NIC" + std::to_string(getpid());
-            EthernetNIC *nic = new EthernetNIC(id);
+            pid_t child_pid = getpid();
+            ConsoleLogger::log("Child process created: PID = " + std::to_string(child_pid));
 
+            std::string id = "NIC" + std::to_string(child_pid);
+            EthernetNIC* nic = new EthernetNIC(id);
             EthernetProtocol* child_protocol = EthernetProtocol::get_instance();
-
             Vehicle* vehicle = new Vehicle(nic, child_protocol);
 
             vehicle->start();
             ConsoleLogger::log("Vehicle " + id + " started");
-            
-            std::this_thread::sleep_for(std::chrono::seconds(60));
+
+            int lifetime = MIN_LIFETIME + rand() % (MAX_LIFETIME - MIN_LIFETIME + 1);
+            ConsoleLogger::log("Vehicle " + id + " will live for " + std::to_string(lifetime) + " seconds");
+
+            std::this_thread::sleep_for(std::chrono::seconds(lifetime));
 
             vehicle->stop();
             ConsoleLogger::log("Vehicle " + id + " stopped");
@@ -52,30 +73,44 @@ int main() {
             delete vehicle;
             delete nic;
 
+            ConsoleLogger::log("Vehicle " + id + " destroyed after " + std::to_string(lifetime) + " seconds");
+
             ConsoleLogger::close();
             exit(0);
         } else {
-            // Parent process
-            ConsoleLogger::log("Created child process " + std::to_string(i) + " with PID: " + std::to_string(pid));
-            children_pids[i] = pid;
+            // --- Parent process ---
+            ConsoleLogger::log("Spawned vehicle process with PID: " + std::to_string(pid));
+
+            // Reap any finished child processes to avoid zombies
+            int status;
+            while (waitpid(-1, &status, WNOHANG) > 0) {
+                if (WIFEXITED(status)) {
+                    ConsoleLogger::log("Child exited normally with status: " + std::to_string(WEXITSTATUS(status)));
+                } else if (WIFSIGNALED(status)) {
+                    ConsoleLogger::log("Child killed by signal: " + std::to_string(WTERMSIG(status)));
+                } else {
+                    ConsoleLogger::log("Child exited with unknown status.");
+                }
+            }
         }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(SPAWN_INTERVAL_MS));
     }
-    
-    ConsoleLogger::log("Parent waiting for all child processes");
-    for (pid_t child_pid : children_pids) {
-        int status;
-        waitpid(child_pid, &status, 0);
-        ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") has finished with status: " + std::to_string(WEXITSTATUS(status)));
-    
+
+    // Wait for all remaining children before exiting
+    ConsoleLogger::log("Waiting for remaining child processes...");
+    int status;
+    while (waitpid(-1, &status, 0) > 0) {
         if (WIFEXITED(status)) {
-            ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") exited normally with status: " + std::to_string(WEXITSTATUS(status)));
+            ConsoleLogger::log("Child exited normally with status: " + std::to_string(WEXITSTATUS(status)));
         } else if (WIFSIGNALED(status)) {
-            ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") killed by signal: " + std::to_string(WTERMSIG(status)));
+            ConsoleLogger::log("Child killed by signal: " + std::to_string(WTERMSIG(status)));
         } else {
-            ConsoleLogger::log("Child process (PID: " + std::to_string(child_pid) + ") terminated with unknown status: " + std::to_string(status));
+            ConsoleLogger::log("Child exited with unknown status.");
         }
     }
 
+    ConsoleLogger::log("All child processes terminated.");
     ConsoleLogger::log("Parent process (PID: " + std::to_string(getpid()) + ") finished.");
     ConsoleLogger::close();
 
