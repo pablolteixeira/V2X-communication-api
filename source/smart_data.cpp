@@ -48,7 +48,7 @@ void SmartData::receive() {
         switch(header->type) {
             case Message::Type::INTEREST: {
                 auto* interest_payload = msg->get_payload<Message::InterestMessage>();
-                ConsoleLogger::log("SmartData: Interest arrived");
+                // ConsoleLogger::log("SmartData: Interest arrived");
 
                 if (interest_payload->type == _component->get_data_type()) {
                     if (_response_thread == nullptr) {
@@ -76,7 +76,7 @@ void SmartData::receive() {
             }
             case Message::Type::RESPONSE: {
                 Message::ResponseMessage* response_payload = msg->get_payload<Message::ResponseMessage>();
-                ConsoleLogger::log("SmartData: Response arrived");
+                // ConsoleLogger::log("SmartData: Response arrived");
 
                 for (InterestData data : _component->get_interests()) {
                     if (response_payload->type == data.data_type) {
@@ -91,7 +91,7 @@ void SmartData::receive() {
                             ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: received response message - value = " + std::to_string(response_payload->value) +  " but descarting it.");
                         }
 
-                        //_component->process_data(response_message);
+                        _component->process_data(response_payload);
 
                         break;
                     }
@@ -111,7 +111,7 @@ void SmartData::receive() {
 }
 
 void SmartData::send_response() {
-    ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: Sending Response");
+    ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: Sending Response, Value: " + std::to_string(_component->get_value()));
     EthernetProtocol::Address from(_component->get_address(), _component->id());
     EthernetProtocol::Address to(EthernetProtocol::Address::BROADCAST_MAC, 0);
 

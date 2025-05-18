@@ -2,6 +2,7 @@
 #include "../header/nic.h"
 #include "../header/smart_data.h"
 #include "../header/component/lidar_component.h"
+#include "../header/component/break_component.h"
 
 #include <iostream>
 #include <pthread.h>
@@ -26,7 +27,13 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), 
         EthernetProtocol::Address component_addr(_nic->address(), i+1);
 
         _communicator[i] = new EthernetCommunicator(_protocol, component_addr);
-        _components[i] = new LidarComponent(this, i+1);
+        //_components[i] = new LidarComponent(this, i+1);
+    
+        if (i % 2 == 0) {
+            _components[i] = new LidarComponent(this, i + 1);
+        } else {
+            _components[i] = new BreakComponent(this, i + 1);
+        }
         _smart_datas[i] = new SmartData(_components[i], _communicator[i]);
     }
 }
@@ -52,9 +59,14 @@ void Vehicle::start() {
     ConsoleLogger::log("Starting Components");
     for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
         _components[i]->start();
-        _smart_datas[i]->start();
     }
     ConsoleLogger::log("Components started");
+
+    ConsoleLogger::log("Starting SmartDatas");
+    for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
+        _smart_datas[i]->start();
+    }
+    ConsoleLogger::log("SmartDatas started");
 
     _running = true;
     ConsoleLogger::log("Threads running.");

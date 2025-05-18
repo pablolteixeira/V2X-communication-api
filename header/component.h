@@ -37,7 +37,6 @@ public:
     virtual void set_interests() = 0;
     virtual void process_data(Message::ResponseMessage* data) = 0;
     virtual void generate_data() = 0;
-
     Ethernet::Address& get_address();
     const unsigned short& id() const;
 
