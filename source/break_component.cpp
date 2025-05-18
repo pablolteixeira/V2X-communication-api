@@ -10,7 +10,7 @@ void BreakComponent::run()
 BreakComponent::BreakComponent(Vehicle* vehicle, const unsigned short& id)
     : Component(vehicle, id) {
     // SI unit: meter => m+1 => 0b101 (5) => m+4 = 9
-    _data_type = 0b1 << 31 | 9 << 18;  // Only m+4 is set
+    _data_type = 0;  // Only m+4 is set
 }
 
 void BreakComponent::generate_data() {
@@ -22,7 +22,7 @@ void BreakComponent::set_interests() {
     //_interests.push_back({_control_data_type, std::chrono::milliseconds(10) });
     auto time = getpid() % 2 == 0 ? std::chrono::milliseconds(250) : std::chrono::milliseconds(100);
 
-    _interests.push_back({_data_type, time});
+    _interests.push_back({0b1 << 31 | 9 << 18, time});
 }
 
 void BreakComponent::process_data(Message::ResponseMessage* data) {
