@@ -68,7 +68,7 @@ void ConsoleLogger::log(const std::string& message) {
     std::string timestamp = get_current_timestamp();
     log_file << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
     // Also print to console
-    std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
+    //std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
 }
 
 void ConsoleLogger::print(const std::string& message) {
@@ -78,7 +78,7 @@ void ConsoleLogger::print(const std::string& message) {
     std::string timestamp = get_current_timestamp();
     log_file << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << message << std::endl;
     // Console gets colors
-    std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << GREEN << message << RESET << std::endl;
+    //std::cout << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << "[THREAD ID:" << std::to_string(pthread_self()) << "] " << GREEN << message << RESET << std::endl;
 }
 
 void ConsoleLogger::error(const std::string& message) {
@@ -88,5 +88,5 @@ void ConsoleLogger::error(const std::string& message) {
     std::string timestamp = get_current_timestamp();
     log_file << "[" << timestamp << "] - " << "ERROR: " "[PID:" << getpid() << "] " << message << std::endl;
     // Console gets colors
-    std::cerr << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << RED << "ERROR: " << message << RESET << std::endl;
+    //std::cerr << "[" << timestamp << "] - " << "[PID:" << getpid() << "] " << RED << "ERROR: " << message << RESET << std::endl;
 }

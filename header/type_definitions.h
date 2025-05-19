@@ -6,14 +6,22 @@
 #include "protocol.h"
 #include "communicator.h"
 
+
 typedef NIC<RawSocketEngine> EthernetNIC;
 typedef Protocol<EthernetNIC> EthernetProtocol;
 typedef Communicator<EthernetProtocol> EthernetCommunicator;
 
 typedef unsigned int ComponentDataType;
 
+enum InterestBroadcastType {
+    INTERNAL,
+    EXTERNAL,
+    BOTH
+};
+
 struct InterestData {
     ComponentDataType data_type;
+    InterestBroadcastType interest_broadcast_type;
     std::chrono::microseconds period;
     std::chrono::microseconds next_receive;
 };

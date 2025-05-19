@@ -10,20 +10,20 @@ Component::~Component() {}
 void Component::start() {
     if (_running) return;
     set_interests();
+    format_interests();
 
     _running = true;
     _running_thread = new PeriodicThread(
             std::bind(&Component::run, this), 
             static_cast<__u64>(std::chrono::microseconds(100 * 1000).count()),
-            static_cast<__u64>(std::chrono::microseconds(40 * 1000).count())
+            static_cast<__u64>(std::chrono::microseconds(80 * 1000).count())
         );
     _running_thread->start();
 }
 
 void Component::stop() {
     _running = false;
-    delete _running_thread;
-}
+    _running_thread->stop();}
 
 Ethernet::Address& Component::get_address() {
     return _vehicle->nic()->address();
@@ -41,19 +41,20 @@ int Component::get_value() {
     return _value;
 }
 
-std::vector<InterestData> Component::get_interests() {
-    std::vector<InterestData> interests;
-
+void Component::format_interests() {
     for (ComponentInterest component_interest : _interests) {
         InterestData data;
-        data.data_type = component_interest.first;
-        data.period = component_interest.second;
-        data.next_receive = component_interest.second;
+        data.data_type = component_interest.data_type;
+        data.interest_broadcast_type = component_interest.interest_broadcast_type;
+        data.period = component_interest.period;
+        data.next_receive = component_interest.period;
         
-        interests.push_back(data);
+        _formatted_interests.push_back(data);
     }
+}
 
-    return interests;
+std::vector<InterestData> Component::get_interests() {
+    return _formatted_interests;
 } 
 
 std::string Component::mac_to_string(Ethernet::Address& addr) {

@@ -25,7 +25,11 @@ class Vehicle;
 class Component 
 {
 public:
-    typedef std::pair<ComponentDataType, std::chrono::microseconds> ComponentInterest;
+    struct ComponentInterest {
+        ComponentDataType data_type;
+        std::chrono::microseconds period;
+        InterestBroadcastType interest_broadcast_type;
+    };
     
     Component(Vehicle* vehicle, const unsigned short& id);
     virtual ~Component();
@@ -43,6 +47,7 @@ public:
     ComponentDataType get_data_type();
     int get_value();
 
+    void format_interests();
     std::vector<InterestData> get_interests();
 
 protected:
@@ -55,6 +60,7 @@ protected:
     Queue<Message, 16> _receive_queue;
     ComponentDataType _data_type;
     std::vector<ComponentInterest> _interests;
+    std::vector<InterestData> _formatted_interests;
 
     std::atomic<int> _value;
 

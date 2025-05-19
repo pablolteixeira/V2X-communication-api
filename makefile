@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -fsanitize=address -g -std=c++11 -Wall -pthread
+CFLAGS = -std=c++11 -Wall -pthread
 INC = -I./include
 LDFLAGS = -pthread
 
