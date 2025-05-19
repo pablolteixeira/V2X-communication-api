@@ -39,9 +39,9 @@ private:
     std::thread _receive_thread;
     std::thread _send_thread;
 
-    EthernetCommunicator* _communicator[Traits<Component>::NUM_COMPONENTS];
-    Component* _components[Traits<Component>::NUM_COMPONENTS];
-    SmartData* _smart_datas[Traits<Component>::NUM_COMPONENTS];
+    EthernetCommunicator* _communicator[Traits<Vehicle>::NUM_COMPONENTS];
+    Component* _components[Traits<Vehicle>::NUM_COMPONENTS];
+    SmartData* _smart_datas[Traits<Vehicle>::NUM_COMPONENTS];
     
     Semaphore _semaphore;
     Queue<Message, 16> _queue;

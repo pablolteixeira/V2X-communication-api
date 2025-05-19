@@ -1,11 +1,11 @@
-#ifndef BREAK_COMPONENT_H
-#define BREAK_COMPONENT_H
+#ifndef GPS_COMPONENT_H
+#define GPS_COMPONENT_H
 
 #include "../component.h"
 
-class BreakComponent : public Component {
+class GPSComponent : public Component {
 public:
-    BreakComponent(Vehicle* vehicle, const unsigned short& id);
+    GPSComponent(Vehicle* vehicle, const unsigned short& id);
 
     void run() override;
 
@@ -16,4 +16,4 @@ public:
     void process_data(Message::ResponseMessage* data) override;
 };
 
-#endif // BREAK_COMPONENT_H
+#endif // GPS_COMPONENT_H

@@ -24,7 +24,8 @@ public:
 
 private:
     void receive();
-    void send_response();
+    void send_response_external();
+    void send_response_internal();
     void send_interest(InterestData& interest);
 
     bool _running;
@@ -32,10 +33,12 @@ private:
     Component* _component;
     std::thread _receive_thread;
     std::thread _send_thread;
-    PeriodicThread* _response_thread;
+    PeriodicThread* _external_response_thread;
+    PeriodicThread* _internal_response_thread;
     PeriodicThread* _interest_thread;
 
-    std::chrono::microseconds _period_time;
+    std::chrono::microseconds _period_time_external_response_thread;
+    std::chrono::microseconds _period_time_internal_response_thread;
     std::vector<InterestData> _interests;
 
     Semaphore _semaphore;

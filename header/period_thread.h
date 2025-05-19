@@ -36,7 +36,7 @@ private:
         int ret;
         unsigned int flags = 0;
         
-        printf("Periodic thread started [%ld]\n", gettid());
+        //printf("Periodic thread started [%ld]\n", gettid());
         
         // Set scheduler attributes
         attr.size = sizeof(attr);
@@ -65,27 +65,27 @@ private:
                 attr.sched_period = attr.sched_deadline = current_period;
                 ret = sched_setattr(0, &attr, flags);
                 if (ret < 0) {
-                    perror("sched_setattr (update)");
+                    perror("sched_setattr(update)");
                 }
             }
         }
         
-        printf("Periodic thread dies [%ld]\n", gettid());
+        //printf("Periodic thread dies [%ld]\n", gettid());
     }
     
 public:
     // Constructor
     PeriodicThread(std::function<void ()> function, __u64 period_microseconds, __u64 runtime_microseconds) 
-        : running(false), runtime_ns(runtime_microseconds), task_func(function) {
+        : running(false), task_func(function) {
             if(period_microseconds < 1000) {
                 period_microseconds = 1000;
             }
             if (runtime_microseconds > period_microseconds) {
-                runtime_microseconds = period_microseconds;
+                runtime_microseconds = (unsigned long long)(period_microseconds * 0.5);
             }
 
-            runtime_ns = runtime_microseconds * 1000;
-            period_ns = period_microseconds * 1000;
+            runtime_ns.store(runtime_microseconds * 1000);
+            period_ns.store(period_microseconds * 1000);
     }
     
     // Destructor
@@ -120,11 +120,7 @@ public:
     // Update the period
     void update(const __u64 new_period_microseconds) {
         period_ns.store(new_period_microseconds * 1000);
-    }
-    
-    // Update the runtime
-    void updateRuntime(const __u64 new_period_microseconds) {
-        runtime_ns.store(new_period_microseconds * 1000);
+        runtime_ns.store(new_period_microseconds * 1000 * 0.5);
     }
 };
 
