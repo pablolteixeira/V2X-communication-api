@@ -29,7 +29,7 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), 
     _components[2] = new ControllerComponent(this, 3);
     _components[3] = new SteeringComponent(this, 4);
 
-    for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++){
+    for(unsigned int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++){
         ConsoleLogger::log("New component");
         EthernetProtocol::Address component_addr(_nic->address(), i+1);
         _communicator[i] = new EthernetCommunicator(_protocol, component_addr);
@@ -57,13 +57,13 @@ void Vehicle::start() {
         ConsoleLogger::log("Running: " + std::to_string(_running));
     }
     ConsoleLogger::log("Starting Components");
-    for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
+    for(unsigned int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
         _components[i]->start();
     }
     ConsoleLogger::log("Components started");
 
     ConsoleLogger::log("Starting SmartDatas");
-    for(int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
+    for(unsigned int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
         _smart_datas[i]->start();
     }
     ConsoleLogger::log("SmartDatas started");

@@ -1,7 +1,7 @@
 #ifndef PERIODIC_THREAD_H
 #define PERIODIC_THREAD_H
 
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

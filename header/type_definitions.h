@@ -32,4 +32,15 @@ struct InterestData {
 //         +--+----+----+------+------+------+------+------+------+------+------+------+
 // Bits     1   2    2     3      3      3      3      3      3      3      3      3
 
+class ComponentDataTypes
+{
+public:
+    static const ComponentDataType METER_DATATYPE = 0b1 << 31 | 9 << 18;
+    static const ComponentDataType POSITION_DATA_TYPE = 0b1 << 31 | 10 << 18;
+    static const ComponentDataType ANGLE_DATA_TYPE = 0b1 << 31 | 11 << 18;
+    static const ComponentDataType DIGITAL_COMAND_TYPE = 0b0 << 31 | 1 << 24;
+};
+
+
+
 #endif // TYPE_DEFINITIONS_H

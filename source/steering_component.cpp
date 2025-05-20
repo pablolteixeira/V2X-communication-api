@@ -9,8 +9,8 @@ void SteeringComponent::run()
 
 SteeringComponent::SteeringComponent(Vehicle* vehicle, const unsigned short& id)
     : Component(vehicle, id), _command_value(0) {
-    // SI unit: angle (degrees) => 0b1 << 31 | 11 << 18;
-    _data_type = 0b1 << 31 | 11 << 18;  // Angle data type
+    // SI unit: angle (degrees) => ComponentDataTypes::ANGLE_DATA_TYPE;
+    _data_type = ComponentDataTypes::ANGLE_DATA_TYPE;  // Angle data type
 }
 
 void SteeringComponent::generate_data() {
@@ -28,7 +28,7 @@ void SteeringComponent::generate_data() {
 
 void SteeringComponent::set_interests() {
     // Interested in Controller command data
-    ComponentDataType controller_data_type = 0b0 << 31 | 1 << 24;
+    ComponentDataType controller_data_type = ComponentDataTypes::DIGITAL_COMAND_TYPE;
     _interests.push_back({controller_data_type, std::chrono::microseconds(100 * 1000), InterestBroadcastType::INTERNAL});
 }
 

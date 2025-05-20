@@ -28,8 +28,6 @@ int main() {
     ConsoleLogger::print("Parent process: " + std::to_string(getpid()));
     std::cout.setf(std::ios_base::unitbuf);
 
-    EthernetProtocol* protocol = EthernetProtocol::get_instance();
-
     auto start_time = std::chrono::steady_clock::now();
 
     while (true) {

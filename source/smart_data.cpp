@@ -119,7 +119,7 @@ void SmartData::receive() {
                 ConsoleLogger::log(std::to_string(_component->get_interests().size()) + "Interests for this component");
                 for (InterestData data : _component->get_interests()) {
                     if (response_payload->type == data.data_type) {
-                        std::string type_string = response_payload->origin.mac == _component->get_address() ? "Internal" : "External";
+                        std::string type_string = (response_payload->origin.mac) == _component->get_address() ? "Internal" : "External";
 
                         auto now = std::chrono::system_clock::now();
                         auto now_micro = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());

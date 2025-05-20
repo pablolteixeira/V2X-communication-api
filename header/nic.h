@@ -209,10 +209,10 @@ private:
 private:
     //Statistics _statistics;
     BufferPool<Ethernet::Frame, BUFFER_SIZE> _buffer_pool;
-    Address _address;
-    bool _running;
-    std::thread _worker_thread;
     Semaphore _data_semaphore;
+    bool _running;
+    Address _address;
+    std::thread _worker_thread;
 };
 
 template <typename Engine>

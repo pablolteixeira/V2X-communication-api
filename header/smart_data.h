@@ -29,19 +29,21 @@ private:
     void send_interest(InterestData& interest);
 
     bool _running;
-    EthernetCommunicator* _communicator;
     Component* _component;
+    EthernetCommunicator* _communicator;
+    Semaphore _semaphore;
+    std::chrono::microseconds _period_time_internal_response_thread;
+    std::chrono::microseconds _period_time_external_response_thread;
+
+    PeriodicThread* _internal_response_thread;
+    PeriodicThread* _external_response_thread;
+    PeriodicThread* _interest_thread;
+    
     std::thread _receive_thread;
     std::thread _send_thread;
-    PeriodicThread* _external_response_thread;
-    PeriodicThread* _internal_response_thread;
-    PeriodicThread* _interest_thread;
 
-    std::chrono::microseconds _period_time_external_response_thread;
-    std::chrono::microseconds _period_time_internal_response_thread;
     std::vector<InterestData> _interests;
 
-    Semaphore _semaphore;
     Queue<int, 32> _queue;
 };
 

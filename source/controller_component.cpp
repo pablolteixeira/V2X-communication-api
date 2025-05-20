@@ -11,7 +11,7 @@ void ControllerComponent::run()
 ControllerComponent::ControllerComponent(Vehicle* vehicle, const unsigned short& id)
     : Component(vehicle, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
     // Command data type (not an SI unit)
-    _data_type = 0b0 << 31 | 1 << 24;  // Digital command type
+    _data_type = ComponentDataTypes::DIGITAL_COMAND_TYPE;  // Digital command type
 }
 
 void ControllerComponent::generate_data() {
@@ -30,7 +30,7 @@ void ControllerComponent::generate_data() {
 void ControllerComponent::set_interests() {
     ConsoleLogger::log("Calling from inside set interests");
     // Interested in Lidar data (from own vehicle)
-    ComponentDataType lidar_data_type = 0b1 << 31 | 9 << 18;
+    ComponentDataType lidar_data_type = ComponentDataTypes::METER_DATATYPE;
     ComponentInterest comp_lidar = {
         lidar_data_type,
         std::chrono::microseconds(100 * 1000),
@@ -39,7 +39,7 @@ void ControllerComponent::set_interests() {
     _interests.push_back(comp_lidar);
     
     // Interested in GPS data (from own vehicle)
-    ComponentDataType gps_data_type = 0b1 << 31 | 10 << 18;
+    ComponentDataType gps_data_type = ComponentDataTypes::POSITION_DATA_TYPE;
     ComponentInterest comp_gps_int = {
         gps_data_type, 
         std::chrono::microseconds(200 * 1000), 
@@ -48,7 +48,7 @@ void ControllerComponent::set_interests() {
     _interests.push_back(comp_gps_int);
     
     // Interested in external GPS data
-    ComponentDataType ext_gps_data_type = 0b1 << 31 | 10 << 18;
+    ComponentDataType ext_gps_data_type = ComponentDataTypes::POSITION_DATA_TYPE;
 
     //std::chrono::microseconds period = getpid() % 2 == 0 ? std::chrono::microseconds(300 * 1000) : std::chrono::microseconds(200 * 1000);  
 
@@ -65,10 +65,10 @@ void ControllerComponent::process_data(Message::ResponseMessage* data) {
     
     bool is_internal = memcmp(data->origin.mac, get_address(), 6) == 0;
     
-    if (data_type == (0b1 << 31 | 9 << 18)) {
+    if (data_type == (ComponentDataTypes::METER_DATATYPE)) {
         _lidar_value = data->value;
         ConsoleLogger::log("Received Lidar data: " + std::to_string(_lidar_value));
-    } else if (data_type == (0b1 << 31 | 10 << 18)) {
+    } else if (data_type == (ComponentDataTypes::POSITION_DATA_TYPE)) {
         // GPS data
         if (is_internal) {
             // Own GPS data

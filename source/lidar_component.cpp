@@ -11,7 +11,7 @@ void LidarComponent::run()
 LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned short& id)
     : Component(vehicle, id) {
     // SI unit: meter => m+1 => 0b101 (5) => m+4 = 9
-    _data_type = 0b1 << 31 | 9 << 18;  // Only m+4 is set
+    _data_type = ComponentDataTypes::METER_DATATYPE;  // Only m+4 is set
 }
 
 void LidarComponent::generate_data() {

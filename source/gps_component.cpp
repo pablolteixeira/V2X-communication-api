@@ -10,8 +10,8 @@ void GPSComponent::run()
 
 GPSComponent::GPSComponent(Vehicle* vehicle, const unsigned short& id)
     : Component(vehicle, id) {
-    // SI unit: position (lat/long) => 0b1 << 31 | 10 << 18; // Representing position data
-    _data_type = 0b1 << 31 | 10 << 18;  // Position data type
+    // SI unit: position (lat/long) => ComponentDataTypes::POSITION_DATA_TYPE; // Representing position data
+    _data_type = ComponentDataTypes::POSITION_DATA_TYPE;  // Position data type
 }
 
 void GPSComponent::generate_data() {    

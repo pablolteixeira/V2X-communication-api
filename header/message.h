@@ -121,9 +121,9 @@ public:
     }
 
 private:
+    unsigned char* _buffer;     // Dynamic array of bytes
     size_t _size;               // Current message size
     size_t _max_size;           // Maximum capacity
-    unsigned char* _buffer;     // Dynamic array of bytes
 };
 
 #endif // MESSAGE_H
