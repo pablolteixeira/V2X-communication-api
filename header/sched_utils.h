@@ -3,9 +3,11 @@
 
 #include <linux/kernel.h>
 #include <linux/types.h>
+#include <linux/unistd.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sched.h>
 
 #define gettid() syscall(__NR_gettid)
 #define SCHED_DEADLINE 6
@@ -26,7 +28,7 @@
 #define __NR_sched_getattr 381
 #endif
 
-struct sched_attr {
+struct pt_sched_attr {
     __u32 size;
     __u32 sched_policy;
     __u64 sched_flags;
@@ -37,7 +39,7 @@ struct sched_attr {
     __u64 sched_period;
 };
 
-int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags);
-int sched_getattr(pid_t pid, struct sched_attr *attr, unsigned int size, unsigned int flags);
+int sched_setattr(pid_t pid, const struct pt_sched_attr *attr, unsigned int flags);
+int sched_getattr(pid_t pid, struct pt_sched_attr *attr, unsigned int size, unsigned int flags);
 
 #endif // SCHED_UTILS_H

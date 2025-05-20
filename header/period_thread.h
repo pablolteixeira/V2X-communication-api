@@ -32,7 +32,7 @@ private:
     }
     
     void executeThread() {
-        struct sched_attr attr;
+        struct pt_sched_attr attr;
         int ret;
         unsigned int flags = 0;
         
