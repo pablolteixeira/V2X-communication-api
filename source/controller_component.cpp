@@ -63,7 +63,7 @@ void ControllerComponent::set_interests() {
 void ControllerComponent::process_data(Message::ResponseMessage* data) {
     ComponentDataType data_type = data->type;
     
-    bool is_internal = memcmp(data->origin.mac, get_address(), 6) == 0;
+    bool is_internal = Ethernet::address_to_string(data->origin.mac) == Ethernet::address_to_string(get_address());
     
     if (data_type == (ComponentDataTypes::METER_DATATYPE)) {
         _lidar_value = data->value;

@@ -52,6 +52,7 @@ void SmartData::send_interests() {
 }
 
 void SmartData::receive() {
+    std::string component_address = Ethernet::address_to_string(_component->get_address());
     Message* msg = new Message();
 
     while (_running) {
@@ -67,7 +68,7 @@ void SmartData::receive() {
             case Message::Type::INTEREST: {
                 auto* interest_payload = msg->get_payload<Message::InterestMessage>();
 
-                bool is_internal = memcmp(interest_payload->origin.mac, _component->get_address(), 6) == 0;
+                bool is_internal = Ethernet::address_to_string(interest_payload->origin.mac) == component_address;
                 
                 if(is_internal){
                     if (_internal_response_thread == nullptr) {
@@ -119,7 +120,7 @@ void SmartData::receive() {
                 ConsoleLogger::log(std::to_string(_component->get_interests().size()) + "Interests for this component");
                 for (InterestData data : _component->get_interests()) {
                     if (response_payload->type == data.data_type) {
-                        std::string type_string = (response_payload->origin.mac) == _component->get_address() ? "Internal" : "External";
+                        std::string type_string = Ethernet::address_to_string(response_payload->origin.mac) == component_address ? "Internal" : "External";
 
                         auto now = std::chrono::system_clock::now();
                         auto now_micro = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
@@ -164,7 +165,7 @@ void SmartData::send_response_external() {
 
     Origin origin = Origin {
         *_component->get_address(),
-        _component->id()
+        static_cast<unsigned char>(_component->id())
     };
 
     response_payload.origin = origin;
