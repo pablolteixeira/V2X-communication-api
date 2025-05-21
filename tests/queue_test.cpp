@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../header/queue.hpp"  // Supondo que a classe Queue esteja definida neste arquivo
+#include "../header/queue.h"  // Supondo que a classe Queue esteja definida neste arquivo
 
 bool test_queue_add() {
     Queue<int, 3> q;
