@@ -30,6 +30,14 @@ int main() {
 
     auto start_time = std::chrono::steady_clock::now();
 
+    std::cout << "\n---------------------------------------------------------------" << std::endl;
+    std::cout << "Running MAIN Simulation" << std::endl;
+    std::cout << "PARAMETERS:" << std::endl;
+    std::cout << "Simulation runtime: " << MAX_RUNTIME_SECONDS << "s" << std::endl;
+    std::cout << "Vehicle spawn interval: " << SPAWN_INTERVAL_MS << "ms" << std::endl;
+    std::cout << "Vehicle lifetime span: " << MIN_LIFETIME << " | " << MAX_LIFETIME << " s" << std::endl;
+    std::cout << "\n---------------------------------------------------------------\n" << std::endl;
+
     while (true) {
         // Check if the parent should stop
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
