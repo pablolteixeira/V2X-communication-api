@@ -32,7 +32,7 @@ private:
     }
     
     void executeThread() {
-        struct pt_sched_attr attr;
+        struct VehicleSched::sched_attr attr;
         int ret;
         unsigned int flags = 0;
         
@@ -47,7 +47,7 @@ private:
         attr.sched_runtime = runtime_ns.load();
         attr.sched_period = attr.sched_deadline = period_ns.load();
         
-        ret = sched_setattr(0, &attr, flags);
+        ret = VehicleSched::sched_setattr(0, &attr, flags);
         if (ret < 0) {
             perror("sched_setattr");
             return;
@@ -63,7 +63,7 @@ private:
             __u64 current_period = period_ns.load();
             if (current_period != attr.sched_period) {
                 attr.sched_period = attr.sched_deadline = current_period;
-                ret = sched_setattr(0, &attr, flags);
+                ret = VehicleSched::sched_setattr(0, &attr, flags);
                 if (ret < 0) {
                     perror("sched_setattr(update)");
                 }
