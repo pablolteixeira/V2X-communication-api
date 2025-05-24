@@ -8,6 +8,7 @@
 #include "protocol.h"
 #include "buffer_pool.h"
 #include "semaphore.h"
+#include "time_keeper.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -58,6 +59,8 @@ public:
         fcntl(Engine::_socket, F_SETFL, flags | O_ASYNC | O_NONBLOCK);
         fcntl(Engine::_socket, F_SETOWN, getpid());
         
+        _time_keeper = new TimeKeeper();
+
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
     ~NIC() {}
@@ -91,11 +94,13 @@ public:
         bool is_local_broadcast = memcmp(frame->data(), frame->data() + 8, 6) == 0;
 
         if (is_local_broadcast) {
-            //ConsoleLogger::log("IT'S EQUAL");
             notify(prot, buf);
             ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
         } else {
+            auto now = _time_keeper->get_system_timestamp();
+            frame->footer()->set_timestamp(now);
+
             int result = Engine::raw_send(
                 frame->header()->h_dest, 
                 prot, 
@@ -154,23 +159,27 @@ private:
             ConsoleLogger::log("PROCESS INCOMING DATA");
             Address src;
             Protocol_Number prot;
+            Footer footer;
             
             // Get a free buffer
-            NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header));
+            NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer));
             if (!buf) {
                 ConsoleLogger::error("No buffers available for incoming data");
                 return;
             }
             
             Ethernet::Frame* frame = buf->frame();
-            int size = Engine::raw_receive(&src, &prot, frame->data(), 
-                                        Ethernet::MTU - sizeof(Ethernet::Header));
+            int size = Engine::raw_receive(&src, &prot, &footer, frame->data(), 
+                                        Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer));
 
             if (size > 0) {
                 // Successful read
                 buf->size(size + sizeof(Ethernet::Header));
+                auto t = _time_keeper->get_local_timestamp();
                 if (!notify(prot, buf)) {
                     free(buf);
+                } else {
+                    _time_keeper->update_time_keeper(footer.get_timestamp() , t);
                 }
             } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
                 // No more data available
@@ -213,6 +222,7 @@ private:
     bool _running;
     Address _address;
     std::thread _worker_thread;
+    TimeKeeper* _time_keeper;
 };
 
 template <typename Engine>

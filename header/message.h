@@ -2,8 +2,9 @@
 #define MESSAGE_H
 
 #include <cstddef>
-#include "ethernet.h"
 #include <chrono>
+#include "ethernet.h"
+#include "type_definitions.h"
 
 struct Origin {
     Ethernet::Address mac;
@@ -75,12 +76,14 @@ public:
         Origin origin;
         unsigned int type;
         std::chrono::microseconds period;
+        U64 timestamp;
     };
 
     struct ResponseMessage {
         Origin origin;
         unsigned int type;
         int value;
+        U64 timestamp;
     };
 
     // Constructor with a specified maximum size

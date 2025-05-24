@@ -1,8 +1,8 @@
 #include "../header/component.h"
 #include "../header/vehicle.h"
 
-Component::Component(Vehicle* vehicle, const unsigned short& id)
-    : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {
+Component::Component(Vehicle* vehicle, SmartData* sd, const unsigned short& id)
+    : _id(id), _running(false), _semaphore(0), _vehicle(vehicle), _smart_data(sd) {
     }
 
 Component::~Component() {}
@@ -10,7 +10,6 @@ Component::~Component() {}
 void Component::start() {
     if (_running) return;
     set_interests();
-    format_interests();
 
     _running = true;
     _running_thread = new PeriodicThread(
@@ -41,20 +40,8 @@ int Component::get_value() {
     return _value;
 }
 
-void Component::format_interests() {
-    for (ComponentInterest component_interest : _interests) {
-        InterestData data;
-        data.data_type = component_interest.data_type;
-        data.interest_broadcast_type = component_interest.interest_broadcast_type;
-        data.period = component_interest.period;
-        data.next_receive = component_interest.period;
-        
-        _formatted_interests.push_back(data);
-    }
-}
-
 std::vector<InterestData> Component::get_interests() {
-    return _formatted_interests;
+    return _interests;
 } 
 
 std::string Component::mac_to_string(Ethernet::Address& addr) {

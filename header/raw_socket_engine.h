@@ -91,7 +91,7 @@ protected:
         return bytes_sent - sizeof(Ethernet::Header);
     }
     
-    int raw_receive(Ethernet::Address* src, Ethernet::Protocol* prot, void* data, unsigned int size) {
+    int raw_receive(Ethernet::Address* src, Ethernet::Protocol* prot, Ethernet::Footer* footer, void* data, unsigned int size) {
         ConsoleLogger::print("Raw Socker Engine: Receive started.");  
         Ethernet::Frame frame;
         int bytes_received = recvfrom(_socket, &frame, sizeof(frame), 0, NULL, NULL);
@@ -101,6 +101,7 @@ protected:
         
         memcpy(src, frame.header()->h_source, ETH_ALEN);
         *prot = ntohs(frame.header()->h_proto);
+        memcpy(footer, frame.footer(), sizeof(Ethernet::Footer));
         ConsoleLogger::print("Raw Socket Engine: Receive PROTO -> " + std::to_string(*prot));
         int data_size = bytes_received - sizeof(Ethernet::Header);
         if(data_size > 0) {

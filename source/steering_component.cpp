@@ -28,8 +28,15 @@ void SteeringComponent::generate_data() {
 
 void SteeringComponent::set_interests() {
     // Interested in Controller command data
+    std::chrono::microseconds period = std::chrono::microseconds(100 * 1000);
     ComponentDataType controller_data_type = ComponentDataTypes::DIGITAL_COMAND_TYPE;
-    _interests.push_back({controller_data_type, std::chrono::microseconds(100 * 1000), InterestBroadcastType::INTERNAL});
+    InterestData dig_command_int = {
+        controller_data_type,
+        InterestBroadcastType::INTERNAL,
+        period,
+        period
+    };
+    _interests.push_back(dig_command_int);
 }
 
 void SteeringComponent::process_data(Message::ResponseMessage* data) {

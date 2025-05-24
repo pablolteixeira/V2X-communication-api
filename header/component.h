@@ -11,6 +11,7 @@
 #include "semaphore.h"
 #include "type_definitions.h"
 #include "period_thread.h"
+#include "smart_data.h"
 #include <chrono>
 
 struct ComponentMessage {
@@ -25,13 +26,7 @@ class Vehicle;
 class Component 
 {
 public:
-    struct ComponentInterest {
-        ComponentDataType data_type;
-        std::chrono::microseconds period;
-        InterestBroadcastType interest_broadcast_type;
-    };
-    
-    Component(Vehicle* vehicle, const unsigned short& id);
+    Component(Vehicle* vehicle, SmartData* sd, const unsigned short& id);
     virtual ~Component();
 
     void start();
@@ -47,7 +42,6 @@ public:
     ComponentDataType get_data_type();
     int get_value();
 
-    void format_interests();
     std::vector<InterestData> get_interests();
 
 protected:
@@ -59,12 +53,12 @@ protected:
 
     Queue<Message, 16> _receive_queue;
     ComponentDataType _data_type;
-    std::vector<ComponentInterest> _interests;
-    std::vector<InterestData> _formatted_interests;
+    std::vector<InterestData> _interests;
 
     std::atomic<int> _value;
 
     Vehicle* _vehicle;
+    SmartData* _smart_data;
 
 private:
     std::string mac_to_string(Ethernet::Address& addr);

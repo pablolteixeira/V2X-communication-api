@@ -9,7 +9,7 @@ void ControllerComponent::run()
 }
 
 ControllerComponent::ControllerComponent(Vehicle* vehicle, const unsigned short& id)
-    : Component(vehicle, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
+    : Component(vehicle, sd, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
     // Command data type (not an SI unit)
     _data_type = ComponentDataTypes::DIGITAL_COMAND_TYPE;  // Digital command type
 }
@@ -29,21 +29,26 @@ void ControllerComponent::generate_data() {
 
 void ControllerComponent::set_interests() {
     ConsoleLogger::log("Calling from inside set interests");
+    std::chrono::microseconds period = std::chrono::microseconds(100 * 1000);
+
     // Interested in Lidar data (from own vehicle)
     ComponentDataType lidar_data_type = ComponentDataTypes::METER_DATATYPE;
-    ComponentInterest comp_lidar = {
+    InterestData comp_lidar = {
         lidar_data_type,
-        std::chrono::microseconds(100 * 1000),
-        InterestBroadcastType::INTERNAL
+        InterestBroadcastType::INTERNAL,
+        period,
+        period
     };
     _interests.push_back(comp_lidar);
     
+    period = std::chrono::microseconds(200 * 1000);
     // Interested in GPS data (from own vehicle)
     ComponentDataType gps_data_type = ComponentDataTypes::POSITION_DATA_TYPE;
-    ComponentInterest comp_gps_int = {
+    InterestData comp_gps_int = {
         gps_data_type, 
-        std::chrono::microseconds(200 * 1000), 
-        InterestBroadcastType::INTERNAL
+        InterestBroadcastType::INTERNAL,
+        period,
+        period
     };
     _interests.push_back(comp_gps_int);
     
@@ -52,10 +57,11 @@ void ControllerComponent::set_interests() {
 
     //std::chrono::microseconds period = getpid() % 2 == 0 ? std::chrono::microseconds(300 * 1000) : std::chrono::microseconds(200 * 1000);  
 
-    ComponentInterest comp_gps_ext = {
-        ext_gps_data_type, 
-        std::chrono::microseconds(200 * 1000), 
-        InterestBroadcastType::EXTERNAL
+    InterestData comp_gps_ext = {
+        ext_gps_data_type,  
+        InterestBroadcastType::EXTERNAL,
+        period,
+        period
     };
     _interests.push_back(comp_gps_ext);
 }

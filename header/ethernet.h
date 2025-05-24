@@ -12,6 +12,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include "types.h"
+
 // Network
 class Ethernet 
 {
@@ -22,7 +24,20 @@ public:
     typedef struct ethhdr Header;
     typedef unsigned char Address[ETH_ALEN];
     typedef unsigned short Protocol;
-    
+
+    class Footer 
+    {
+    public:
+        Footer() {}
+        Footer(U64 t) : _timestamp(t) {}
+
+        U64 get_timestamp() { return _timestamp; }
+        void set_timestamp(U64 timestamp) {_timestamp = timestamp; }
+
+    private:
+        U64 _timestamp;
+    };
+
     class Frame 
     {
     public:
@@ -34,11 +49,13 @@ public:
         }
         
         Header* header() { return &_header; }
+        Footer* footer() { return &_footer; }
         unsigned char* data() { return _data; }
         
     private:
         Header _header;
-        unsigned char _data[ETH_FRAME_LEN - sizeof(Header)];
+        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Footer)];
+        Footer _footer;
     };
     
     static std::string address_to_string(Address addr) {
