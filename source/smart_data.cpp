@@ -3,8 +3,13 @@
 #include "../header/message.h"
 #include "../header/period_thread.h"
 
-SmartData::SmartData(EthernetCommunicator* communicator) 
-    : _running(false), _communicator(communicator), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _internal_response_thread(nullptr), _external_response_thread(nullptr) {
+SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
+    : _running(false), _id(id), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _internal_response_thread(nullptr), _external_response_thread(nullptr) 
+{
+    EthernetProtocol::Address component_addr(nic_address, id);
+    
+    _communicator = new EthernetCommunicator(EthernetProtocol::get_instance(), component_addr);
+    
     _interest_thread = new PeriodicThread(
         std::bind(&SmartData::send_interests, this),
         static_cast<__u64>(std::chrono::milliseconds(500).count() * 1000),
@@ -41,27 +46,30 @@ void SmartData::stop() {
     }
 }
 
-void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, GetIdCallback get_id) {
+void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data) {
     _get_interests = get_cb;
     _get_data = get_data;
-    _get_id = get_id;
     _get_address = get_add;
+    _process_data = p_data;
+
+    Ethernet::Address address;
+    memcpy(address, _get_address(), 6);
+
+    EthernetProtocol::Address from(address, _id);
+    EthernetProtocol::Address* to;
 
     for (auto interest : _get_interests()) {
-        EthernetProtocol::Address from(component->get_address(), component->id());
-        EthernetProtocol::Address* to;
-        
         if (interest.interest_broadcast_type == InterestBroadcastType::EXTERNAL) {
             to = new EthernetProtocol::Address(EthernetProtocol::Address::BROADCAST_MAC, 0);
         } else {
-            to = new EthernetProtocol::Address(_get_address(), 0);
+            to = new EthernetProtocol::Address(address, 0);
         }
         
         Message::InterestMessage interest_payload;
         
         Origin origin;
         memcpy(origin.mac, _get_address(), 6);
-        origin.port = _get_id();
+        origin.port = _id;
         
         interest_payload.origin = origin;
         interest_payload.type = interest.data_type;
@@ -71,8 +79,9 @@ void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback 
         Message* msg = new Message();
         msg->set_type(Message::Type::INTEREST);
         msg->set_payload(interest_payload);
-
-        _interest_messages.push_back((msg, to));
+        
+        MessageAddressPair interest_message = std::make_pair(msg, to); 
+        _interest_messages.push_back(interest_message);
     }
 
 
@@ -87,7 +96,7 @@ void SmartData::send_interests() {
 }
 
 // void SmartData::receive() {
-//     std::string component_address = Ethernet::address_to_string(_component->get_address());
+//     std::string component_address = Ethernet::address_to_string(_get_address());
 //     Message* msg = new Message();
 
 //     while (_running) {
@@ -187,7 +196,7 @@ void SmartData::send_interests() {
 
 // Modified receive function to register interests
 void SmartData::receive() {
-    std::string component_address = Ethernet::address_to_string(_component->get_address());
+    std::string component_address = Ethernet::address_to_string(*_get_address());
     Message* msg = new Message();
 
     while (_running) {
@@ -199,102 +208,125 @@ void SmartData::receive() {
         Message::MessageHeader* header = msg->get_header();
         ConsoleLogger::log("Smart data receiving -> " + std::to_string(header->type));
 
-        if () {
-            switch(header->type) {
-                case Message::Type::INTEREST: {
-                    
-                    auto* interest_payload = msg->get_payload<Message::InterestMessage>();
-                    bool is_internal = Ethernet::address_to_string(interest_payload->origin.mac) == component_address;
-                    
-                    // Register the interest
-                    interest_table.register_interest(
-                        interest_payload->origin,
-                        interest_payload->type,
-                        interest_payload->period,
-                        is_internal
-                    );
+        switch(header->type) {
+            case Message::Type::INTEREST: {
+                
+                auto* interest_payload = msg->get_payload<Message::InterestMessage>();
+                bool is_internal = Ethernet::address_to_string(interest_payload->origin.mac) == component_address;
+                
+                // Register the interest
+                _interest_table.register_interest(
+                    interest_payload->origin,
+                    interest_payload->type,
+                    interest_payload->period,
+                    is_internal
+                );
 
-                    // Calculate new GCD period using the registry
-                    auto new_period = interest_table.calculate_gcd_period();
-                    
-                    if(is_internal){
-                        if (_internal_response_thread == nullptr) {
-                            _period_time_internal_response_thread = new_period;
-                            ConsoleLogger::log("SmartData: Internal Interest arrived and response thread not initialized");
-                            ConsoleLogger::log("SmartData: Initial Internal response period -> " + std::to_string(_period_time_internal_response_thread.count()) + " microseconds.");
-                            
-                            _internal_response_thread = new PeriodicThread(
-                                std::bind(&SmartData::send_response_internal, this), 
-                                static_cast<__u64>(_period_time_internal_response_thread.count()),
-                                static_cast<__u64>((unsigned long long)(_period_time_internal_response_thread.count() * 0.5))
-                            );
-                            _internal_response_thread->start();
-                        } else {
-                            ConsoleLogger::log("SmartData: Internal Interest arrived and response thread initialized");
-                            
-                            if (_period_time_internal_response_thread != new_period) {
-                                _period_time_internal_response_thread = new_period;
-                                ConsoleLogger::log("SmartData: Updating Internal response period -> " + std::to_string(_period_time_internal_response_thread.count()) + " microseconds.");
-                                _internal_response_thread->update(_period_time_internal_response_thread.count());
-                            }
-                        }
+                // Calculate new GCD period using the registry
+                auto new_period = _interest_table.calculate_gcd_period(is_internal);
+                
+                if(is_internal){
+                    if (_internal_response_thread == nullptr) {
+                        _period_time_internal_response_thread = new_period;
+                        ConsoleLogger::log("SmartData: Internal Interest arrived and response thread not initialized");
+                        ConsoleLogger::log("SmartData: Initial Internal response period -> " + std::to_string(_period_time_internal_response_thread.count()) + " microseconds.");
+                        
+                        _internal_response_thread = new PeriodicThread(
+                            std::bind(&SmartData::send_response_internal, this), 
+                            static_cast<__u64>(_period_time_internal_response_thread.count()),
+                            static_cast<__u64>((unsigned long long)(_period_time_internal_response_thread.count() * 0.5))
+                        );
+                        _internal_response_thread->start();
                     } else {
-                        if (_external_response_thread == nullptr) {
-                            _period_time_external_response_thread = new_period;
-                            ConsoleLogger::log("SmartData: External interest arrived and response thread not initialized");
-
-                            _external_response_thread = new PeriodicThread(
-                                std::bind(&SmartData::send_response_external, this), 
-                                static_cast<__u64>(_period_time_external_response_thread.count()),
-                                static_cast<__u64>((unsigned long long)(_period_time_external_response_thread.count() * 0.5))
-                            );
-                            _external_response_thread->start();
-                        } else {
-                            ConsoleLogger::log("SmartData: External Interest arrived and response thread initialized");
-                            
-                            if (_period_time_external_response_thread != new_period) {
-                                _period_time_external_response_thread = new_period;
-                                ConsoleLogger::log("SmartData: Updating External response period -> " + std::to_string(_period_time_external_response_thread.count()) + " microseconds.");
-                                _external_response_thread->update(_period_time_external_response_thread.count());
-                            }
+                        ConsoleLogger::log("SmartData: Internal Interest arrived and response thread initialized");
+                        
+                        if (_period_time_internal_response_thread != new_period) {
+                            _period_time_internal_response_thread = new_period;
+                            ConsoleLogger::log("SmartData: Updating Internal response period -> " + std::to_string(_period_time_internal_response_thread.count()) + " microseconds.");
+                            _internal_response_thread->update(_period_time_internal_response_thread.count());
                         }
                     }
-                    break;
+                } else {
+                    if (_external_response_thread == nullptr) {
+                        _period_time_external_response_thread = new_period;
+                        ConsoleLogger::log("SmartData: External interest arrived and response thread not initialized");
+
+                        _external_response_thread = new PeriodicThread(
+                            std::bind(&SmartData::send_response_external, this), 
+                            static_cast<__u64>(_period_time_external_response_thread.count()),
+                            static_cast<__u64>((unsigned long long)(_period_time_external_response_thread.count() * 0.5))
+                        );
+                        _external_response_thread->start();
+                    } else {
+                        ConsoleLogger::log("SmartData: External Interest arrived and response thread initialized");
+                        
+                        if (_period_time_external_response_thread != new_period) {
+                            _period_time_external_response_thread = new_period;
+                            ConsoleLogger::log("SmartData: Updating External response period -> " + std::to_string(_period_time_external_response_thread.count()) + " microseconds.");
+                            _external_response_thread->update(_period_time_external_response_thread.count());
+                        }
+                    }
                 }
-            // ... rest of the cases ...
+                break;
             }
+            case Message::Type::RESPONSE: {
+                auto*  response_payload = msg->get_payload<Message::ResponseMessage>();
+                ConsoleLogger::log("SmartData: Response arrived");
+                ConsoleLogger::log(std::to_string(_get_interests().size()) + "Interests for this component");
+                for (InterestData data : _get_interests()) {
+                    if (response_payload->type == data.data_type) {
+                        std::string type_string = Ethernet::address_to_string(response_payload->origin.mac) == component_address ? "Internal" : "External";
+
+                        auto now = std::chrono::system_clock::now();
+                        auto now_micro = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
+
+                        if (now_micro >= data.next_receive * 1.2) {
+                            ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: received " + type_string + " response message - value = " + std::to_string(response_payload->value) + " and using it.");
+                        } else {
+                            data.next_receive += data.period;
+                            ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: received " + type_string + " response message - value = " + std::to_string(response_payload->value) +  " but descarting it.");
+                        }
+
+                        _process_data(response_payload);
+
+                        break;
+                    }
+                }
+
+                ConsoleLogger::log("SmartData: Not interest found in this type");
+                break;
+            }
+            default:
+                ConsoleLogger::log("SmartData: Message with unknown type");
+                break;
         }
     }
 
     delete msg;
 }
 
-// Optional: Periodic cleanup of old interests
-void cleanup_old_interests() {
-    interest_table.cleanup_old_interests(std::chrono::seconds(600)); // 10 minutes timeout
-}
-
 
 void SmartData::send_response_external() {
     if (!_running) return;
 
-    ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: Sending Response External, Value: " + std::to_string(_component->get_value()));
-    EthernetProtocol::Address from(_component->get_address(), _component->id());
+    ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: Sending Response External, Value: " + std::to_string(_get_data()));
+    Ethernet::Address address;
+    memcpy(address, _get_address(), 6);
+    EthernetProtocol::Address from(address, _id);
     EthernetProtocol::Address to(EthernetProtocol::Address::BROADCAST_MAC, 0);
 
-    int value = _component->get_value();
+    int value = _get_data();
 
     Message* msg = new Message();
 
     Message::ResponseMessage response_payload;
 
-    Origin origin = Origin {
-        *_component->get_address(),
-        static_cast<unsigned char>(_component->id())
-    };
+    Origin origin;
+    memcpy(origin.mac, _get_address(), 6);
+    origin.port = _id;
 
     response_payload.origin = origin;
-    response_payload.type = _component->get_data_type();
+    response_payload.type = _data_type;
     response_payload.value = value;
 
     msg->set_type(Message::Type::RESPONSE);
@@ -308,22 +340,24 @@ void SmartData::send_response_external() {
 void SmartData::send_response_internal() {
     if (!_running) return;
 
-    ConsoleLogger::log("SmartData [" + std::to_string(_component->id()) + "]: Sending Response Internal, Value: " + std::to_string(_component->get_value()));
-    EthernetProtocol::Address from(_component->get_address(), _component->id());
-    EthernetProtocol::Address to(_component->get_address(), 0);
+    ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: Sending Response Internal, Value: " + std::to_string(_get_data()));
+    Ethernet::Address address;
+    memcpy(address, _get_address(), 6);
+    EthernetProtocol::Address from(address, _id);
+    EthernetProtocol::Address to(address, 0);
 
-    int value = _component->get_value();
+    int value = _get_data();
 
     Message* msg = new Message();
 
     Message::ResponseMessage response_payload;
 
     Origin origin;
-    memcpy(origin.mac, _component->get_address(), 6);
-    origin.port = _component->id();
+    memcpy(origin.mac, _get_address(), 6);
+    origin.port = _id;
 
     response_payload.origin = origin;
-    response_payload.type = _component->get_data_type();
+    response_payload.type = _data_type;
     response_payload.value = value;
     response_payload.timestamp = 0;
 
@@ -335,9 +369,11 @@ void SmartData::send_response_internal() {
     delete msg;
 }
 
-void SmartData::send_interest(std::pair<Message*, Ethernet::Address> interest) {
-    EthernetProtocol::Address
-    Origin origin = reinterpret_cast<Message::InterestMessage*>(interest)->origin;
-    EthernetProtocol::Address from(origin.mac, origin.port)
-    _communicator->send(interest, from, *to);
+void SmartData::send_interest(MessageAddressPair interest) {
+    
+    EthernetProtocol::Address* to = interest.second;
+    Origin origin = reinterpret_cast<Message::InterestMessage*>(interest.first)->origin;
+    EthernetProtocol::Address from(origin.mac, origin.port);
+
+    _communicator->send(interest.first, from, *to);
 }

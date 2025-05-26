@@ -1,40 +1,47 @@
 #ifndef SMART_DATA_H
 #define SMART_DATA_H
 
-#include "type_definitions.h"
-#include "vehicle.h"
-#include "observer.h"
 #include <numeric>
 #include <pthread.h>
 #include <thread>
+#include <functional>
+
+#include "types.h"
+#include "type_definitions.h"
+#include "observer.h"
 #include "period_thread.h"
 #include "observer.h"
 #include "interest_table.h"
-#include <functional>
+#include "queue.h"
+#include "component_types.h"
+#include "nic.h"
 
 class SmartData {
 public:
-    SmartData(EthernetCommunicator* communicator);
+    SmartData(Ethernet::Address& address, const unsigned short id);
     ~SmartData();
 
     typedef std::function<std::vector<InterestData>()>  GetInterestsCallback;
     typedef std::function<int()>                        GetDataCallback;
-    typedef std::function<int()>                        GetIdCallback;
     typedef std::function<Ethernet::Address*()>         GetAddressCallback;
+    typedef std::function<void(Message::ResponseMessage *)> ProcessDataCallback;
+    typedef std::pair<Message*, EthernetProtocol::Address*> MessageAddressPair;
 
     void start();
     void stop();
 
-    void register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, GetIdCallback get_id);
+    void register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data);
     void send_interests();
 
 private:
     void receive();
     void send_response_external();
     void send_response_internal();
-    void send_interest(Message* message);
+    void send_interest(MessageAddressPair);
 
     bool _running;
+    const unsigned short _id;
+    ComponentDataType _data_type;
     EthernetCommunicator* _communicator;
     Semaphore _semaphore;
     std::chrono::microseconds _period_time_internal_response_thread;
@@ -47,15 +54,15 @@ private:
     std::thread _receive_thread;
     std::thread _send_thread;
 
-    InterestTable interest_table;
-    std::vector<std::pair<Message*, Ethernet::Address>> _interest_messages;
+    InterestTable _interest_table;
+    std::vector<MessageAddressPair> _interest_messages;
 
     Queue<int, 32> _queue;
 
     GetInterestsCallback _get_interests;
     GetDataCallback _get_data;
     GetAddressCallback _get_address;
-    GetIdCallback _get_id;
+    ProcessDataCallback _process_data;
 };
 
 #endif // SMART_DATA_H

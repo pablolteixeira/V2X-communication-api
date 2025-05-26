@@ -6,9 +6,6 @@
 #include "../header/component/steering_component.h"
 #include "../header/component/controller_component.h"
 
-#include <iostream>
-#include <pthread.h>
-
 std::string mac_to_string(Ethernet::Address& addr) {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
@@ -28,14 +25,6 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), 
     _components[1] = new GPSComponent(this, 2);
     _components[2] = new ControllerComponent(this, 3);
     _components[3] = new SteeringComponent(this, 4);
-
-    for(unsigned int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++){
-        ConsoleLogger::log("New component");
-        EthernetProtocol::Address component_addr(_nic->address(), i+1);
-        _communicator[i] = new EthernetCommunicator(_protocol, component_addr);
-        _smart_datas[i] = new SmartData(_components[i], _communicator[i]);
-    }
-
 }
 
 Vehicle::~Vehicle() {

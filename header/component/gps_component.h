@@ -1,6 +1,8 @@
 #ifndef GPS_COMPONENT_H
 #define GPS_COMPONENT_H
 
+#include <random>
+
 #include "../component.h"
 
 class GPSComponent : public Component {

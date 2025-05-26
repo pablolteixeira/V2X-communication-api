@@ -1,14 +1,6 @@
 #ifndef NIC_H
 #define NIC_H
 
-#include "observer.h"
-#include "ethernet.h"
-#include "console_logger.h"
-#include "mac_address_generator.h"
-#include "protocol.h"
-#include "buffer_pool.h"
-#include "semaphore.h"
-#include "time_keeper.h"
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
@@ -18,6 +10,15 @@
 #include <algorithm>
 #include <string>
 #include <thread>
+
+#include "observer.h"
+#include "ethernet.h"
+#include "console_logger.h"
+#include "mac_address_generator.h"
+#include "protocol.h"
+#include "buffer_pool.h"
+#include "semaphore.h"
+#include "time_keeper.h"
 
 template <typename Engine>
 class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,

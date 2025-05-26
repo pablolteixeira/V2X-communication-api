@@ -2,7 +2,7 @@
 #define TIME_KEEPER_H
 
 #include <chrono>
-#include "types.h"
+#include "u64_type.h"
 
 class TimeKeeper 
 {
@@ -22,6 +22,6 @@ private:
     U64 t2 = 0;
     U64 t3 = 0;
     U64 t4 = 0;
-}
+};
 
 #endif // TIME_KEEPER_H 

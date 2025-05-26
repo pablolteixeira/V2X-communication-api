@@ -1,9 +1,4 @@
 #include "../header/console_logger.h"
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/resource.h>
 
 const std::string ConsoleLogger::RED = "\033[31m";
 const std::string ConsoleLogger::GREEN = "\033[32m";

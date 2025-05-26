@@ -9,6 +9,10 @@
 #include <sstream>
 #include <chrono>
 #include <iomanip>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/resource.h>
 
 
 class ConsoleLogger {

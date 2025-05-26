@@ -2,11 +2,11 @@
 
 TimeKeeper::TimeKeeper() {}
 
-TimeKeeper::U64 TimeKeeper::get_system_timestamp() {
+U64 TimeKeeper::get_system_timestamp() {
     return get_local_timestamp() - offset;
 }
 
-TimeKeeper::U64 TimeKeeper::get_local_timestamp() {
+U64 TimeKeeper::get_local_timestamp() {
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();
     auto timestamp = std::chrono::duration_cast<std::chrono::microseconds>(duration);

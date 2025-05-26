@@ -1,11 +1,3 @@
-#include "../header/communicator.h"
-#include "../header/protocol.h"
-#include "../header/traits.h"
-#include "../header/ethernet.h"
-#include "../header/nic.h"
-#include "../header/raw_socket_engine.h"
-#include "../header/vehicle.h"
-
 #include <sys/wait.h>
 #include <execinfo.h>
 #include <unistd.h>
@@ -15,6 +7,14 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+
+#include "../header/communicator.h"
+#include "../header/protocol.h"
+#include "../header/traits.h"
+#include "../header/ethernet.h"
+#include "../header/nic.h"
+#include "../header/raw_socket_engine.h"
+#include "../header/vehicle.h"
 
 constexpr int MAX_RUNTIME_SECONDS = 13; // total simulation time for the parent process (e.g., 5 min)
 constexpr int SPAWN_INTERVAL_MS = 3000;  // interval between spawns (in milliseconds)

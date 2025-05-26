@@ -3,8 +3,9 @@
 
 #include <cstddef>
 #include <chrono>
+
 #include "ethernet.h"
-#include "type_definitions.h"
+#include "u64_type.h"
 
 struct Origin {
     Ethernet::Address mac;

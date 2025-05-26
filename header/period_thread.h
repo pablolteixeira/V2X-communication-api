@@ -1,7 +1,6 @@
 #ifndef PERIODIC_THREAD_H
 #define PERIODIC_THREAD_H
 
-// #define _GNU_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +13,7 @@
 #include <sys/syscall.h>
 #include <pthread.h>
 #include <atomic>
+
 #include "sched_utils.h"
 
 class PeriodicThread {

@@ -1,5 +1,4 @@
 #include "../header/component/controller_component.h"
-#include <algorithm>
 
 void ControllerComponent::run() 
 {
@@ -9,7 +8,7 @@ void ControllerComponent::run()
 }
 
 ControllerComponent::ControllerComponent(Vehicle* vehicle, const unsigned short& id)
-    : Component(vehicle, sd, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
+    : Component(vehicle, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
     // Command data type (not an SI unit)
     _data_type = ComponentDataTypes::DIGITAL_COMAND_TYPE;  // Digital command type
 }

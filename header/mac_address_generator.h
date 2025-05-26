@@ -1,7 +1,6 @@
 #ifndef MAC_ADDRESS_GENERATOR_H
 #define MAC_ADDRESS_GENERATOR_H
 
-#include "ethernet.h"
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -9,6 +8,8 @@
 #include <iomanip>
 #include <random>
 #include <netinet/ether.h>
+
+#include "ethernet.h"
 
 class MacAddressGenerator 
 {

@@ -1,5 +1,5 @@
 #include "../header/component/gps_component.h"
-#include <random>
+
 
 void GPSComponent::run() 
 {

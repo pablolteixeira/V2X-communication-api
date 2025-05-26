@@ -1,6 +1,8 @@
 #ifndef LIDAR_COMPONENT_H
 #define LIDAR_COMPONENT_H
 
+#include <random>
+
 #include "../component.h"
 
 class LidarComponent : public Component {

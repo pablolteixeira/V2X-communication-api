@@ -1,6 +1,12 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
+#include <thread>
+#include <atomic>
+#include <random>
+#include <iostream>
+#include <pthread.h>
+
 #include "ethernet.h"
 #include "traits.h"
 #include "type_definitions.h"
@@ -10,10 +16,7 @@
 #include "component.h"
 #include "traits.h"
 #include "smart_data.h"
-
-#include <thread>
-#include <atomic>
-#include <random>
+#include "types.h"
 
 class SmartData;
 

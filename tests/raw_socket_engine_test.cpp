@@ -72,13 +72,14 @@ bool test_raw_socket_send_receive() {
         std::thread receive_thread([&]() {
             Ethernet::Address src;
             Ethernet::Protocol prot;
+            Ethernet::Footer footer;
             char buffer[1024];
             
             auto start_time = std::chrono::steady_clock::now();
             while (!packet_received && 
                    std::chrono::steady_clock::now() - start_time < std::chrono::seconds(5)) {
                 
-                int bytes_received = receiver.raw_receive(&src, &prot, buffer, sizeof(buffer));
+                int bytes_received = receiver.raw_receive(&src, &prot, &footer, buffer, sizeof(buffer));
                 
                 if (bytes_received > 0 && prot == 0x8888) {  // Protocolo personalizado para teste
                     std::string received_data(buffer, bytes_received);

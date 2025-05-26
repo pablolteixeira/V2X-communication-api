@@ -1,8 +1,9 @@
 #include "../header/component.h"
 #include "../header/vehicle.h"
 
-Component::Component(Vehicle* vehicle, SmartData* sd, const unsigned short& id)
-    : _id(id), _running(false), _semaphore(0), _vehicle(vehicle), _smart_data(sd) {
+Component::Component(Vehicle* vehicle, const unsigned short& id)
+    : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {
+        _smart_data = new SmartData(_vehicle->nic()->address(), id);
     }
 
 Component::~Component() {}

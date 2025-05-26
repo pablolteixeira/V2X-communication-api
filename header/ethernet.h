@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "types.h"
+#include "u64_type.h"
 
 // Network
 class Ethernet 

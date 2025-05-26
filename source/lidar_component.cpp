@@ -1,5 +1,4 @@
 #include "../header/component/lidar_component.h"
-#include <random>
 
 void LidarComponent::run() 
 {

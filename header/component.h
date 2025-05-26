@@ -6,19 +6,15 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <chrono>
+
 #include "console_logger.h"
 #include "queue.h"
 #include "semaphore.h"
 #include "type_definitions.h"
 #include "period_thread.h"
 #include "smart_data.h"
-#include <chrono>
-
-struct ComponentMessage {
-    Ethernet::Address origin_addr;
-    unsigned short origin_port;
-    int id;
-};
+#include "component_types.h"
 
 // Forward declarations
 class Vehicle;
@@ -26,7 +22,8 @@ class Vehicle;
 class Component 
 {
 public:
-    Component(Vehicle* vehicle, SmartData* sd, const unsigned short& id);
+
+    Component(Vehicle* vehicle, const unsigned short& id);
     virtual ~Component();
 
     void start();

@@ -1,5 +1,4 @@
 #include "../header/message.h"
-#include <cstring>
 
 // Constructor
 Message::Message(size_t max_size) 

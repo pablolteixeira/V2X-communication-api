@@ -1,10 +1,6 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-#include "observer.h"
-#include "buffer.h"
-#include "traits.h"
-#include "ethernet.h"
 #include <vector>
 #include <unordered_map>
 #include <string>
@@ -15,6 +11,10 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
+#include "observer.h"
+#include "buffer.h"
+#include "traits.h"
+#include "ethernet.h"
 
 template <typename NIC>
 class Protocol: private NIC::Observer

@@ -1,12 +1,13 @@
 #ifndef OBSERVER_H
 #define OBSERVER_H
 
+#include <vector>
+
 #include "ordered_list.h"
 #include "list.h"
 #include "semaphore.h"
 #include "buffer.h"
 #include "console_logger.h"
-#include <vector>
 
 // Fundamentals for Observer X Observed
 template <typename T, typename Condition = void>

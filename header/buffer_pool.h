@@ -1,9 +1,10 @@
 #ifndef BUFFER_POOL_H
 #define BUFFER_POOL_H
 
+#include <cstddef>
+
 #include "semaphore.h"
 #include "buffer.h"
-#include <cstddef>
 
 template <typename T, size_t SIZE>
 class BufferPool
