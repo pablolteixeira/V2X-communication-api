@@ -4,6 +4,12 @@
 Component::Component(Vehicle* vehicle, const unsigned short& id)
     : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {
         _smart_data = new SmartData(_vehicle->nic()->address(), id);
+        _smart_data->register_component(
+            [this]() { return get_interests(); },
+            [this]() { return get_value(); },
+            [this]() -> Ethernet::Address& { return get_address(); },
+            [this](Message::ResponseMessage* msg) { process_data(msg); }
+        );
     }
 
 Component::~Component() {}
@@ -19,11 +25,14 @@ void Component::start() {
             static_cast<__u64>(std::chrono::microseconds(80 * 1000).count())
         );
     _running_thread->start();
+    _smart_data->start();
 }
 
 void Component::stop() {
     _running = false;
-    _running_thread->stop();}
+    _running_thread->stop();
+    _smart_data->stop();
+}
 
 Ethernet::Address& Component::get_address() {
     return _vehicle->nic()->address();

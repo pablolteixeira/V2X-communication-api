@@ -196,7 +196,7 @@ void SmartData::send_interests() {
 
 // Modified receive function to register interests
 void SmartData::receive() {
-    std::string component_address = Ethernet::address_to_string(*_get_address());
+    std::string component_address = Ethernet::address_to_string(_get_address());
     Message* msg = new Message();
 
     while (_running) {

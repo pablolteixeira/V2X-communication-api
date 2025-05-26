@@ -23,7 +23,7 @@ public:
 
     typedef std::function<std::vector<InterestData>()>  GetInterestsCallback;
     typedef std::function<int()>                        GetDataCallback;
-    typedef std::function<Ethernet::Address*()>         GetAddressCallback;
+    typedef std::function<Ethernet::Address&()>         GetAddressCallback;
     typedef std::function<void(Message::ResponseMessage *)> ProcessDataCallback;
     typedef std::pair<Message*, EthernetProtocol::Address*> MessageAddressPair;
 

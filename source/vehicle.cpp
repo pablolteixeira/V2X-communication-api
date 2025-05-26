@@ -31,12 +31,12 @@ Vehicle::~Vehicle() {
     for(Component* component: _components) {
         delete component;
     }
-    for(SmartData* smart_data: _smart_datas) {
-        delete smart_data;
-    }
-    for(EthernetCommunicator* communicator: _communicator) {
-        delete communicator;
-    }
+    // for(SmartData* smart_data: _smart_datas) {
+    //     delete smart_data;
+    // }
+    // for(EthernetCommunicator* communicator: _communicator) {
+    //     delete communicator;
+    // }
 }
 
 void Vehicle::start() {
@@ -51,11 +51,11 @@ void Vehicle::start() {
     }
     ConsoleLogger::log("Components started");
 
-    ConsoleLogger::log("Starting SmartDatas");
-    for(unsigned int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
-        _smart_datas[i]->start();
-    }
-    ConsoleLogger::log("SmartDatas started");
+    // ConsoleLogger::log("Starting SmartDatas");
+    // for(unsigned int i = 0; i < Traits<Vehicle>::NUM_COMPONENTS; i++) {
+    //     _smart_datas[i]->start();
+    // }
+    // ConsoleLogger::log("SmartDatas started");
 
     _running = true;
     ConsoleLogger::log("Threads running.");
@@ -72,9 +72,9 @@ void Vehicle::stop() {
         component->stop();
     }
 
-    for(SmartData* smartdata : _smart_datas) {
-        smartdata->stop();
-    }
+    // for(SmartData* smartdata : _smart_datas) {
+    //     smartdata->stop();
+    // }
 }
 
 EthernetNIC* Vehicle::nic() const { 
