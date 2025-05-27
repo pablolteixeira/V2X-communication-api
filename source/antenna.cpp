@@ -1,9 +1,41 @@
 #include "../header/agent/antenna.h"
 
+
 Antenna::Antenna(EthernetNIC* nic, EthernetProtocol* protocol)
     : AutonomousAgent(nic, protocol) {
     _protocol->register_nic(_nic);
+    _nic->set_time_keeper_packet_origin(Ethernet::Footer::PacketOrigin::ANTENNA);
+    EthernetProtocol::Address address(nic->address(), 1);
+    _communicator = new EthernetCommunicator(protocol, address);
+}
 
-    //_components.push_back((this, 1));
-    //_components.push_back(TimeSyncEmitter(this, 1));
+Antenna::~Antenna() {
+}
+
+void Antenna::send_sync_messages() {
+    Message* msg = new Message();
+    EthernetProtocol::Address from(_nic->address(), _id);
+    EthernetProtocol::Address to(EthernetProtocol::Address::BROADCAST_MAC, 0);
+    _communicator->send(msg, from, to);
+    _communicator->send(msg, from, to);
+}
+
+void Antenna::start() {
+    if (!_running) return;
+    
+    _running_thread = new PeriodicThread(
+        std::bind(&Antenna::send_sync_messages, this),
+        static_cast<__u64>(std::chrono::microseconds(1000).count()),
+        static_cast<__u64>(std::chrono::microseconds(400).count())
+    );
+    _running_thread->start();}
+
+void Antenna::stop() {
+    ConsoleLogger::log("Stopping Antenna -> " + std::to_string(_id));
+
+    _nic->stop();
+
+    _running = false;
+
+    _running_thread->stop();
 }
