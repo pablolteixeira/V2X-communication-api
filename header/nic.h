@@ -99,6 +99,12 @@ public:
             //ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
         } else {
+            auto sync_state = _time_keeper->get_sync_state();
+            frame->footer()->set_sync_state(sync_state);
+
+            auto packet_type = _time_keeper->get_packet_origin();
+            frame->footer()->set_packet_origin(packet_type);
+
             auto now = _time_keeper->get_system_timestamp();
             frame->footer()->set_timestamp(now);
 
@@ -124,7 +130,19 @@ public:
     void receive(NICBuffer* buf, Address* src) {
         //ConsoleLogger::print("NIC: Receiving frame.");
         Ethernet::Frame* frame = buf->frame();
+
+        Footer* footer = frame->footer();
+        if (footer->get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA) {
+            auto system_timestamp = footer->get_timestamp();
+            auto now = _time_keeper->get_local_timestamp();
+            _time_keeper->update_time_keeper(system_timestamp, now);
+        }
+
         memcpy(src, frame->header()->h_source, ETH_ALEN);
+    }
+
+    void set_time_keeper_packet_origin(Ethernet::Footer::PacketOrigin packet_origin) {
+        _time_keeper->update_packet_origin(packet_origin);
     }
 
     Address& address() {
@@ -217,7 +235,6 @@ private:
     }
 
 private:
-    //Statistics _statistics;
     BufferPool<Ethernet::Frame, BUFFER_SIZE> _buffer_pool;
     Semaphore _data_semaphore;
     bool _running;
@@ -225,6 +242,7 @@ private:
     std::thread _worker_thread;
     TimeKeeper* _time_keeper;
 };
+
 
 template <typename Engine>
 NIC<Engine>* NIC<Engine>::_instance = nullptr;
