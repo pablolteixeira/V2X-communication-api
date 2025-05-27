@@ -24,7 +24,9 @@ TEST_BINS = $(patsubst $(TEST_DIR)/%.cpp,$(BIN_DIR)/test_%,$(TEST_SRCS))
 
 # Default target - build the main program
 #all: clean clean_logs run_tests run
-all: clean clean_logs run
+all: clean clean_logs run_tests run
+
+clean_all: clean clean_logs
 
 # Rule to build the main program
 $(BIN_DIR)/main: $(SRC_DIR)/main.o $(OBJS)
