@@ -24,6 +24,7 @@ public:
     static const ComponentDataType POSITION_DATA_TYPE = 0b1 << 31 | 10 << 18;
     static const ComponentDataType ANGLE_DATA_TYPE = 0b1 << 31 | 11 << 18;
     static const ComponentDataType DIGITAL_COMAND_TYPE = 0b0 << 31 | 1 << 24;
+    static const ComponentDataType TIME_SYNC_TYPE = 0b0 << 31 | 1 << 23;
 };
 
 struct InterestData {
