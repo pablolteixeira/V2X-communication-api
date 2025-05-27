@@ -1,3 +1,5 @@
 .vscode
 *.o
-logs/*
+*.txt
+logs/
+bin/
