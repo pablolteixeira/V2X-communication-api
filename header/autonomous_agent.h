@@ -5,23 +5,20 @@
 #include <atomic>
 #include <random>
 #include <iostream>
-#include <vector>
 #include <pthread.h>
 
 #include "ethernet.h"
-#include "component.h"
 #include "types.h"
-
-class Component;
+#include "nic.h"
 
 class AutonomousAgent
 {
 public:
     AutonomousAgent(EthernetNIC* nic, EthernetProtocol* protocol);
-    ~AutonomousAgent();
+    virtual ~AutonomousAgent() = 0;
 
-    void start();
-    void stop();
+    virtual void start() = 0;
+    virtual void stop() = 0;
 
     EthernetNIC* nic() const;
 
@@ -32,7 +29,7 @@ protected:
     
     std::atomic<bool> _running;
 
-    std::vector<Component*> _components;
+    // std::vector<Component*> _components;
     // EthernetCommunicator* _communicator[Traits<Vehicle>::NUM_COMPONENTS];
     // SmartData* _smart_datas[Traits<Vehicle>::NUM_COMPONENTS];
 };
