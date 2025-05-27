@@ -155,7 +155,7 @@ public:
         if (size > MTU) {
             return -1;
         }
-        ConsoleLogger::print("Protocol: Sending message.");
+        //ConsoleLogger::print("Protocol: Sending message.");
         
         if (_nic) {
             NICBuffer* buf = _nic->alloc(Address::BROADCAST_MAC, PROTO, sizeof(Header) + size);
@@ -163,7 +163,7 @@ public:
                 return -1;
             }
 
-            ConsoleLogger::print("Protocol: Buffer allocated.");
+            //ConsoleLogger::print("Protocol: Buffer allocated.");
 
             Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
             packet->Header::operator=(Header(from, to, size));
@@ -205,12 +205,12 @@ public:
 
 private:
     void update(NICBuffer * buf) override {
-        ConsoleLogger::print("Protocol: Update observers.");
+        //ConsoleLogger::print("Protocol: Update observers.");
         
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
 
         if(!_observed.notify(packet->to_port(), buf)) {
-            ConsoleLogger::print("Protocol: Calling free buffer.");
+            //ConsoleLogger::print("Protocol: Calling free buffer.");
             _nic->free(buf);
         }
     }

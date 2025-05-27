@@ -30,8 +30,9 @@ public:
     void start();
     void stop();
 
-    void register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data);
-    void send_interests();
+    void register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data, ComponentDataType data_type);
+    void send_external_interests();
+    void send_internal_interests();
 
 private:
     void receive();
@@ -55,7 +56,8 @@ private:
     std::thread _send_thread;
 
     InterestTable _interest_table;
-    std::vector<MessageAddressPair> _interest_messages;
+    std::vector<MessageAddressPair> _external_interest_messages;
+    std::vector<MessageAddressPair> _internal_interest_messages;
 
     Queue<int, 32> _queue;
 

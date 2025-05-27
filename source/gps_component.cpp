@@ -15,7 +15,7 @@ GPSComponent::GPSComponent(AutonomousAgent* autonamous_agent, const unsigned sho
 }
 
 void GPSComponent::generate_data() {    
-    _value = static_cast<int>(1000000);
+    _value = static_cast<int>(getpid());
     
     ConsoleLogger::log("GPS data generated: Lat: " + std::to_string(_value) + 
                       ", Long: " + std::to_string(_value));

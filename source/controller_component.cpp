@@ -7,8 +7,8 @@ void ControllerComponent::run()
     ConsoleLogger::log("Command generation completed");
 }
 
-ControllerComponent::ControllerComponent(AutonomousAgent* autonamous_agent, const unsigned short& id)
-    : Component(autonamous_agent, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
+ControllerComponent::ControllerComponent(AutonomousAgent* autonomous_agent, const unsigned short& id)
+    : Component(autonomous_agent, id), _lidar_value(0), _gps_value(0), _external_gps_value(0) {
     // Command data type (not an SI unit)
     _data_type = ComponentDataTypes::DIGITAL_COMAND_TYPE;  // Digital command type
 }
@@ -27,7 +27,6 @@ void ControllerComponent::generate_data() {
 }
 
 void ControllerComponent::set_interests() {
-    ConsoleLogger::log("Calling from inside set interests");
     std::chrono::microseconds period = std::chrono::microseconds(100 * 1000);
 
     // Interested in Lidar data (from own vehicle)

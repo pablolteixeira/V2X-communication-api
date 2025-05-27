@@ -4,27 +4,33 @@
 Component::Component(AutonomousAgent* autonomous_agent, const unsigned short& id)
     : _id(id), _running(false), _semaphore(0), _autonomous_agent(autonomous_agent) {
         _smart_data = new SmartData(_autonomous_agent->nic()->address(), id);
-        _smart_data->register_component(
-            [&]() { return get_interests(); },
-            [&]() { return get_value(); },
-            [&]() -> Ethernet::Address& { return get_address(); },
-            [&](Message::ResponseMessage* msg) { process_data(msg); }
-        );
     }
-
-Component::~Component() {}
+    
+Component::~Component() {
+    delete _smart_data;
+    _running_thread->stop();
+}
 
 void Component::start() {
     if (_running) return;
     set_interests();
 
+    _smart_data->register_component(
+        [&]() { return get_interests(); },
+        [&]() { return get_value(); },
+        [&]() -> Ethernet::Address& { return get_address(); },
+        [&](Message::ResponseMessage* msg) { process_data(msg); },
+        _data_type
+    );
+    
     _running = true;
     _running_thread = new PeriodicThread(
             std::bind(&Component::run, this), 
             static_cast<__u64>(std::chrono::microseconds(100 * 1000).count()),
-            static_cast<__u64>(std::chrono::microseconds(80 * 1000).count())
+            static_cast<__u64>(std::chrono::microseconds(400).count())
         );
     _running_thread->start();
+
     _smart_data->start();
 }
 
@@ -51,6 +57,7 @@ int Component::get_value() {
 }
 
 std::vector<InterestData> Component::get_interests() {
+    // ConsoleLogger::log("Get Interests component size: " + std::to_string(_interests.size()));
     return _interests;
 } 
 

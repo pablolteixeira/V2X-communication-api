@@ -75,13 +75,13 @@ private:
     
 public:
     // Constructor
-    PeriodicThread(std::function<void ()> function, __u64 period_microseconds, __u64 runtime_microseconds) 
+    PeriodicThread(std::function<void ()> function, __u64 period_microseconds, __u64 runtime_microseconds = 400 * 1000) 
         : running(false), task_func(function) {
-            if(period_microseconds < 1000) {
-                period_microseconds = 1000;
+            if(period_microseconds < 300) {
+                period_microseconds = 300;
             }
             if (runtime_microseconds > period_microseconds) {
-                runtime_microseconds = (unsigned long long)(period_microseconds * 0.5);
+                runtime_microseconds = (unsigned long long)(period_microseconds * 0.1);
             }
 
             runtime_ns.store(runtime_microseconds * 1000);

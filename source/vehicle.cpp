@@ -9,6 +9,8 @@
 
 Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol) 
     : AutonomousAgent(nic, protocol) {
+    _protocol->register_nic(_nic);
+    
     _components.push_back(new LidarComponent(this, 1));
     _components.push_back(new GPSComponent(this, 2));
     _components.push_back(new ControllerComponent(this, 3));

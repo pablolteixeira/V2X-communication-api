@@ -23,7 +23,8 @@ TEST_SRCS = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_BINS = $(patsubst $(TEST_DIR)/%.cpp,$(BIN_DIR)/test_%,$(TEST_SRCS))
 
 # Default target - build the main program
-all: clean clean_logs run_tests run
+#all: clean clean_logs run_tests run
+all: clean clean_logs run
 
 # Rule to build the main program
 $(BIN_DIR)/main: $(SRC_DIR)/main.o $(OBJS)

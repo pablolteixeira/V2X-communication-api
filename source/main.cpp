@@ -16,10 +16,10 @@
 #include "../header/raw_socket_engine.h"
 #include "../header/agent/vehicle.h"
 
-constexpr int MAX_RUNTIME_SECONDS = 13; // total simulation time for the parent process (e.g., 5 min)
-constexpr int SPAWN_INTERVAL_MS = 3000;  // interval between spawns (in milliseconds)
-constexpr int MIN_LIFETIME = 3;         // min vehicle lifetime (in seconds)
-constexpr int MAX_LIFETIME = 4;         // max vehicle lifetime (in seconds)
+constexpr int MAX_RUNTIME_SECONDS = 25; // total simulation time for the parent process (e.g., 5 min)
+constexpr int SPAWN_INTERVAL_MS = 500;  // interval between spawns (in milliseconds)
+constexpr int MIN_LIFETIME = 8;         // min vehicle lifetime (in seconds)
+constexpr int MAX_LIFETIME = 10;         // max vehicle lifetime (in seconds)
 
 int main() {
     srand(time(nullptr));

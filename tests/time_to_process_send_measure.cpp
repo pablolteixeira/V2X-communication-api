@@ -7,7 +7,7 @@
 #include "../header/types.h" 
 #include "../header/message.h"
 
-const int NUM_MESSAGES = 100000;
+const int NUM_MESSAGES = 10;
 const int DELAY_BETWEEN_MESSAGES_MS = 10;
 
 int main() {

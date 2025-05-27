@@ -28,7 +28,7 @@ public:
     }
 
     BufferType* alloc() {
-        ConsoleLogger::log("Buffer Pool: Requesting Buffer - Semaphore P -> " + std::to_string(_free_buffers.count()));
+        //ConsoleLogger::log("Buffer Pool: Requesting Buffer - Semaphore P -> " + std::to_string(_free_buffers.count()));
         _free_buffers.p();
         
         {
@@ -47,7 +47,7 @@ public:
     }
     
     void free(BufferType* buf) {
-        ConsoleLogger::log("Buffer Pool: Free Buffer");
+        //ConsoleLogger::log("Buffer Pool: Free Buffer");
         bool was_in_use = false;
         
         {
@@ -68,7 +68,7 @@ public:
         //ConsoleLogger::log("Buffer Pool: Freed Buffer");
         // If the buffer was in use, increment the semaphore
         if (was_in_use) {
-            ConsoleLogger::log("Buffer Pool: Buffer was in use - Semaphore V -> " + std::to_string(_free_buffers.count()));
+            //ConsoleLogger::log("Buffer Pool: Buffer was in use - Semaphore V -> " + std::to_string(_free_buffers.count()));
             _free_buffers.v();
         }
     }

@@ -2,9 +2,9 @@
 
 void LidarComponent::run() 
 {
-    ConsoleLogger::log("About to generate data");
+    ConsoleLogger::log("About to generate Lidar data");
     generate_data();
-    ConsoleLogger::log("Data generation completed");
+    ConsoleLogger::log("Lidar data generation completed");
 }
 
 LidarComponent::LidarComponent(AutonomousAgent* autonomous_agent, const unsigned short& id)
@@ -19,14 +19,13 @@ void LidarComponent::generate_data() {
     std::uniform_int_distribution<> dist(1, 100); // Lidar range in meters
 
     _value = dist(gen);
-    ConsoleLogger::log("Data generated: " + std::to_string(_value));
+    ConsoleLogger::log("Lidar data generated: " + std::to_string(_value));
 }
 
 void LidarComponent::set_interests() {
 }
 
 void LidarComponent::process_data(Message::ResponseMessage* data) {
-
 }
 
 

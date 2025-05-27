@@ -72,7 +72,7 @@ public:
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
-        ConsoleLogger::print("NIC: Allocating buffer. ");
+        //ConsoleLogger::print("NIC: Allocating buffer. ");
         
         NICBuffer* buf = _buffer_pool.alloc();
 
@@ -86,7 +86,7 @@ public:
     }
 
     int send(NICBuffer* buf) {
-        ConsoleLogger::print("NIC: Sending frame.");
+        //ConsoleLogger::print("NIC: Sending frame.");
 
         Ethernet::Frame* frame = buf->frame();
         Protocol_Number prot;
@@ -96,7 +96,7 @@ public:
 
         if (is_local_broadcast) {
             notify(prot, buf);
-            ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
+            //ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
         } else {
             auto now = _time_keeper->get_system_timestamp();
@@ -111,18 +111,18 @@ public:
             
             free(buf);
 
-            ConsoleLogger::print("NIC: Frame sent BROADCAST EXTERNAL.");
+            //ConsoleLogger::print("NIC: Frame sent BROADCAST EXTERNAL.");
             return result;
         }
     }
 
     void free(NICBuffer* buf) {
-        ConsoleLogger::print("NIC: Free buffer");
+        //ConsoleLogger::print("NIC: Free buffer");
         _buffer_pool.free(buf);
     }
 
     void receive(NICBuffer* buf, Address* src) {
-        ConsoleLogger::print("NIC: Receiving frame.");
+        //ConsoleLogger::print("NIC: Receiving frame.");
         Ethernet::Frame* frame = buf->frame();
         memcpy(src, frame->header()->h_source, ETH_ALEN);
     }
@@ -157,7 +157,7 @@ private:
 
     void process_incoming_data() {
         while (true) {
-            ConsoleLogger::log("PROCESS INCOMING DATA");
+            //ConsoleLogger::log("PROCESS INCOMING DATA");
             Address src;
             Protocol_Number prot;
             Footer footer;
@@ -165,7 +165,7 @@ private:
             // Get a free buffer
             NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer));
             if (!buf) {
-                ConsoleLogger::error("No buffers available for incoming data");
+                //ConsoleLogger::error("No buffers available for incoming data");
                 return;
             }
             
