@@ -28,14 +28,31 @@ public:
     class Footer 
     {
     public:
+        enum SyncState {
+            NOT_SYNCHRONIZED,
+            SYNCHRONIZED
+        };
+
+        enum PacketOrigin {
+            ANTENNA,
+            OTHERS
+        };
+        
         Footer() {}
-        Footer(U64 t) : _timestamp(t) {}
+        Footer(U64 timestamp, SyncState sync_state) : _timestamp(timestamp), _sync_state(sync_state) {}
 
         U64 get_timestamp() { return _timestamp; }
+        SyncState get_sync_state() { return _sync_state; }
+        PacketOrigin get_packet_origin() {return _packet_type; }
+
         void set_timestamp(U64 timestamp) {_timestamp = timestamp; }
+        void set_sync_state(SyncState sync_state) { _sync_state = sync_state; }
+        void set_packet_origin(PacketOrigin packet_type) { _packet_type = packet_type; }
 
     private:
         U64 _timestamp;
+        SyncState _sync_state;
+        PacketOrigin _packet_type;
     };
 
     class Frame 
