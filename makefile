@@ -71,5 +71,6 @@ run: $(BIN_DIR)/main
 
 clean_logs:
 	rm -f $(LOGS_DIR)/*.log
+	rm -f *.txt
 
 .PHONY: all clean run
