@@ -14,7 +14,7 @@
 #include "../header/ethernet.h"
 #include "../header/nic.h"
 #include "../header/raw_socket_engine.h"
-#include "../header/vehicle.h"
+#include "../header/agent/vehicle.h"
 
 constexpr int MAX_RUNTIME_SECONDS = 13; // total simulation time for the parent process (e.g., 5 min)
 constexpr int SPAWN_INTERVAL_MS = 3000;  // interval between spawns (in milliseconds)
@@ -86,6 +86,7 @@ int main() {
         } else {
             // --- Parent process ---
             ConsoleLogger::log("Spawned vehicle process with PID: " + std::to_string(pid));
+            std::cout << "Spawned vehicle process with PID: " << std::to_string(pid) << std::endl;
 
             // Reap any finished child processes to avoid zombies
             int status;

@@ -5,7 +5,7 @@
 
 class ControllerComponent : public Component {
 public:
-    ControllerComponent(Vehicle* vehicle, const unsigned short& id);
+    ControllerComponent(AutonomousAgent* autonomous_agent, const unsigned short& id);
 
     void run() override;
 

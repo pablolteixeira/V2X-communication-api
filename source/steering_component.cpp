@@ -7,8 +7,8 @@ void SteeringComponent::run()
     ConsoleLogger::log("Steering actuation completed");
 }
 
-SteeringComponent::SteeringComponent(Vehicle* vehicle, const unsigned short& id)
-    : Component(vehicle, id), _command_value(0) {
+SteeringComponent::SteeringComponent(AutonomousAgent* autonomous_agent, const unsigned short& id)
+    : Component(autonomous_agent, id), _command_value(0) {
     // SI unit: angle (degrees) => ComponentDataTypes::ANGLE_DATA_TYPE;
     _data_type = ComponentDataTypes::ANGLE_DATA_TYPE;  // Angle data type
 }

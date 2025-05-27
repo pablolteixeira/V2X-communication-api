@@ -15,20 +15,20 @@
 #include "period_thread.h"
 #include "smart_data.h"
 #include "component_types.h"
+#include "autonomous_agent.h"
 
 // Forward declarations
-class Vehicle;
+class AutonomousAgent;
 
 class Component 
 {
 public:
-
-    Component(Vehicle* vehicle, const unsigned short& id);
+    Component(AutonomousAgent* AutonomousAgent, const unsigned short& id);
     virtual ~Component();
 
     void start();
-
     void stop();
+
     virtual void run() = 0;
     virtual void set_interests() = 0;
     virtual void process_data(Message::ResponseMessage* data) = 0;
@@ -54,7 +54,7 @@ protected:
 
     std::atomic<int> _value;
 
-    Vehicle* _vehicle;
+    AutonomousAgent* _autonomous_agent;
     SmartData* _smart_data;
 
 private:

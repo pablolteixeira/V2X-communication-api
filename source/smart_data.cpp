@@ -20,6 +20,7 @@ SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
 SmartData::~SmartData() {}
 
 void SmartData::start() {
+    ConsoleLogger::log("SmartData: Starting threads");
     if (_running) return;
     _running = true;
 

@@ -14,7 +14,7 @@
 #include "interest_table.h"
 #include "queue.h"
 #include "component_types.h"
-#include "nic.h"
+
 
 class SmartData {
 public:

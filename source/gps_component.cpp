@@ -8,8 +8,8 @@ void GPSComponent::run()
     ConsoleLogger::log("GPS data generation completed");
 }
 
-GPSComponent::GPSComponent(Vehicle* vehicle, const unsigned short& id)
-    : Component(vehicle, id) {
+GPSComponent::GPSComponent(AutonomousAgent* autonamous_agent, const unsigned short& id)
+    : Component(autonamous_agent, id) {
     // SI unit: position (lat/long) => ComponentDataTypes::POSITION_DATA_TYPE; // Representing position data
     _data_type = ComponentDataTypes::POSITION_DATA_TYPE;  // Position data type
 }

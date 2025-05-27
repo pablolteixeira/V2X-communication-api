@@ -7,7 +7,7 @@
 
 class GPSComponent : public Component {
 public:
-    GPSComponent(Vehicle* vehicle, const unsigned short& id);
+    GPSComponent(AutonomousAgent* autonomous_agent, const unsigned short& id);
 
     void run() override;
 

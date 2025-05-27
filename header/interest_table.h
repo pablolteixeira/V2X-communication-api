@@ -73,7 +73,8 @@ public:
         std::vector<InterestRecord*> results;
         const auto& table = get_table(is_internal);
         
-        for (const auto& [key, record] : table) {
+        for (auto& key_record : table) {
+            const auto& record = key_record.second;
             results.push_back(record);
         }
         
@@ -142,12 +143,14 @@ public:
         std::vector<InterestRecord*> results;
         
         // Add internal interests
-        for (const auto& [key, record] : internal_table) {
+        for (auto& key_record : internal_table) {
+            const auto& record = key_record.second;
             results.push_back(record);
         }
         
         // Add external interests
-        for (const auto& [key, record] : external_table) {
+        for (auto& key_record : external_table) {
+            const auto& record = key_record.second;
             results.push_back(record);
         }
         

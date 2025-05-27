@@ -7,8 +7,8 @@ void LidarComponent::run()
     ConsoleLogger::log("Data generation completed");
 }
 
-LidarComponent::LidarComponent(Vehicle* vehicle, const unsigned short& id)
-    : Component(vehicle, id) {
+LidarComponent::LidarComponent(AutonomousAgent* autonomous_agent, const unsigned short& id)
+    : Component(autonomous_agent, id) {
     // SI unit: meter => m+1 => 0b101 (5) => m+4 = 9
     _data_type = ComponentDataTypes::METER_DATATYPE;  // Only m+4 is set
 }

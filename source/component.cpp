@@ -1,14 +1,14 @@
 #include "../header/component.h"
-#include "../header/vehicle.h"
+#include "../header/agent/vehicle.h"
 
-Component::Component(Vehicle* vehicle, const unsigned short& id)
-    : _id(id), _running(false), _semaphore(0), _vehicle(vehicle) {
-        _smart_data = new SmartData(_vehicle->nic()->address(), id);
+Component::Component(AutonomousAgent* autonomous_agent, const unsigned short& id)
+    : _id(id), _running(false), _semaphore(0), _autonomous_agent(autonomous_agent) {
+        _smart_data = new SmartData(_autonomous_agent->nic()->address(), id);
         _smart_data->register_component(
-            [this]() { return get_interests(); },
-            [this]() { return get_value(); },
-            [this]() -> Ethernet::Address& { return get_address(); },
-            [this](Message::ResponseMessage* msg) { process_data(msg); }
+            [&]() { return get_interests(); },
+            [&]() { return get_value(); },
+            [&]() -> Ethernet::Address& { return get_address(); },
+            [&](Message::ResponseMessage* msg) { process_data(msg); }
         );
     }
 
@@ -35,7 +35,7 @@ void Component::stop() {
 }
 
 Ethernet::Address& Component::get_address() {
-    return _vehicle->nic()->address();
+    return _autonomous_agent->nic()->address();
 }
 
 const unsigned short& Component::id() const {

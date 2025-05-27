@@ -7,7 +7,7 @@
 
 class LidarComponent : public Component {
 public:
-    LidarComponent(Vehicle* vehicle, const unsigned short& id);
+    LidarComponent(AutonomousAgent* autonomous_agent, const unsigned short& id);
 
     void run() override;
 
