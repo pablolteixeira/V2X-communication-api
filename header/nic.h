@@ -64,7 +64,9 @@ public:
 
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
-    ~NIC() {}
+    ~NIC() {
+        _instance->stop();
+    }
 
     void stop() {
         ConsoleLogger::log("NIC: Stopping");
@@ -76,7 +78,7 @@ public:
         
         NICBuffer* buf = _buffer_pool.alloc();
 
-        buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Footer));
+        buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata));
         Ethernet::Frame* frame = buf->frame();
         memcpy(frame->header()->h_dest, dst, ETH_ALEN);
         memcpy(frame->header()->h_source, Engine::_addr, ETH_ALEN);
@@ -102,20 +104,20 @@ public:
             _time_keeper->update_sync_status();
 
             auto sync_state = _time_keeper->get_sync_state();
-            frame->footer()->set_sync_state(sync_state);
+            frame->metadata()->set_sync_state(sync_state);
 
             auto packet_origin = _time_keeper->get_packet_origin();
-            frame->footer()->set_packet_origin(packet_origin);
+            frame->metadata()->set_packet_origin(packet_origin);
 
             auto now = _time_keeper->get_system_timestamp();
-            frame->footer()->set_timestamp(now);
+            frame->metadata()->set_timestamp(now);
 
             int result = Engine::raw_send(
                 frame->header()->h_dest, 
                 prot,
-                frame->footer(),
+                frame->metadata(),
                 frame->data(),
-                buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer)
+                buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata)
             );
 
             free(buf);
@@ -137,7 +139,7 @@ public:
         memcpy(src, frame->header()->h_source, ETH_ALEN);
     }
 
-    void set_time_keeper_packet_origin(Ethernet::Footer::PacketOrigin packet_origin) {
+    void set_time_keeper_packet_origin(Ethernet::Metadata::PacketOrigin packet_origin) {
         _time_keeper->update_packet_origin(packet_origin);
     }
 
@@ -174,35 +176,33 @@ private:
             //ConsoleLogger::log("PROCESS INCOMING DATA");
             Address src;
             Protocol_Number prot;
-            Footer footer;
+            Metadata metadata;
             
             // Get a free buffer
-            NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer));
+            NICBuffer* buf = alloc(address(), 0, Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata));
             if (!buf) {
                 //ConsoleLogger::error("No buffers available for incoming data");
                 return;
             }
             
             Ethernet::Frame* frame = buf->frame();
-            int size = Engine::raw_receive(&src, &prot, &footer, frame->data(), 
-                                        Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer));
+            int size = Engine::raw_receive(&src, &prot, &metadata, frame->data(), 
+                                        Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata));
 
             if (size > 0) {
                 // Successful read
-                buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Footer));
+                buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata));
                 auto t = _time_keeper->get_local_timestamp();
                 if (!notify(prot, buf)) {
                     free(buf);
                 } else {
-                    ConsoleLogger::log("Packet origin: " + std::to_string(footer.get_packet_origin()));
-                    if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA && _time_keeper->get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
-                        ConsoleLogger::log("Recieved Antenna message");
-                        auto system_timestamp = footer.get_timestamp();
-                        ConsoleLogger::log("Footer timestamp: " + std::to_string(system_timestamp));
+                    ConsoleLogger::log("Packet origin: " + std::to_string(metadata.get_packet_origin()));
+                    if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::ANTENNA && _time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                        ConsoleLogger::log("Received Antenna message");
+                        auto system_timestamp = metadata.get_timestamp();
                         _time_keeper->update_time_keeper(system_timestamp, t);
-                    }
-                    else if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
-                        ConsoleLogger::log("Recieved others message");
+                    } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                        ConsoleLogger::log("Received others message");
                     }
                 }
             } else if (size == 0 || (size < 0 && errno == EAGAIN)) {

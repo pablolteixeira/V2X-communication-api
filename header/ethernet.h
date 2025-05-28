@@ -25,7 +25,7 @@ public:
     typedef unsigned char Address[ETH_ALEN];
     typedef unsigned short Protocol;
 
-    class Footer 
+    class Metadata 
     {
     public:
         enum SyncState {
@@ -38,8 +38,8 @@ public:
             OTHERS
         };
         
-        Footer() {}
-        Footer(U64 timestamp, SyncState sync_state) : _timestamp(timestamp), _sync_state(sync_state) {}
+        Metadata() : _timestamp(0), _sync_state(SyncState::NOT_SYNCHRONIZED), _packet_origin(PacketOrigin::OTHERS) {}
+        Metadata(U64 timestamp, SyncState sync_state, PacketOrigin packet_origin) : _timestamp(timestamp), _sync_state(sync_state), _packet_origin(packet_origin) {}
 
         U64 get_timestamp() { return _timestamp; }
         SyncState get_sync_state() { return _sync_state; }
@@ -66,13 +66,13 @@ public:
         }
         
         Header* header() { return &_header; }
-        Footer* footer() { return &_footer; }
+        Metadata* metadata() { return &_metadata; }
         unsigned char* data() { return _data; }
         
     private:
         Header _header;
-        Footer _footer;
-        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Footer)];
+        Metadata _metadata;
+        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Metadata)];
     } __attribute__((packed));
     
     static std::string address_to_string(Address addr) {

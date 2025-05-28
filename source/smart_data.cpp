@@ -12,8 +12,8 @@ SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
 }
 
 SmartData::~SmartData() {
-    delete _communicator;
     stop();
+    delete _communicator;
 }
 
 void SmartData::start() {
@@ -23,7 +23,7 @@ void SmartData::start() {
 
     send_internal_interests();
 
-    if (_get_interests().size() > 0) {
+    if (_external_interest_messages.size() > 0) {
         _interest_thread = new PeriodicThread(
             std::bind(&SmartData::send_external_interests, this),
             static_cast<__u64>(std::chrono::microseconds(500 * 1000).count()),
@@ -38,7 +38,10 @@ void SmartData::start() {
 void SmartData::stop() {
     ConsoleLogger::log("SmartData: Stopping threads");
     _running = false;
-    _interest_thread->stop();
+
+    if (_interest_thread != nullptr) {
+        _interest_thread->stop();
+    }
 
     if (_internal_response_thread != nullptr) {
         _internal_response_thread->stop();
