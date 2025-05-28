@@ -62,7 +62,7 @@ run_test: $(BIN_DIR)/test_$(TEST)
 
 # Clean build artifacts
 clean:
-	rm -f $(SRC_DIR)/*.o $(BIN_DIR)/main
+	rm -f $(SRC_DIR)/*.o $(BIN_DIR)/*
 
 # Clean test artifacts
 clean_tests:
