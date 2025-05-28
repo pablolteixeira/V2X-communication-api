@@ -102,8 +102,8 @@ public:
             auto sync_state = _time_keeper->get_sync_state();
             frame->footer()->set_sync_state(sync_state);
 
-            auto packet_type = _time_keeper->get_packet_origin();
-            frame->footer()->set_packet_origin(packet_type);
+            auto packet_origin = _time_keeper->get_packet_origin();
+            frame->footer()->set_packet_origin(packet_origin);
 
             auto now = _time_keeper->get_system_timestamp();
             frame->footer()->set_timestamp(now);
