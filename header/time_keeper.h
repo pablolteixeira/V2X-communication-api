@@ -6,6 +6,7 @@
 
 #include "u64_type.h"
 #include "ethernet.h"
+#include "console_logger.h"
 
 #define SYNC_TIMEOUT 50;
 

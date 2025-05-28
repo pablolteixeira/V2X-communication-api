@@ -55,4 +55,5 @@ void TimeKeeper::update_time_keeper(U64 system_timestamp, U64 local_timestamp) {
         }
         is_t1 = !is_t1;
     }
+    ConsoleLogger::log("Fake Offset: " + std::to_string(fake_offset) + " | Offset: " + std::to_string(offset));
 }

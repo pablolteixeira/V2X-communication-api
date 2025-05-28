@@ -14,10 +14,13 @@ Antenna::~Antenna() {
 
 void Antenna::send_sync_messages() {
     Message* msg = new Message();
+    msg->set_type(Message::Type::PTP);
     EthernetProtocol::Address from(_nic->address(), _id);
     EthernetProtocol::Address to(EthernetProtocol::Address::BROADCAST_MAC, 0);
-    _communicator->send(msg, from, to);
-    _communicator->send(msg, from, to);
+    ConsoleLogger::log("Antenna: " + Ethernet::address_to_string(_nic->address()) + " Sending Synchronization Message");
+    std::string t1 = _communicator->send(msg, from, to) ? "Success" : "Failure";
+    std::string t2 = _communicator->send(msg, from, to) ? "Success" : "Failure";
+    ConsoleLogger::log("t1 status: " + t1 + " | t2 status: " + t2);
 }
 
 void Antenna::start() {
