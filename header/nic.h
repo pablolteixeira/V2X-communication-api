@@ -193,7 +193,7 @@ private:
 
             if (size > 0) {
                 // Successful read
-                buf->size(size + sizeof(Ethernet::Header));
+                buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Footer));
                 auto t = _time_keeper->get_local_timestamp();
                 if (!notify(prot, buf)) {
                     free(buf);
