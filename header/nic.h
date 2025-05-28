@@ -202,13 +202,13 @@ private:
                 if (!notify(prot, buf)) {
                     free(buf);
                 } else {
-                    if (footer->get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA) {
+                    if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA) {
                         ConsoleLogger::log("Recieved Antenna message");
-                        auto system_timestamp = footer->get_timestamp();
+                        auto system_timestamp = footer.get_timestamp();
                         auto now = _time_keeper->get_local_timestamp();
                         _time_keeper->update_time_keeper(system_timestamp, now);
                     }
-                    else if (footer->get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
+                    else if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
                         ConsoleLogger::log("Recieved others message");
                     }
                 }
