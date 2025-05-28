@@ -58,6 +58,8 @@ int main() {
         std::this_thread::sleep_for(std::chrono::seconds(MAX_RUNTIME_SECONDS));
         antenna->stop();
 
+        delete antenna;
+        delete nic;
         ConsoleLogger::close();
         exit(0);
     } else {        

@@ -14,8 +14,8 @@
 class TimeKeeper 
 {
 public:
-    typedef Ethernet::Footer::SyncState SyncState;
-    typedef Ethernet::Footer::PacketOrigin PacketOrigin;
+    typedef Ethernet::Metadata::SyncState SyncState;
+    typedef Ethernet::Metadata::PacketOrigin PacketOrigin;
 
     TimeKeeper();
     ~TimeKeeper();

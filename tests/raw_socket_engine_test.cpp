@@ -72,7 +72,7 @@ bool test_raw_socket_send_receive() {
         std::thread receive_thread([&]() {
             Ethernet::Address src;
             Ethernet::Protocol prot;
-            Ethernet::Footer footer;
+            Ethernet::Metadata footer;
             char buffer[1024];
             
             auto start_time = std::chrono::steady_clock::now();
@@ -99,7 +99,7 @@ bool test_raw_socket_send_receive() {
         // Envia pacote de teste para o endereço de broadcast
         Ethernet::Address broadcast = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         const char* test_data = "TESTE_RAW_SOCKET";
-        Ethernet::Footer* footer;
+        Ethernet::Metadata* footer;
 
         std::cout << "Enviando pacote de teste..." << std::endl;
         int bytes_sent = sender.raw_send(broadcast, 0x8888, footer, test_data, strlen(test_data));
