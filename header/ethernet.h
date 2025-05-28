@@ -43,17 +43,17 @@ public:
 
         U64 get_timestamp() { return _timestamp; }
         SyncState get_sync_state() { return _sync_state; }
-        PacketOrigin get_packet_origin() {return _packet_type; }
+        PacketOrigin get_packet_origin() {return _packet_origin; }
 
         void set_timestamp(U64 timestamp) {_timestamp = timestamp; }
         void set_sync_state(SyncState sync_state) { _sync_state = sync_state; }
-        void set_packet_origin(PacketOrigin packet_type) { _packet_type = packet_type; }
+        void set_packet_origin(PacketOrigin packet_origin) { _packet_origin = packet_origin; }
 
     private:
         U64 _timestamp;
         SyncState _sync_state;
-        PacketOrigin _packet_type;
-    };
+        PacketOrigin _packet_origin;
+    } __attribute__((packed));
 
     class Frame 
     {
@@ -71,9 +71,9 @@ public:
         
     private:
         Header _header;
-        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Footer)];
         Footer _footer;
-    };
+        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Footer)];
+    } __attribute__((packed));
     
     static std::string address_to_string(Address addr) {
         std::stringstream ss;

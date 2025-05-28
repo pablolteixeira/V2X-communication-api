@@ -20,6 +20,7 @@ Vehicle::~Vehicle() {
     for(Component* component: _components) {
         delete component;
     }
+    delete _nic;
 }
 
 void Vehicle::start() {

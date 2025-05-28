@@ -71,12 +71,21 @@ protected:
             close(_socket);
     }
     
-    int raw_send(Ethernet::Address dst, Ethernet::Protocol prot, const void* data, unsigned int size) {
+    int raw_send(Ethernet::Address dst, Ethernet::Protocol prot, Ethernet::Footer* footer, const void* data, unsigned int size) {
         //ConsoleLogger::print("Raw Socket Engine: Sending frame.");
         Ethernet::Frame frame(dst, _addr, prot);
         //ConsoleLogger::print("Raw Socket Engine:PROTO -> " + std::to_string(prot));
+        ConsoleLogger::log("Before Send Timestamp: " + std::to_string(footer->get_timestamp()));
+        ConsoleLogger::log("Before Send Sync State: " + std::to_string(footer->get_sync_state()));
+        ConsoleLogger::log("Before Send Packet Origin: " + std::to_string(footer->get_packet_origin()));
+
+        memcpy(frame.footer(), footer, sizeof(Ethernet::Footer));
         memcpy(frame.data(), data, size);
         
+        ConsoleLogger::log("Send Timestamp: " + std::to_string(frame.footer()->get_timestamp()));
+        ConsoleLogger::log("Send Sync State: " + std::to_string(frame.footer()->get_sync_state()));
+        ConsoleLogger::log("Send Packet Origin: " + std::to_string(frame.footer()->get_packet_origin()));
+
         struct sockaddr_ll socket_address;
         socket_address.sll_family = AF_PACKET;
         socket_address.sll_protocol = htons(ETH_P_ALL);
@@ -84,26 +93,33 @@ protected:
         socket_address.sll_halen = ETH_ALEN;
         memcpy(socket_address.sll_addr, dst, ETH_ALEN);
         
-        int bytes_sent = sendto(_socket, &frame, sizeof(Ethernet::Header) + size, 0,
+        int bytes_sent = sendto(_socket, &frame, sizeof(Ethernet::Header) + sizeof(Ethernet::Footer) + size, 0,
                                (struct sockaddr*)&socket_address, sizeof(socket_address));
 
+        ConsoleLogger::log("Bytes sent: " + std::to_string(bytes_sent));
+
         //ConsoleLogger::print("Raw Socket Engine: Frame sent.");                  
-        return bytes_sent - sizeof(Ethernet::Header);
+        return bytes_sent - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer);
     }
     
     int raw_receive(Ethernet::Address* src, Ethernet::Protocol* prot, Ethernet::Footer* footer, void* data, unsigned int size) {
         //ConsoleLogger::print("Raw Socket Engine: Receive started.");  
         Ethernet::Frame frame;
         int bytes_received = recvfrom(_socket, &frame, sizeof(frame), 0, NULL, NULL);
-        
+        ConsoleLogger::log("Bytes received: " + std::to_string(bytes_received));
         if(bytes_received < 0)
             return -1;
         
         memcpy(src, frame.header()->h_source, ETH_ALEN);
+        memcpy(footer, (char*)&frame + sizeof(Ethernet::Header), sizeof(Ethernet::Footer));
         *prot = ntohs(frame.header()->h_proto);
-        memcpy(footer, frame.footer(), sizeof(Ethernet::Footer));
+
+        ConsoleLogger::log("Timestamp: " + std::to_string(footer->get_timestamp()));
+        ConsoleLogger::log("Sync State: " + std::to_string(footer->get_sync_state()));
+        ConsoleLogger::log("Packet Origin: " + std::to_string(footer->get_packet_origin()));
+
         //ConsoleLogger::print("Raw Socket Engine: Receive PROTO -> " + std::to_string(*prot));
-        int data_size = bytes_received - sizeof(Ethernet::Header);
+        int data_size = bytes_received - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer);
         if(data_size > 0) {
             int copy_size = (data_size > (int)size) ? size : data_size;
             memcpy(data, frame.data(), copy_size);

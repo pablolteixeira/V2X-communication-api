@@ -12,6 +12,7 @@ SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
 }
 
 SmartData::~SmartData() {
+    delete _communicator;
     stop();
 }
 
