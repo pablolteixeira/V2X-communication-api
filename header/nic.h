@@ -76,7 +76,7 @@ public:
         
         NICBuffer* buf = _buffer_pool.alloc();
 
-        buf->size(size + sizeof(Ethernet::Header));
+        buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Footer));
         Ethernet::Frame* frame = buf->frame();
         memcpy(frame->header()->h_dest, dst, ETH_ALEN);
         memcpy(frame->header()->h_source, Engine::_addr, ETH_ALEN);
@@ -99,6 +99,8 @@ public:
             //ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
         } else {
+            _time_keeper->update_sync_status();
+
             auto sync_state = _time_keeper->get_sync_state();
             frame->footer()->set_sync_state(sync_state);
 
@@ -110,11 +112,12 @@ public:
 
             int result = Engine::raw_send(
                 frame->header()->h_dest, 
-                prot, 
+                prot,
+                frame->footer(),
                 frame->data(),
-                buf->size() - sizeof(Ethernet::Header)
+                buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Footer)
             );
-            
+
             free(buf);
 
             //ConsoleLogger::print("NIC: Frame sent BROADCAST EXTERNAL.");
@@ -130,17 +133,6 @@ public:
     void receive(NICBuffer* buf, Address* src) {
         //ConsoleLogger::print("NIC: Receiving frame.");
         Ethernet::Frame* frame = buf->frame();
-
-        Footer* footer = frame->footer();
-        if (footer->get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA) {
-            ConsoleLogger::log("Recieved Antenna message");
-            auto system_timestamp = footer->get_timestamp();
-            auto now = _time_keeper->get_local_timestamp();
-            _time_keeper->update_time_keeper(system_timestamp, now);
-        }
-        if (footer->get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
-            ConsoleLogger::log("Recieved others message");
-        }
 
         memcpy(src, frame->header()->h_source, ETH_ALEN);
     }
@@ -202,11 +194,12 @@ private:
                 if (!notify(prot, buf)) {
                     free(buf);
                 } else {
-                    if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA) {
+                    ConsoleLogger::log("Packet origin: " + std::to_string(footer.get_packet_origin()));
+                    if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::ANTENNA && _time_keeper->get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
                         ConsoleLogger::log("Recieved Antenna message");
                         auto system_timestamp = footer.get_timestamp();
-                        auto now = _time_keeper->get_local_timestamp();
-                        _time_keeper->update_time_keeper(system_timestamp, now);
+                        ConsoleLogger::log("Footer timestamp: " + std::to_string(system_timestamp));
+                        _time_keeper->update_time_keeper(system_timestamp, t);
                     }
                     else if (footer.get_packet_origin() == Ethernet::Footer::PacketOrigin::OTHERS) {
                         ConsoleLogger::log("Recieved others message");

@@ -4,12 +4,12 @@
 Antenna::Antenna(EthernetNIC* nic, EthernetProtocol* protocol)
     : AutonomousAgent(nic, protocol) {
     _protocol->register_nic(_nic);
-    _nic->set_time_keeper_packet_origin(Ethernet::Footer::PacketOrigin::ANTENNA);
     EthernetProtocol::Address address(nic->address(), 1);
     _communicator = new EthernetCommunicator(protocol, address);
 }
 
 Antenna::~Antenna() {
+    delete _nic;
 }
 
 void Antenna::send_sync_messages() {
@@ -25,6 +25,7 @@ void Antenna::send_sync_messages() {
 
 void Antenna::start() {
     if (!_running) return;
+    _nic->set_time_keeper_packet_origin(Ethernet::Footer::PacketOrigin::ANTENNA);
     
     _running_thread = new PeriodicThread(
         std::bind(&Antenna::send_sync_messages, this),

@@ -28,9 +28,11 @@ public:
     void update_packet_origin(PacketOrigin packet_origin);
     void update_sync_state(SyncState sync_sate);
     void update_time_keeper(U64 system_timestamp, U64 local_timestamp);
+    void update_sync_status();
 
 private:
     bool is_t1 = true;
+    bool synchronize_time = true;
     int fake_offset;
     
     U64 offset = 0;
@@ -41,7 +43,7 @@ private:
     U64 t4 = 0;
     
     PacketOrigin _packet_origin = PacketOrigin::OTHERS;
-    SyncState _sync_state = SyncState::NOT_SYNCHRONIZED;
+    SyncState sync_state = SyncState::NOT_SYNCHRONIZED;
     U64 sync_timeout = SYNC_TIMEOUT;
 };
 

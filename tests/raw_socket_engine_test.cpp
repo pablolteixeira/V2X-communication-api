@@ -99,9 +99,10 @@ bool test_raw_socket_send_receive() {
         // Envia pacote de teste para o endereço de broadcast
         Ethernet::Address broadcast = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         const char* test_data = "TESTE_RAW_SOCKET";
-        
+        Ethernet::Footer* footer;
+
         std::cout << "Enviando pacote de teste..." << std::endl;
-        int bytes_sent = sender.raw_send(broadcast, 0x8888, test_data, strlen(test_data));
+        int bytes_sent = sender.raw_send(broadcast, 0x8888, footer, test_data, strlen(test_data));
         
         std::cout << "Enviados " << bytes_sent << " bytes." << std::endl;
         
