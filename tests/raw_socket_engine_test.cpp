@@ -100,6 +100,8 @@ bool test_raw_socket_send_receive() {
         Ethernet::Address broadcast = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         const char* test_data = "TESTE_RAW_SOCKET";
         Ethernet::Metadata* metadata;
+        metadata = new Ethernet::Metadata;
+        metadata->set_packet_origin(Ethernet::Metadata::PacketOrigin::OTHERS);
 
         std::cout << "Enviando pacote de teste..." << std::endl;
         int bytes_sent = sender.raw_send(broadcast, 0x8888, metadata, test_data, strlen(test_data));
