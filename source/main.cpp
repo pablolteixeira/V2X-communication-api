@@ -15,7 +15,7 @@
 #include "../header/nic.h"
 #include "../header/raw_socket_engine.h"
 #include "../header/agent/vehicle.h"
-#include "../header/agent/antenna.h"
+#include "../header/agent/rsu.h"
 
 constexpr int MAX_RUNTIME_SECONDS = 5; // total simulation time for the parent process (e.g., 5 min)
 constexpr int SPAWN_INTERVAL_MS = 500;  // interval between spawns (in milliseconds)
@@ -53,12 +53,12 @@ int main() {
         std::string id = "NIC" + std::to_string(child_pid);
         EthernetNIC* nic = new EthernetNIC(id);
         EthernetProtocol* protocol = EthernetProtocol::get_instance();  
-        Antenna* antenna = new Antenna(nic, protocol);
-        antenna->start();
+        RSU* rsu = new RSU(nic, protocol);
+        rsu->start();
         std::this_thread::sleep_for(std::chrono::seconds(MAX_RUNTIME_SECONDS));
-        antenna->stop();
+        rsu->stop();
 
-        delete antenna;
+        delete rsu;
         delete nic;
         ConsoleLogger::close();
         exit(0);

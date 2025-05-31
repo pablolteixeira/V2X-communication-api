@@ -1,15 +1,15 @@
-#ifndef ANTENNA_H
-#define ANTENNA_H
+#ifndef RSU_H
+#define RSU_H
 
 #include "../traits.h"
 #include "../autonomous_agent.h"
 #include "../period_thread.h"
 
-class Antenna: public AutonomousAgent
+class RSU: public AutonomousAgent
 {
 public:
-    Antenna(EthernetNIC* nic, EthernetProtocol* protocol);
-    ~Antenna();
+    RSU(EthernetNIC* nic, EthernetProtocol* protocol);
+    ~RSU();
 
     void send_sync_messages();
     void start() override;
@@ -20,4 +20,4 @@ private:
     EthernetCommunicator* _communicator;
 };
 
-#endif // ANTENNA_H
+#endif // RSU_H

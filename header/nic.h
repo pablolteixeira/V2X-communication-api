@@ -197,8 +197,8 @@ private:
                     free(buf);
                 } else {
                     ConsoleLogger::log("Packet origin: " + std::to_string(metadata.get_packet_origin()));
-                    if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::ANTENNA && _time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
-                        ConsoleLogger::log("Received Antenna message");
+                    if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::RSU && _time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                        ConsoleLogger::log("Received RSU message");
                         auto system_timestamp = metadata.get_timestamp();
                         _time_keeper->update_time_keeper(system_timestamp, t);
                     } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {

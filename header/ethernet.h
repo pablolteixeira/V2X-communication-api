@@ -34,7 +34,7 @@ public:
         };
 
         enum PacketOrigin {
-            ANTENNA,
+            RSU,
             OTHERS
         };
         
