@@ -78,6 +78,7 @@ public:
 
     void create_mac_handler_key() {
         _mac_handler->create_mac_key();
+        _mac_handler->print_mac_key();
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {

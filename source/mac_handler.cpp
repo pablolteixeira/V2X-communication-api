@@ -1,6 +1,6 @@
-#include "mac_handler.h"
+#include "../header/mac_handler.h"
 
-MACHandler::MACHandler(size_t mac_size_bytes = DEFAULT_MAC_BYTE_SIZE) : 
+MACHandler::MACHandler(size_t mac_size_bytes) : 
     _key_is_set(false), _mac_byte_size(mac_size_bytes) {
 }
 
@@ -12,6 +12,10 @@ void MACHandler::set_mac_key(const std::vector<unsigned char>& key) {
     }
     _mac_key = key;
     _key_is_set = true;
+}
+
+std::vector<unsigned char> MACHandler::get_mac_key() {
+    return _mac_key;
 }
 
 void MACHandler::create_mac_key() {
@@ -27,8 +31,17 @@ void MACHandler::create_mac_key() {
     set_mac_key(key);
 }
 
+void MACHandler::print_mac_key() {
+    std::cout << "Chave gerada (" << _mac_key.size() << " bytes): ";
+    std::cout << std::hex;
+    for (unsigned char byte : _mac_key) {
+        std::cout << (static_cast<int>(byte) & 0xFF) << " ";
+    }
+    std::cout << std::dec << std::endl;
+}
+
 uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length) const {
-    if (_key_is_set) {
+    if (!_key_is_set) {
         throw std::runtime_error("A chave MAC não está definida. Não é possível gerar MAC.");
     }
 
