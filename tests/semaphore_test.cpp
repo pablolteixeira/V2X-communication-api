@@ -139,73 +139,73 @@ int main() {
     
     std::cout << "Iniciando testes para a classe Semaphore..." << std::endl;
     
-    // Executar os testes
-    try {
-        test_result("Teste de inicialização", test_semaphore_init());
-    } catch (const std::exception& e) {
-        std::cout << "FALHA: Teste de inicialização - Exceção: " << e.what() << std::endl;
-        failures++;
-    } catch (...) {
-        std::cout << "FALHA: Teste de inicialização - Exceção desconhecida" << std::endl;
-        failures++;
+    std::cout << "----------------------------------------" << std::endl;
+
+    std::cout << "Teste 1: Inicialização" << std::endl;
+    if (test_semaphore_init()) {
+        std::cout << "Teste 1: PASSOU" << std::endl;
+    } else {
+        std::cout << "Teste 1: FALHOU" << std::endl;
+        failures ++;
+    }
+
+    std::cout << "----------------------------------------" << std::endl;
+
+    std::cout << "Teste 2: Operação P" << std::endl;
+    if (test_semaphore_p()) {
+        std::cout << "Teste 2: PASSOU" << std::endl;
+    } else {
+        std::cout << "Teste 2: FALHOU" << std::endl;
+        failures ++;
     }
     
-    try {
-        test_result("Teste da operação P", test_semaphore_p());
-    } catch (const std::exception& e) {
-        std::cout << "FALHA: Teste da operação P - Exceção: " << e.what() << std::endl;
-        failures++;
-    } catch (...) {
-        std::cout << "FALHA: Teste da operação P - Exceção desconhecida" << std::endl;
-        failures++;
+    std::cout << "----------------------------------------" << std::endl;
+
+    std::cout << "Teste 3: Operação V" << std::endl;
+    if (test_semaphore_v()) {
+        std::cout << "Teste 3: PASSOU" << std::endl;
+    } else {
+        std::cout << "Teste 3: FALHOU" << std::endl;
+        failures ++;
     }
-    
-    try {
-        test_result("Teste da operação V", test_semaphore_v());
-    } catch (const std::exception& e) {
-        std::cout << "FALHA: Teste da operação V - Exceção: " << e.what() << std::endl;
-        failures++;
-    } catch (...) {
-        std::cout << "FALHA: Teste da operação V - Exceção desconhecida" << std::endl;
-        failures++;
+
+    std::cout << "----------------------------------------" << std::endl;
+
+    std::cout << "Teste 4: Operação try_p" << std::endl;
+    if (test_semaphore_try_p()) {
+        std::cout << "Teste 4: PASSOU" << std::endl;
+    } else {
+        std::cout << "Teste 4: FALHOU" << std::endl;
+        failures ++;
     }
-    
-    try {
-        test_result("Teste da operação try_p", test_semaphore_try_p());
-    } catch (const std::exception& e) {
-        std::cout << "FALHA: Teste da operação try_p - Exceção: " << e.what() << std::endl;
-        failures++;
-    } catch (...) {
-        std::cout << "FALHA: Teste da operação try_p - Exceção desconhecida" << std::endl;
-        failures++;
+
+    std::cout << "----------------------------------------" << std::endl;
+
+    std::cout << "Teste 5: Sincronização de Threads" << std::endl;
+    if (test_semaphore_thread_sync()) {
+        std::cout << "Teste 5: PASSOU" << std::endl;
+    } else {
+        std::cout << "Teste 5: FALHOU" << std::endl;
+        failures ++;
     }
-    
-    try {
-        test_result("Teste de sincronização de threads", test_semaphore_thread_sync());
-    } catch (const std::exception& e) {
-        std::cout << "FALHA: Teste de sincronização de threads - Exceção: " << e.what() << std::endl;
-        failures++;
-    } catch (...) {
-        std::cout << "FALHA: Teste de sincronização de threads - Exceção desconhecida" << std::endl;
-        failures++;
+
+    std::cout << "----------------------------------------" << std::endl;
+
+    std::cout << "Teste 6: Múltiplas de Threads" << std::endl;
+    if (test_semaphore_multiple_threads()) {
+        std::cout << "Teste 6: PASSOU" << std::endl;
+    } else {
+        std::cout << "Teste 6: FALHOU" << std::endl;
+        failures ++;
     }
-    
-    try {
-        test_result("Teste com múltiplas threads", test_semaphore_multiple_threads());
-    } catch (const std::exception& e) {
-        std::cout << "FALHA: Teste com múltiplas threads - Exceção: " << e.what() << std::endl;
-        failures++;
-    } catch (...) {
-        std::cout << "FALHA: Teste com múltiplas threads - Exceção desconhecida" << std::endl;
-        failures++;
-    }
-    
-    // Exibir resumo dos resultados
+
+    std::cout << "----------------------------------------" << std::endl;
+
     if (failures == 0) {
         std::cout << "TODOS OS TESTES PASSARAM!" << std::endl;
-        return 0;  // Sucesso
+        return 0;
     } else {
         std::cout << failures << " TESTE(S) FALHARAM!" << std::endl;
-        return 1;  // Falha
+        return 1;
     }
 }
