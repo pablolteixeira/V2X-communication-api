@@ -15,6 +15,7 @@
 #include "ethernet.h"
 #include "console_logger.h"
 #include "mac_address_generator.h"
+#include "mac_handler.h"
 #include "protocol.h"
 #include "buffer_pool.h"
 #include "semaphore.h"
@@ -61,6 +62,7 @@ public:
         fcntl(Engine::_socket, F_SETOWN, getpid());
         
         _time_keeper = new TimeKeeper();
+        _mac_handler = new MACHandler();
 
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
@@ -108,6 +110,11 @@ public:
 
             auto packet_origin = _time_keeper->get_packet_origin();
             frame->metadata()->set_packet_origin(packet_origin);
+
+            if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                auto mac = _mac_handler->generate_mac(frame->data(), sizeof(frame->data()));
+                frame->metadata()->set_mac(mac);
+            }
 
             auto now = _time_keeper->get_system_timestamp();
             frame->metadata()->set_timestamp(now);
@@ -246,6 +253,7 @@ private:
     Address _address;
     std::thread _worker_thread;
     TimeKeeper* _time_keeper;
+    MACHandler* _mac_handler;
 };
 
 
