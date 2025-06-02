@@ -230,7 +230,7 @@ template <typename NIC>
 const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST(Protocol<NIC>::Address::BROADCAST_MAC, 0);
 
 template <typename NIC>
-const unsigned int Protocol<NIC>::MTU = NIC::MTU - sizeof(Protocol<NIC>::Header) - sizeof(Protocol<NIC>::);
+const unsigned int Protocol<NIC>::MTU = NIC::MTU - sizeof(Protocol<NIC>::Header) - sizeof(Ethernet::Metadata);
 
 template <typename NIC>
 typename Protocol<NIC>::Observed Protocol<NIC>::_observed;
