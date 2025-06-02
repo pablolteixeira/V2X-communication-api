@@ -5,6 +5,8 @@
 #include <string>
 #include <stdexcept>
 #include <cstdint>
+#include <random>
+#include <algorithm>
 
 
 #include "ethernet.h"
@@ -20,6 +22,7 @@ public:
     MACHandler(size_t mac_size_bytes = DEFAULT_MAC_BYTE_SIZE);
 
     void set_mac_key(const std::vector<unsigned char>& key);
+    void create_mac_key();
 
     uint32_t generate_mac(const unsigned char* data, size_t data_length) const;
     bool verify_mac(const unsigned char* data, size_t data_length, uint32_t received_mac) const;

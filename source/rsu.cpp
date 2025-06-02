@@ -3,9 +3,11 @@
 
 RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol)
     : AutonomousAgent(nic, protocol) {
+    nic->create_mac_handler_key();
     _protocol->register_nic(_nic);
     EthernetProtocol::Address address(nic->address(), 1);
     _communicator = new EthernetCommunicator(protocol, address);
+    
 }
 
 RSU::~RSU() {}

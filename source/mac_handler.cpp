@@ -14,6 +14,19 @@ void MACHandler::set_mac_key(const std::vector<unsigned char>& key) {
     _key_is_set = true;
 }
 
+void MACHandler::create_mac_key() {
+    std::vector<unsigned char> key(DEFAULT_MAC_BYTE_SIZE);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 255);
+    std::generate(key.begin(), key.end(), [&]() {
+        return static_cast<unsigned char>(distrib(gen));
+    });
+
+    set_mac_key(key);
+}
+
 uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length) const {
     if (_key_is_set) {
         throw std::runtime_error("A chave MAC não está definida. Não é possível gerar MAC.");

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 #include <thread>
+#include <random>
 
 #include "observer.h"
 #include "ethernet.h"
@@ -73,6 +74,10 @@ public:
     void stop() {
         ConsoleLogger::log("NIC: Stopping");
         cleanup_nic();
+    }
+
+    void create_mac_handler_key() {
+        _mac_handler->create_mac_key();
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
