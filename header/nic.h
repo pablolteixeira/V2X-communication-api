@@ -118,8 +118,11 @@ public:
             frame->metadata()->set_packet_origin(packet_origin);
 
             if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
-                auto mac = _mac_handler->generate_mac(frame->data(), sizeof(frame->data()));
-                frame->metadata()->set_mac(mac);
+                try {
+                    auto mac = _mac_handler->generate_mac(frame->data(), sizeof(frame->data()));
+                    frame->metadata()->set_mac(mac);
+                } catch (const std::exception& ex){
+                }
             }
 
             auto now = _time_keeper->get_system_timestamp();
