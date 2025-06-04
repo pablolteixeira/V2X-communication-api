@@ -123,6 +123,9 @@ public:
                     frame->metadata()->set_mac(mac);
                 } catch (const std::exception& ex){
                 }
+            } else if (packet_origin == Ethernet::Metadata::PacketOrigin::RSU) {
+                auto mac_key = _mac_handler->get_mac_key();
+                frame->metadata()->set_mac_key(mac_key);
             }
 
             auto now = _time_keeper->get_system_timestamp();
@@ -217,6 +220,7 @@ private:
                         ConsoleLogger::log("Received RSU message");
                         auto system_timestamp = metadata.get_timestamp();
                         _time_keeper->update_time_keeper(system_timestamp, t);
+                        _mac_handler->set_mac_key(metadata.get_mac_key());
                     } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
                         ConsoleLogger::log("Received others message");
                     }
