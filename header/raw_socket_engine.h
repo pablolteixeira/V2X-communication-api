@@ -100,6 +100,11 @@ protected:
         if(bytes_received < 0)
             return -1;
 
+
+        memcpy(src, frame.header()->h_source, ETH_ALEN);
+        *prot = ntohs(frame.header()->h_proto);
+        memcpy(metadata, frame.metadata(), sizeof(Ethernet::Metadata));
+
         //ConsoleLogger::print("Raw Socket Engine: Receive PROTO -> " + std::to_string(*prot));
         int data_size = bytes_received - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata);
         if(data_size > 0) {
