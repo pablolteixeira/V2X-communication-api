@@ -4,35 +4,35 @@ MACHandler::MACHandler(size_t mac_size_bytes) :
     _key_is_set(false), _mac_byte_size(mac_size_bytes) {
 }
 
-void MACHandler::set_mac_key(const std::vector<unsigned char>& key) {
-    if (key.empty()) {
-        _mac_key.clear();
-        _key_is_set = false;
-        throw std::invalid_argument("A chave MAC não pode ser vazia.");
-    }
-    _mac_key = key;
+void MACHandler::set_mac_key(Ethernet::MAC_KEY *key) {
+    // for(size_t i = 0; i < Ethernet::DEFAULT_MAC_BYTE_SIZE; i++) {
+    //     if (key[i]) {
+    //         _key_is_set = false;
+    //         throw std::invalid_argument("A chave MAC não pode ser vazia.");
+    //     }
+    // }
+    memcpy(&_mac_key, key, Ethernet::DEFAULT_MAC_BYTE_SIZE);
     _key_is_set = true;
 }
 
-std::vector<unsigned char> MACHandler::get_mac_key() {
-    return _mac_key;
+Ethernet::MAC_KEY* MACHandler::get_mac_key() {
+    return &_mac_key;
 }
 
 void MACHandler::create_mac_key() {
-    std::vector<unsigned char> key(DEFAULT_MAC_BYTE_SIZE);
+    Ethernet::MAC_KEY key;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, 255);
-    std::generate(key.begin(), key.end(), [&]() {
-        return static_cast<unsigned char>(distrib(gen));
-    });
-
-    set_mac_key(key);
+    for(size_t i = 0; i < Ethernet::DEFAULT_MAC_BYTE_SIZE; i++) {
+        key[i] = static_cast<unsigned char>(distrib(gen));
+    }
+    set_mac_key(&key);
 }
 
 void MACHandler::print_mac_key() {
-    std::cout << "Chave gerada (" << _mac_key.size() << " bytes): ";
+    std::cout << "Chave gerada (" << Ethernet::DEFAULT_MAC_BYTE_SIZE << " bytes): ";
     std::cout << std::hex;
     for (unsigned char byte : _mac_key) {
         std::cout << (static_cast<int>(byte) & 0xFF) << " ";
@@ -55,7 +55,7 @@ uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length)
 
     // 2. Faz XOR dos bytes da chave no buffer do MAC
     // A chave inteira é "dobrada" (folded) no mac_buffer.
-    for (size_t i = 0; i < _mac_key.size(); ++i) {
+    for (size_t i = 0; i < Ethernet::DEFAULT_MAC_BYTE_SIZE; ++i) {
         mac_buffer[i % this->_mac_byte_size] ^= _mac_key[i];
     }
 
@@ -78,9 +78,6 @@ uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length)
 
 bool MACHandler::verify_mac(const unsigned char* data, size_t data_length, uint32_t received_mac) const {
     if (!_key_is_set) {
-        // Política de erro: pode logar, retornar false ou lançar exceção.
-        // Retornar false é uma opção segura se a verificação falhar devido à ausência de chave.
-        // Alternativamente: throw std::runtime_error("A chave MAC não está definida. Não é possível verificar MAC.");
         return false; 
     }
     

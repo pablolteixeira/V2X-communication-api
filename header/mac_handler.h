@@ -14,17 +14,17 @@
 
 
 // Define o tamanho do MAC em bytes. Um MAC de 4 bytes pode ser representado como uint32_t.
-const size_t DEFAULT_MAC_BYTE_SIZE = 4;
+
 
 class MACHandler 
 {
 
 public:
-    MACHandler(size_t mac_size_bytes = DEFAULT_MAC_BYTE_SIZE);
+    MACHandler(size_t mac_size_bytes = Ethernet::DEFAULT_MAC_BYTE_SIZE);
 
     void create_mac_key();
-    void set_mac_key(const std::vector<unsigned char>& key);
-    std::vector<unsigned char> get_mac_key();
+    void set_mac_key(Ethernet::MAC_KEY *key);
+    Ethernet::MAC_KEY* get_mac_key();
 
     void print_mac_key();
 
@@ -32,7 +32,7 @@ public:
     bool verify_mac(const unsigned char* data, size_t data_length, uint32_t received_mac) const;
 
 private:
-    std::vector<unsigned char> _mac_key;
+    Ethernet::MAC_KEY _mac_key;
     bool _key_is_set;
     size_t _mac_byte_size;
 };

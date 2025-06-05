@@ -5,9 +5,6 @@
 #include <vector>
 
 bool test_mac_handler() {
-    const unsigned char key_char[] = "supersecretkey";
-    std::vector<unsigned char> key_vector;
-    key_vector.assign(key_char, key_char + 14);
     
     const char* message_string =
         "Cappu-cappu-cappuccino Assassino! Assassini cappuccini! "
@@ -19,7 +16,7 @@ bool test_mac_handler() {
     size_t message_length = strlen(message_string);
 
     MACHandler mac_handler = MACHandler();
-    mac_handler.set_mac_key(key_vector);
+    mac_handler.create_mac_key();
 
     uint32_t mac_generated = mac_handler.generate_mac(message_char, message_length);
 

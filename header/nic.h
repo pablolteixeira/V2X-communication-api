@@ -223,6 +223,11 @@ private:
                         _mac_handler->set_mac_key(metadata.get_mac_key());
                     } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
                         ConsoleLogger::log("Received others message");
+                        if(_mac_handler->verify_mac(frame->data(), sizeof(frame->data()), metadata.get_mac())) {
+                            ConsoleLogger::log("Message verification failure");
+                        } else {
+                            ConsoleLogger::log("Message verification success");
+                        };
                     }
                 }
             } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
