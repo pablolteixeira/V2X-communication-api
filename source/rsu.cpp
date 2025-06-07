@@ -1,8 +1,8 @@
 #include "../header/agent/rsu.h"
 
 
-RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol)
-    : AutonomousAgent(nic, protocol) {
+RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol, MacKeyTable* mac_key_table)
+    : AutonomousAgent(nic, protocol), _mac_key_table{mac_key_table} {
     nic->create_mac_handler_key();
     _protocol->register_nic(_nic);
     EthernetProtocol::Address address(nic->address(), 1);
@@ -25,7 +25,7 @@ void RSU::send_sync_messages() {
 
 void RSU::start() {
     if (!_running) return;
-    _nic->set_time_keeper_packet_origin(Ethernet::Metadata::PacketOrigin::RSU);
+    _nic->set_packet_origin(Ethernet::Metadata::PacketOrigin::RSU);
     
     _running_thread = new PeriodicThread(
         std::bind(&RSU::send_sync_messages, this),
