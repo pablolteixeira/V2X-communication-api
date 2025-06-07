@@ -47,25 +47,30 @@ public:
         Metadata(U64 timestamp, SyncState sync_state, PacketOrigin packet_origin) : _timestamp(timestamp), _sync_state(sync_state), _packet_origin(packet_origin) {}
 
         MAC get_mac() {return _mac; }
-        MAC_KEY* get_mac_key() {return &_mac_key; }
         U64 get_timestamp() { return _timestamp; }
         SyncState get_sync_state() { return _sync_state; }
         PacketOrigin get_packet_origin() {return _packet_origin; }
 
         void set_mac(MAC mac) {_mac = mac; }
-        void set_mac_key(MAC_KEY* mac_key) {memcpy(&_mac_key, mac_key, DEFAULT_MAC_BYTE_SIZE); }
         void set_timestamp(U64 timestamp) {_timestamp = timestamp; }
         void set_sync_state(SyncState sync_state) { _sync_state = sync_state; }
         void set_packet_origin(PacketOrigin packet_origin) { _packet_origin = packet_origin; }
+        void set_mac_key(MAC_KEY* mac_key) {memcpy(&_mac_key, mac_key, DEFAULT_MAC_BYTE_SIZE); }
+        void set_dest_mac_key(MAC_KEY* mac_key) {memcpy(&_dest_mac_key, mac_key, DEFAULT_MAC_BYTE_SIZE); }
+        MAC_KEY* get_mac_key() {return &_mac_key; }
+        MAC_KEY* get_dest_mac_key() {return &_dest_mac_key; }
 
     private:
         U64 _timestamp;
         SyncState _sync_state;
         MAC _mac;
-        MAC_KEY _mac_key;
         PacketOrigin _packet_origin;
+        unsigned short _quadrant;
+        unsigned short _dest_quadrant;
+        MAC_KEY _mac_key;
+        MAC_KEY _dest_mac_key;
     } __attribute__((packed));
-
+    
     class Frame 
     {
     public:

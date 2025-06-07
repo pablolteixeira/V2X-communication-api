@@ -2,6 +2,8 @@
 #define VEHICLE_H
 
 #include <vector>
+#include <chrono>
+
 #include "../traits.h"
 #include "../autonomous_agent.h"
 #include "../component.h"
@@ -11,14 +13,19 @@
 class Vehicle: public AutonomousAgent
 {
 public:
-    Vehicle(EthernetNIC* nic, EthernetProtocol* protocol);
+    Vehicle(EthernetNIC* nic, EthernetProtocol* protocol, int lifetime);
     ~Vehicle();
     
     void start() override;
     void stop() override;
+    void run();
 
 protected:
     std::vector<Component*> _components;
+    unsigned int _quadrant;
+    unsigned int _dest_quadrant;
+    int _lifetime;
+    U64 _start_time;
 };
 
 #endif // VEHICLE_H

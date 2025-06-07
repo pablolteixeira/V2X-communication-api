@@ -158,7 +158,7 @@ public:
         memcpy(src, frame->header()->h_source, ETH_ALEN);
     }
 
-    void set_time_keeper_packet_origin(Ethernet::Metadata::PacketOrigin packet_origin) {
+    void set_packet_origin(Ethernet::Metadata::PacketOrigin packet_origin) {
         _time_keeper->update_packet_origin(packet_origin);
     }
 
