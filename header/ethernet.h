@@ -22,13 +22,13 @@ class Ethernet
 public:
     static const unsigned int MTU = ETH_FRAME_LEN;
     static const unsigned char BROADCAST_MAC[ETH_ALEN];
-    static const size_t DEFAULT_MAC_BYTE_SIZE = 8;
+    static const size_t MAC_BYTE_SIZE = 8;
 
     typedef struct ethhdr Header;
     typedef unsigned char Address[ETH_ALEN];
     typedef unsigned short Protocol;
     typedef uint32_t MAC;
-    typedef unsigned char MAC_KEY[DEFAULT_MAC_BYTE_SIZE];
+    typedef unsigned char MAC_KEY[MAC_BYTE_SIZE];
 
     class Metadata 
     {
@@ -50,15 +50,15 @@ public:
         U64 get_timestamp() { return _timestamp; }
         SyncState get_sync_state() { return _sync_state; }
         PacketOrigin get_packet_origin() {return _packet_origin; }
+        unsigned short get_quadrant() { return _quadrant; }
+        bool get_has_mac_keys() { return _has_mac_keys; }
 
         void set_mac(MAC mac) {_mac = mac; }
         void set_timestamp(U64 timestamp) {_timestamp = timestamp; }
         void set_sync_state(SyncState sync_state) { _sync_state = sync_state; }
         void set_packet_origin(PacketOrigin packet_origin) { _packet_origin = packet_origin; }
-        void set_mac_key(MAC_KEY* mac_key) {memcpy(&_mac_key, mac_key, DEFAULT_MAC_BYTE_SIZE); }
-        void set_dest_mac_key(MAC_KEY* mac_key) {memcpy(&_dest_mac_key, mac_key, DEFAULT_MAC_BYTE_SIZE); }
-        MAC_KEY* get_mac_key() {return &_mac_key; }
-        MAC_KEY* get_dest_mac_key() {return &_dest_mac_key; }
+        void set_quadrant(unsigned short quadrant) {_quadrant = quadrant; }
+        void set_has_mac_keys(bool has_mac_keys) { _has_mac_keys = has_mac_keys; }
 
     private:
         U64 _timestamp;
@@ -66,10 +66,8 @@ public:
         MAC _mac;
         PacketOrigin _packet_origin;
         unsigned short _quadrant;
-        unsigned short _dest_quadrant;
-        MAC_KEY _mac_key;
-        MAC_KEY _dest_mac_key;
-    } __attribute__((packed));
+        bool _has_mac_keys;
+    }__attribute__((packed));
     
     class Frame 
     {

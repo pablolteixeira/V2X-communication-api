@@ -41,9 +41,26 @@ int main() {
     std::cout << "Vehicle lifetime span: " << MIN_LIFETIME << " | " << MAX_LIFETIME << " s" << std::endl;
     std::cout << "\n---------------------------------------------------------------\n" << std::endl;
     
-    MacKeyTable mac_key_table = MacKeyTable();
+    std::vector<unsigned char>* mac_key_vector;
 
-    for (int i = 0; i < Traits<RSU>::NUM_RSU; i++) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 255);
+
+    mac_key_vector->clear()
+    mac_key_vector->reserve(Traits<RSU>::NUM_RSU);
+
+    for (int i = 0; i < Traits<RSU>::NUM_RSU; ++i) {
+        Ethernet::MAC_KEY key;
+
+        for (size_t j = 0; j < Ethernet::MAC_BYTE_SIZE; ++j) {
+            key[j] = static_cast<unsigned char>(distrib(gen));
+        }
+
+        mac_key_vector->push_back(key);
+    }
+
+    for (unsigned short i = 0; i < Traits<RSU>::NUM_RSU; i++) {
         pid_t pid = fork();
         
         if (pid < 0) {
@@ -56,9 +73,9 @@ int main() {
             ConsoleLogger::log("Child process created: PID = " + std::to_string(child_pid));
             
             std::string id = "NIC" + std::to_string(child_pid);
-            EthernetNIC* nic = new EthernetNIC(id);
+            EthernetNIC* nic = new EthernetNIC(id, i);
             EthernetProtocol* protocol = EthernetProtocol::get_instance();  
-            RSU* rsu = new RSU(nic, protocol, mac_key_table);
+            RSU* rsu = new RSU(nic, protocol, mac_key_vector);
             rsu->start();
             std::this_thread::sleep_for(std::chrono::seconds(MAX_RUNTIME_SECONDS));
             rsu->stop();
@@ -93,7 +110,11 @@ int main() {
             ConsoleLogger::log("Child process created: PID = " + std::to_string(child_pid));
             
             std::string id = "NIC" + std::to_string(child_pid);
-            EthernetNIC* nic = new EthernetNIC(id);
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> distrib(1, Traits<Vehicle>::NUM_RSU);
+            
+            EthernetNIC* nic = new EthernetNIC(id, static_cast<unsigned short>(distrib(gen)));
             EthernetProtocol* child_protocol = EthernetProtocol::get_instance();
             
             int lifetime = MIN_LIFETIME + rand() % (MAX_LIFETIME - MIN_LIFETIME + 1);

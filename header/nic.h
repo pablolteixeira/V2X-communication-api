@@ -21,6 +21,8 @@
 #include "buffer_pool.h"
 #include "semaphore.h"
 #include "time_keeper.h"
+#include "vehicle_table.h"
+#include "lru-cache/lru-cache.h"
 
 template <typename Engine>
 class NIC: public Ethernet, public Conditionally_Data_Observed<Buffer<Ethernet::Frame>,
@@ -38,7 +40,7 @@ public:
 
     static NIC<Engine>* _instance;
 public:
-    NIC(const std::string& id) : _buffer_pool(Ethernet::MTU), _data_semaphore(0), _running(true) {
+    NIC(const std::string& id, const unsigned short quadrant) : _buffer_pool(Ethernet::MTU), _data_semaphore(0), _running(true), _quadrant(quadrant) {
         ConsoleLogger::print("NIC " + id + ": Starting...");
         // MAC ADDRESS + PID + COMPONENT ID
         MacAddressGenerator::generate_mac_from_seed(id, _address);
@@ -64,6 +66,7 @@ public:
         
         _time_keeper = new TimeKeeper();
         _mac_handler = new MACHandler();
+        _mac_key_cache = new LRU_Cache<unsigned short, Ethernet::MAC_KEY>::(3);
 
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
@@ -79,6 +82,22 @@ public:
     void create_mac_handler_key() {
         _mac_handler->create_mac_key();
         _mac_handler->print_mac_key();
+    }
+    
+    void create_mac_key_data(std::vector<unsigned char*>* mac_keys){
+        prev_quad = (_quadrant - 1 + mac_keys->size()) % mac_keys->size();
+        next_quad = (_quadrant + 1) % mac_keys->size();
+        
+        int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
+
+        memcpy(_mac_key_data, _mac_keys[prev_quad], sizeof(unsigned short));
+        memcpy(_mac_key_data + sizeof(unsigned short), _mac_keys[prev_quad], Ethernet::MAC_BYTE_SIZE);
+
+        memcpy(_mac_key_data + length, _mac_keys[next_quad], sizeof(unsigned short));
+        memcpy(_mac_key_data + (length + sizeof(unsigned short)), _mac_keys[next_quad], Ethernet::MAC_BYTE_SIZE);
+        
+        memcpy(_mac_key_data + (sizeof(unsigned short) * length), _mac_keys[_quadrant], sizeof(unsigned short));
+        memcpy(_mac_key_data + ((sizeof(unsigned short) * length) + sizeof(unsigned short)), _mac_keys[_quadrant], Ethernet::MAC_BYTE_SIZE);
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
@@ -97,7 +116,6 @@ public:
 
     int send(NICBuffer* buf) {
         //ConsoleLogger::print("NIC: Sending frame.");
-
         Ethernet::Frame* frame = buf->frame();
         Protocol_Number prot;
         prot = ntohs(frame->header()->h_proto);
@@ -118,19 +136,20 @@ public:
             frame->metadata()->set_packet_origin(packet_origin);
 
             if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
-                try {
-                    auto mac = _mac_handler->generate_mac(frame->data(), sizeof(frame->data()));
+                auto mac = _mac_handler->generate_mac(frame->data(), sizeof(frame->data()));
+                if (mac != 0) {
                     frame->metadata()->set_mac(mac);
-                } catch (const std::exception& ex){
                 }
-            } else if (packet_origin == Ethernet::Metadata::PacketOrigin::RSU) {
-                auto mac_key = _mac_handler->get_mac_key();
-                frame->metadata()->set_mac_key(mac_key);
             }
-
+            
             auto now = _time_keeper->get_system_timestamp();
             frame->metadata()->set_timestamp(now);
 
+            if(_send_mac_key) {
+                int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
+                memcpy(frame->data(), _mac_key_data, 3*length);
+            }
+            
             int result = Engine::raw_send(
                 frame->header()->h_dest, 
                 prot,
@@ -138,7 +157,10 @@ public:
                 frame->data(),
                 buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata)
             );
-
+            if(result > 0) {
+                _send_mac_key = false;
+            }
+            
             free(buf);
 
             //ConsoleLogger::print("NIC: Frame sent BROADCAST EXTERNAL.");
@@ -160,6 +182,10 @@ public:
 
     void set_packet_origin(Ethernet::Metadata::PacketOrigin packet_origin) {
         _time_keeper->update_packet_origin(packet_origin);
+    }
+
+    void set_quadrant(unsigned int new_quadrant) {
+
     }
 
     Address& address() {
@@ -212,22 +238,53 @@ private:
                 // Successful read
                 auto t = _time_keeper->get_local_timestamp();
                 buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata));
-                if (!notify(prot, buf)) {
+
+                auto sender_quadrant = metadata.get_quadrant();
+
+                // VERIFY IF THE RSU RECEIVED THE MESSAGE 
+                if(_time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::RSU) {
+                    if(_quadrant == sender_quadrant) {
+                        Ethernet::Address* sender_address;
+                        memcpy(sender_address, frame->data(), 6);
+                        if(_vehicle_table.check_vehicle(sender_adress)) {
+                            _vehicle_table.set_vehicle(sender_address);
+                            _send_mac_key = true;
+                        }
+                    }
+
                     free(buf);
+                // VERIFY IF THE VEHICLE RECEIVED THE MESSAGE
                 } else {
-                    ConsoleLogger::log("Packet origin: " + std::to_string(metadata.get_packet_origin()));
-                    if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::RSU && _time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                    if (metadata.get_packet_origin == Ethernet::Metadata::PacketOrigin::RSU && sender_quadrant == _quadrant) {
                         ConsoleLogger::log("Received RSU message");
                         auto system_timestamp = metadata.get_timestamp();
-                        _time_keeper->update_time_keeper(system_timestamp, t);
-                        _mac_handler->set_mac_key(metadata.get_mac_key());
-                    } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
-                        ConsoleLogger::log("Received others message");
-                        if(_mac_handler->verify_mac(frame->data(), sizeof(frame->data()), metadata.get_mac())) {
-                            ConsoleLogger::log("Message verification failure");
+                        _time_keeper->update_time_keeper(system_timestamp, t);    
+                        
+                        // FRAME -> FRAME HEADER + METADATA + (DATA) -> [(id1+CHAVE1) + (id2+CHAVE2) + (id3+CHAVE3)]
+                        int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
+                        for(int i = 0; i < 3; i++) {
+                            unsigned short quadrant;
+                            Ethernet::MAC_KEY* key;
+                            memcpy(quadrant, frame->data()+(i*length), sizeof(unsigned short));
+                            memcpy(key, frame->data()+(i*length)+2, Ethernet::MAC_BYTE_SIZE);
+                            _mac_key_cache->put(sender_quadrant, key);
+                        }
+                        free(buf);
+                    } else if (metadata.get_packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                        Ethernet::MAC_KEY* mac_key = _mac_key_cache->get(sender_quadrant);
+                        if(mac_key != nullptr) {
+                            if(_mac_handler->verify_mac(frame->data(), sizeof(frame->data()), metadata.get_mac())) {
+                                if (!notify(prot, buf)) {
+                                    free(buf);
+                                }
+                            } else {
+                                free(buf);
+                            }
                         } else {
-                            ConsoleLogger::log("Message verification success");
-                        };
+                            free(buf);
+                        }
+                    } else {
+                        free(buf);
                     }
                 }
             } else if (size == 0 || (size < 0 && errno == EAGAIN)) {
@@ -240,6 +297,44 @@ private:
                 perror("Error reading from socket");
                 break;
             }
+
+            /*  
+                SE A MENSAGEM CHEGOU DE UM CARRO NA RSU, E O CARRO AINDA NÃO ESTÁ NA TABELA DA RSU, A RSU VAI MANDAR UMA MENSAGEM
+                RAW COM AS CHAVES DENTRO DO DATA DO FRAME
+                
+                if RSU {
+                    if VEICULO TA NO MEU QUADRANTE {
+                        if NOT VEICULO TA NA TABELA DE VEICULOS {
+                            ADICIONAR NA TABELA DE VEICULOS
+                            ENVIAR MAC KEY (SETA FLAG)
+                        }
+                    }
+                    FREE
+                }
+                
+                
+                if VEICULO {
+                    if VEM DE RSU DO MEU QUADRANTE {
+                        UPDATE TIME KEEPER
+                        if MENSAGEM TEM CHAVE {
+                            ATUALIZA CHAVES
+                    } ELSE {
+                        if CHECAR SE ELE TEM A CHAVE DAQUELE QUADRANTE {
+                            if VERIFICAR MAC{
+                                if NOT NOTIFY {
+                                    FREE
+                                }
+                            } ELSE {
+                                FREE
+                            }
+                        } ELSE {
+                            FREE
+                        }  
+                    } else {
+                        FREE
+                    }
+                }
+            */
         }
     }
 
@@ -272,6 +367,12 @@ private:
     std::thread _worker_thread;
     TimeKeeper* _time_keeper;
     MACHandler* _mac_handler;
+    
+    VehicleTable _vehicle_table;
+    unsigned int _quadrant;
+    bool _send_mac_key;
+    LRU_Cache<unsigned short, Ethernet::MAC_KEY>* _mac_key_cache;
+    unsigned char _mac_key_data;
 };
 
 

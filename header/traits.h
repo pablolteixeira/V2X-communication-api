@@ -10,7 +10,7 @@ public:
     static const unsigned int ETHERNET_PROTOCOL_NUMBER = 0x8888;
     static const unsigned int NUM_COMPONENTS = 4;
     static const unsigned int NUM_VEHICLE = 2;
-    static const unsigned int NUM_RSU = 9;
+    static const unsigned int NUM_RSU = 4;
 
     unsigned int pick_random_quadrant() {
         std::random_device rd;

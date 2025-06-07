@@ -22,8 +22,6 @@ public:
 
 protected:
     std::vector<Component*> _components;
-    unsigned int _quadrant;
-    unsigned int _dest_quadrant;
     int _lifetime;
     U64 _start_time;
 };

@@ -20,7 +20,7 @@ class MACHandler
 {
 
 public:
-    MACHandler(size_t mac_size_bytes = Ethernet::DEFAULT_MAC_BYTE_SIZE);
+    MACHandler(size_t mac_size_bytes = Ethernet::MAC_BYTE_SIZE);
 
     void create_mac_key();
     void set_mac_key(Ethernet::MAC_KEY *key);

@@ -56,12 +56,12 @@ void Vehicle::stop() {
 void Vehicle::run() {
     U64 elapsed_time = 0;
     while(elapsed_time < _lifetime) {
-        int size = sqrt(Traits<Vehicle>::NUM_RSU);
-        int x = _quadrant % size;
-        int y = _quadrant / size;
-        
-
         std::this_thread::sleep_for(std::chrono::seconds(_lifetime/3));
+        x = _quadrant.first;
+
+        (_quadrant + 1) % Traits<Vehicle>::NUM_RSU;
+        update_quadrant();
+
 
         std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
         std::time_t epoch_time = std::chrono::system_clock::to_time_t(now);

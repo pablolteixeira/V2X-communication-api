@@ -1,15 +1,16 @@
 #ifndef RSU_H
 #define RSU_H
 
+#include <vector>
+
 #include "../traits.h"
 #include "../autonomous_agent.h"
 #include "../period_thread.h"
-#include "../mac_key_table.h"
 
 class RSU: public AutonomousAgent
 {
 public:
-    RSU(EthernetNIC* nic, EthernetProtocol* protocol, MacKeyTable mac_key_table);
+    RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<unsigned char> mac_key_vector);
     ~RSU();
 
     void send_sync_messages();
@@ -19,7 +20,7 @@ public:
 private:
     PeriodicThread* _running_thread;
     EthernetCommunicator* _communicator;
-    MacKeyTable _mac_key_table;
+    std::vector<unsigned char>* _mac_key_vector;
     unsigned short _quadrant;
 };
 

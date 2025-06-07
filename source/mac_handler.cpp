@@ -5,13 +5,13 @@ MACHandler::MACHandler(size_t mac_size_bytes) :
 }
 
 void MACHandler::set_mac_key(Ethernet::MAC_KEY *key) {
-    // for(size_t i = 0; i < Ethernet::DEFAULT_MAC_BYTE_SIZE; i++) {
+    // for(size_t i = 0; i < Ethernet::MAC_BYTE_SIZE; i++) {
     //     if (key[i]) {
     //         _key_is_set = false;
     //         throw std::invalid_argument("A chave MAC não pode ser vazia.");
     //     }
     // }
-    memcpy(&_mac_key, key, Ethernet::DEFAULT_MAC_BYTE_SIZE);
+    memcpy(&_mac_key, key, Ethernet::MAC_BYTE_SIZE);
     _key_is_set = true;
 }
 
@@ -25,14 +25,14 @@ void MACHandler::create_mac_key() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, 255);
-    for(size_t i = 0; i < Ethernet::DEFAULT_MAC_BYTE_SIZE; i++) {
+    for(size_t i = 0; i < Ethernet::MAC_BYTE_SIZE; i++) {
         key[i] = static_cast<unsigned char>(distrib(gen));
     }
     set_mac_key(&key);
 }
 
 void MACHandler::print_mac_key() {
-    std::cout << "Chave gerada (" << Ethernet::DEFAULT_MAC_BYTE_SIZE << " bytes): ";
+    std::cout << "Chave gerada (" << Ethernet::MAC_BYTE_SIZE << " bytes): ";
     std::cout << std::hex;
     for (unsigned char byte : _mac_key) {
         std::cout << (static_cast<int>(byte) & 0xFF) << " ";
@@ -42,7 +42,7 @@ void MACHandler::print_mac_key() {
 
 uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length) const {
     if (!_key_is_set) {
-        throw std::runtime_error("A chave MAC não está definida. Não é possível gerar MAC.");
+        return 0;
     }
 
     std::vector<unsigned char> mac_buffer(this->_mac_byte_size, 0);
@@ -55,7 +55,7 @@ uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length)
 
     // 2. Faz XOR dos bytes da chave no buffer do MAC
     // A chave inteira é "dobrada" (folded) no mac_buffer.
-    for (size_t i = 0; i < Ethernet::DEFAULT_MAC_BYTE_SIZE; ++i) {
+    for (size_t i = 0; i < Ethernet::MAC_BYTE_SIZE; ++i) {
         mac_buffer[i % this->_mac_byte_size] ^= _mac_key[i];
     }
 

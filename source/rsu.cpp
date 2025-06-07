@@ -1,9 +1,10 @@
 #include "../header/agent/rsu.h"
 
 
-RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol, MacKeyTable* mac_key_table)
-    : AutonomousAgent(nic, protocol), _mac_key_table{mac_key_table} {
+RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<unsigned char> mac_key_vector)
+    : AutonomousAgent(nic, protocol), _mac_key_vector{mac_key_vector} {
     nic->create_mac_handler_key();
+    nic->create_mac_key_data();
     _protocol->register_nic(_nic);
     EthernetProtocol::Address address(nic->address(), 1);
     _communicator = new EthernetCommunicator(protocol, address);
