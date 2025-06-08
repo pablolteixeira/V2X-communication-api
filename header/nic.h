@@ -66,7 +66,7 @@ public:
         
         _time_keeper = new TimeKeeper();
         _mac_handler = new MACHandler();
-        _mac_key_cache = new LRU_Cache<unsigned short, Ethernet::MAC_KEY>::(3);
+        _mac_key_cache = new LRU_Cache<unsigned short, Ethernet::MAC_KEY>(3);
 
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
@@ -84,20 +84,20 @@ public:
         _mac_handler->print_mac_key();
     }
     
-    void create_mac_key_data(std::vector<unsigned char*>* mac_keys){
-        prev_quad = (_quadrant - 1 + mac_keys->size()) % mac_keys->size();
-        next_quad = (_quadrant + 1) % mac_keys->size();
+    void create_mac_key_data(std::vector<unsigned char*> mac_keys){
+        unsigned short prev_quad = (_quadrant - 1 + mac_keys.size()) % mac_keys.size();
+        unsigned short next_quad = (_quadrant + 1) % mac_keys.size();
         
         int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
 
-        memcpy(_mac_key_data, _mac_keys[prev_quad], sizeof(unsigned short));
-        memcpy(_mac_key_data + sizeof(unsigned short), _mac_keys[prev_quad], Ethernet::MAC_BYTE_SIZE);
+        memcpy(_mac_key_data, &prev_quad, sizeof(unsigned short));
+        memcpy(_mac_key_data + sizeof(unsigned short), mac_keys[prev_quad], Ethernet::MAC_BYTE_SIZE);
 
-        memcpy(_mac_key_data + length, _mac_keys[next_quad], sizeof(unsigned short));
-        memcpy(_mac_key_data + (length + sizeof(unsigned short)), _mac_keys[next_quad], Ethernet::MAC_BYTE_SIZE);
+        memcpy(_mac_key_data + length, &next_quad, sizeof(unsigned short));
+        memcpy(_mac_key_data + (length + sizeof(unsigned short)), mac_keys[next_quad], Ethernet::MAC_BYTE_SIZE);
         
-        memcpy(_mac_key_data + (sizeof(unsigned short) * length), _mac_keys[_quadrant], sizeof(unsigned short));
-        memcpy(_mac_key_data + ((sizeof(unsigned short) * length) + sizeof(unsigned short)), _mac_keys[_quadrant], Ethernet::MAC_BYTE_SIZE);
+        memcpy(_mac_key_data + (2 * length), &_quadrant, sizeof(unsigned short));
+        memcpy(_mac_key_data + (2 * length) + sizeof(unsigned short), mac_keys[_quadrant], Ethernet::MAC_BYTE_SIZE);
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
@@ -184,8 +184,13 @@ public:
         _time_keeper->update_packet_origin(packet_origin);
     }
 
-    void set_quadrant(unsigned int new_quadrant) {
+    unsigned short get_quadrant() {
+        return _quadrant;
+    }
 
+    void set_quadrant(unsigned int new_quadrant) {
+        _quadrant = new_quadrant;
+        ConsoleLogger::log("NIC quadrant set to: " + std::to_string(_quadrant));
     }
 
     Address& address() {
@@ -233,7 +238,7 @@ private:
             Ethernet::Frame* frame = buf->frame();
             int size = Engine::raw_receive(&src, &prot, &metadata, frame->data(), 
                                         Ethernet::MTU - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata));
-
+                
             if (size > 0) {
                 // Successful read
                 auto t = _time_keeper->get_local_timestamp();
@@ -246,7 +251,7 @@ private:
                     if(_quadrant == sender_quadrant) {
                         Ethernet::Address* sender_address;
                         memcpy(sender_address, frame->data(), 6);
-                        if(_vehicle_table.check_vehicle(sender_adress)) {
+                        if(_vehicle_table.check_vehicle(sender_address)) {
                             _vehicle_table.set_vehicle(sender_address);
                             _send_mac_key = true;
                         }
@@ -255,7 +260,7 @@ private:
                     free(buf);
                 // VERIFY IF THE VEHICLE RECEIVED THE MESSAGE
                 } else {
-                    if (metadata.get_packet_origin == Ethernet::Metadata::PacketOrigin::RSU && sender_quadrant == _quadrant) {
+                    if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::RSU && sender_quadrant == _quadrant) {
                         ConsoleLogger::log("Received RSU message");
                         auto system_timestamp = metadata.get_timestamp();
                         _time_keeper->update_time_keeper(system_timestamp, t);    
@@ -264,13 +269,13 @@ private:
                         int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
                         for(int i = 0; i < 3; i++) {
                             unsigned short quadrant;
-                            Ethernet::MAC_KEY* key;
-                            memcpy(quadrant, frame->data()+(i*length), sizeof(unsigned short));
+                            Ethernet::MAC_KEY key;
+                            memcpy(&quadrant, frame->data()+(i*length), sizeof(unsigned short));
                             memcpy(key, frame->data()+(i*length)+2, Ethernet::MAC_BYTE_SIZE);
                             _mac_key_cache->put(sender_quadrant, key);
                         }
                         free(buf);
-                    } else if (metadata.get_packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
+                    } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
                         Ethernet::MAC_KEY* mac_key = _mac_key_cache->get(sender_quadrant);
                         if(mac_key != nullptr) {
                             if(_mac_handler->verify_mac(frame->data(), sizeof(frame->data()), metadata.get_mac())) {
@@ -372,7 +377,7 @@ private:
     unsigned int _quadrant;
     bool _send_mac_key;
     LRU_Cache<unsigned short, Ethernet::MAC_KEY>* _mac_key_cache;
-    unsigned char _mac_key_data;
+    unsigned char* _mac_key_data[3 * (Ethernet::MAC_BYTE_SIZE + sizeof(unsigned short))];
 };
 
 

@@ -8,17 +8,19 @@ template <typename T, typename V>
 class LRU_Cache
 {
 private:
+    typedef Node<T, V> NodeT;
+
     int capacity;
-    std::unordered_map<T, Node<T, V>*> cache;
+    std::unordered_map<T, NodeT*> cache;
 
-    Node* head;
-    Node* tail;
+    NodeT* head;
+    NodeT* tail;
 
-    void remove(Node* node) {
+    void remove(NodeT* node) {
         node->next->prev = node->prev;
         node->prev->next = node->next;
     }
-    void add(Node* node) {
+    void add(NodeT* node) {
         node->next = head->next;
         node->next->prev = node;
         head->next = node;
@@ -28,16 +30,16 @@ private:
 public:
     LRU_Cache(int capacity) {
         this->capacity = capacity;
-        head = new Node();
-        tail = new Node();
+        head = new NodeT();
+        tail = new NodeT();
 
         head->next = tail;
         tail->next = head;
     }
     ~LRU_Cache() {
-        Node* current = head;
+        NodeT* current = head;
         while (current != tail) {
-            Node* next = current->next;
+            NodeT* next = current->next;
             delete current;
             current = next;
         }
@@ -47,38 +49,39 @@ public:
     }
 
     V* get(const T& key) {
-        if (cache.find(key) != cache.end()) {
-            Node* node = cache[key];
-
-            remove(node);
-            add(node);
-
-            return node->value; 
+        if (cache.find(key) == cache.end()) {
+            return nullptr;
         }
+        NodeT* node = cache[key];
 
-        return nullptr;
-    }
-    void put(const T& key, const V& value) {
-        if (cache.find(key) != cache.end()) {
-            remove(cache[key]);
-        }
-        Node* node = new Node(key, value);
+        remove(node);
         add(node);
 
+        return &(node->value); 
+    }
+
+    void put(const T& key, const V& value) {
+        if (cache.find(key) != cache.end()) {
+            NodeT* existing = cache[key];
+            remove(existing);
+            delete existing;
+        }
+
+        NodeT* node = new NodeT(key, value);
         cache[key] = node;
+        add(node);
 
         if (cache.size() > capacity) {
-            Node* lru = tail->prev;
-
-            remove(lru);
-            cache.erase(lru->key);
-            delete lru;
+            NodeT* last = tail->prev;
+            cache.erase(last->key);
+            remove(last);
+            delete last;
         }
     }
 
     void erase(const T& key) {
         if (cache.find(key) != cache.end()) {
-            Node* node = cache[key];
+            NodeT* node = cache[key];
 
             remove(node);
             cache.erase(node->key);

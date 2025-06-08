@@ -7,7 +7,6 @@
 #include <iostream>
 #include <pthread.h>
 
-#include "ethernet.h"
 #include "types.h"
 #include "nic.h"
 

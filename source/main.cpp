@@ -17,7 +17,6 @@
 #include "../header/raw_socket_engine.h"
 #include "../header/agent/vehicle.h"
 #include "../header/agent/rsu.h"
-#include "../header/mac_key_table.h"
 
 constexpr int MAX_RUNTIME_SECONDS = 5; // total simulation time for the parent process (e.g., 5 min)
 constexpr int SPAWN_INTERVAL_MS = 500;  // interval between spawns (in milliseconds)
@@ -41,14 +40,14 @@ int main() {
     std::cout << "Vehicle lifetime span: " << MIN_LIFETIME << " | " << MAX_LIFETIME << " s" << std::endl;
     std::cout << "\n---------------------------------------------------------------\n" << std::endl;
     
-    std::vector<unsigned char>* mac_key_vector;
+    std::vector<unsigned char*> mac_key_vector;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, 255);
 
-    mac_key_vector->clear()
-    mac_key_vector->reserve(Traits<RSU>::NUM_RSU);
+    mac_key_vector.clear();
+    mac_key_vector.reserve(Traits<RSU>::NUM_RSU);
 
     for (int i = 0; i < Traits<RSU>::NUM_RSU; ++i) {
         Ethernet::MAC_KEY key;
@@ -57,7 +56,7 @@ int main() {
             key[j] = static_cast<unsigned char>(distrib(gen));
         }
 
-        mac_key_vector->push_back(key);
+        mac_key_vector.push_back(key);
     }
 
     for (unsigned short i = 0; i < Traits<RSU>::NUM_RSU; i++) {
@@ -79,9 +78,9 @@ int main() {
             rsu->start();
             std::this_thread::sleep_for(std::chrono::seconds(MAX_RUNTIME_SECONDS));
             rsu->stop();
-
-            delete rsu;
+            ConsoleLogger::log("RSU AFTER STOP");
             delete nic;
+            delete rsu;
             ConsoleLogger::close();
             exit(0);
         }       

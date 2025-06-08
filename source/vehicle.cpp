@@ -26,8 +26,7 @@ void Vehicle::start() {
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();  
     std::time_t epoch_time = std::chrono::system_clock::to_time_t(now);
     _start_time = static_cast<U64>(epoch_time);
-
-    _quadrant = Traits<Vehicle>::pick_random_quadrant();
+    _nic->set_quadrant(Traits<Vehicle>::pick_random_quadrant());
     
     ConsoleLogger::log("Starting Vehicle -> " + std::to_string(_id));
     
@@ -57,11 +56,10 @@ void Vehicle::run() {
     U64 elapsed_time = 0;
     while(elapsed_time < _lifetime) {
         std::this_thread::sleep_for(std::chrono::seconds(_lifetime/3));
-        x = _quadrant.first;
+        auto quad = _nic->get_quadrant();
+        quad = (quad % Traits<Vehicle>::NUM_RSU) + 1;
 
-        (_quadrant + 1) % Traits<Vehicle>::NUM_RSU;
-        update_quadrant();
-
+        _nic->set_quadrant(quad);
 
         std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
         std::time_t epoch_time = std::chrono::system_clock::to_time_t(now);

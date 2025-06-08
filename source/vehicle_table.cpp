@@ -1,4 +1,4 @@
-#include <../header/vehicle_table.h>
+#include "../header/vehicle_table.h"
 
 VehicleTable::VehicleTable() {
     
@@ -22,13 +22,14 @@ VehicleTable::VehicleTable() {
 }
 
 bool VehicleTable::check_vehicle(Ethernet::Address* address) {
-    auto q = std::find_if(_vehicles.begin(), vehicles.end(), [](Ethernet::Address* add){memcmp(add, address, 6)})
-    if(q == m.end()){
-        return false;
+    for(auto vehicle : _vehicles) {
+        if(memcmp(vehicle, address, 6) == 0) {
+            return true;
+        };
     }
-    return true;
+    return false;
 }
 
 void VehicleTable::set_vehicle(Ethernet::Address* address) {
-    _vehicles.insert(address);
+    _vehicles.push_back(address);
 }

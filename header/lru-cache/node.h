@@ -4,14 +4,16 @@
 template<typename T, typename V>
 class Node
 {
+public:
     T key;
     V value;
 
     Node* prev;
     Node* next;
-
-    Node() : prev(nullptr), next(nullptr);
-    Node(T key, V value) : key(key), value(value), prev(nullptr), next(nullptr);
+    Node() : prev(nullptr), next(nullptr) {};
+    Node(T key, const V& value) : key(key), prev(nullptr), next(nullptr) {
+        std::copy(value, value + sizeof(V), this->value);
+    }
 };
 
 #endif // NODE_H

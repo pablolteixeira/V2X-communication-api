@@ -15,7 +15,7 @@ int main() {
     std::string id = "NIC" + std::to_string(pid);
     int correct_packets = 0;
 
-    EthernetNIC* nic = new EthernetNIC(id);
+    EthernetNIC* nic = new EthernetNIC(id, 1);
     EthernetProtocol* protocol = EthernetProtocol::get_instance();
     protocol->register_nic(nic);
 
