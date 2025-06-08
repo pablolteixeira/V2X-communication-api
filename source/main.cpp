@@ -40,7 +40,7 @@ int main() {
     std::cout << "Vehicle lifetime span: " << MIN_LIFETIME << " | " << MAX_LIFETIME << " s" << std::endl;
     std::cout << "\n---------------------------------------------------------------\n" << std::endl;
     
-    std::vector<unsigned char*> mac_key_vector;
+    std::vector<Ethernet::MAC_KEY*> mac_key_vector;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -56,7 +56,7 @@ int main() {
             key[j] = static_cast<unsigned char>(distrib(gen));
         }
 
-        mac_key_vector.push_back(key);
+        mac_key_vector.push_back(&key);
     }
 
     for (unsigned short i = 0; i < Traits<RSU>::NUM_RSU; i++) {

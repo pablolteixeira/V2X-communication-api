@@ -78,13 +78,11 @@ public:
         ConsoleLogger::log("NIC: Stopping");
         cleanup_nic();
     }
-
-    void create_mac_handler_key() {
-        _mac_handler->create_mac_key();
-        _mac_handler->print_mac_key();
-    }
     
-    void create_mac_key_data(std::vector<unsigned char*> mac_keys){
+    void create_mac_key_data(std::vector<Ethernet::MAC_KEY*> mac_keys){
+        _mac_handler->set_mac_key(mac_keys[_quadrant]);
+        _mac_handler->print_mac_key();
+
         unsigned short prev_quad = (_quadrant - 1 + mac_keys.size()) % mac_keys.size();
         unsigned short next_quad = (_quadrant + 1) % mac_keys.size();
         

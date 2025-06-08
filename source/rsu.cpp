@@ -1,9 +1,8 @@
 #include "../header/agent/rsu.h"
 
 
-RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<unsigned char*> mac_key_vector)
+RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<Ethernet::MAC_KEY*> mac_key_vector)
     : AutonomousAgent(nic, protocol), _mac_key_vector(mac_key_vector) {
-    nic->create_mac_handler_key();
     ConsoleLogger::log("Initializing NIC MAC KEY data");
     nic->create_mac_key_data(_mac_key_vector);
     ConsoleLogger::log("NIC MAC KEY data initialized");
