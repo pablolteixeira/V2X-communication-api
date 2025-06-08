@@ -43,7 +43,7 @@ public:
 
 protected:
     unsigned short _id;
-    std::atomic<bool> _running;
+    bool _running;
     //std::thread _running_thread;
     PeriodicThread* _running_thread;
     Semaphore _semaphore;

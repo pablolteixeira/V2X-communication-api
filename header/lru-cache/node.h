@@ -11,8 +11,8 @@ public:
     Node* prev;
     Node* next;
     Node() : prev(nullptr), next(nullptr) {};
-    Node(T key, const V& value) : key(key), prev(nullptr), next(nullptr) {
-        std::copy(value, value + sizeof(V), this->value);
+    Node(T key, const V value) : key(key), prev(nullptr), next(nullptr) {
+        this->value = value; 
     }
 };
 

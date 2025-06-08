@@ -10,7 +10,7 @@
 class RSU: public AutonomousAgent
 {
 public:
-    RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<Ethernet::MAC_KEY*> mac_key_vector);
+    RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<Ethernet::MAC_KEY> mac_key_vector);
     ~RSU();
 
     void send_sync_messages();
@@ -20,7 +20,7 @@ public:
 private:
     PeriodicThread* _running_thread;
     EthernetCommunicator* _communicator;
-    std::vector<Ethernet::MAC_KEY*> _mac_key_vector;
+    std::vector<Ethernet::MAC_KEY> _mac_key_vector;
     unsigned short _quadrant;
 };
 

@@ -12,10 +12,10 @@ class VehicleTable {
 public:
     VehicleTable();
     bool check_vehicle(Ethernet::Address* address);
-    void set_vehicle(Ethernet::Address* address);
+    void set_vehicle(std::array<unsigned char, ETH_ALEN> address);
 
 private:
-    std::vector<Ethernet::Address* > _vehicles;
+    std::vector<std::array<unsigned char, ETH_ALEN>> _vehicles;
 };
 
 #endif // VEHICLE_TABLE

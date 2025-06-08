@@ -11,6 +11,7 @@
 #include <string>
 #include <thread>
 #include <random>
+#include <semaphore.h>
 
 #include "observer.h"
 #include "ethernet.h"
@@ -40,7 +41,7 @@ public:
 
     static NIC<Engine>* _instance;
 public:
-    NIC(const std::string& id, const unsigned short quadrant) : _buffer_pool(Ethernet::MTU), _data_semaphore(0), _running(true), _quadrant(quadrant) {
+    NIC(const std::string& id, const unsigned short quadrant) : _buffer_pool(Ethernet::MTU), _running(true), _quadrant(quadrant), _send_mac_key(false) {
         ConsoleLogger::print("NIC " + id + ": Starting...");
         // MAC ADDRESS + PID + COMPONENT ID
         MacAddressGenerator::generate_mac_from_seed(id, _address);
@@ -58,6 +59,8 @@ public:
             ConsoleLogger::error("sigaction");
             exit(EXIT_FAILURE);
         }
+
+        sem_init(&_sem, 0, 0);
 
         // Configure socket for async I/O
         int flags = fcntl(Engine::_socket, F_GETFL, 0);
@@ -79,23 +82,23 @@ public:
         cleanup_nic();
     }
     
-    void create_mac_key_data(std::vector<Ethernet::MAC_KEY*> mac_keys){
-        _mac_handler->set_mac_key(mac_keys[_quadrant]);
-        _mac_handler->print_mac_key();
-
-        unsigned short prev_quad = (_quadrant - 1 + mac_keys.size()) % mac_keys.size();
-        unsigned short next_quad = (_quadrant + 1) % mac_keys.size();
+    void create_mac_key_data(std::vector<Ethernet::MAC_KEY> mac_keys){
+        _mac_handler->set_mac_key(&mac_keys[_quadrant-1]);
+        _mac_handler->print_mac_key(); 
+        
+        unsigned short prev_quad = _quadrant - 1 == 0 ? mac_keys.size() : _quadrant - 1;
+        unsigned short next_quad = (_quadrant % mac_keys.size()) + 1;
         
         int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
 
         memcpy(_mac_key_data, &prev_quad, sizeof(unsigned short));
-        memcpy(_mac_key_data + sizeof(unsigned short), mac_keys[prev_quad], Ethernet::MAC_BYTE_SIZE);
+        memcpy(_mac_key_data + sizeof(unsigned short), &mac_keys[prev_quad-1], Ethernet::MAC_BYTE_SIZE);
 
         memcpy(_mac_key_data + length, &next_quad, sizeof(unsigned short));
-        memcpy(_mac_key_data + (length + sizeof(unsigned short)), mac_keys[next_quad], Ethernet::MAC_BYTE_SIZE);
+        memcpy(_mac_key_data + (length + sizeof(unsigned short)), &mac_keys[next_quad-1], Ethernet::MAC_BYTE_SIZE);
         
         memcpy(_mac_key_data + (2 * length), &_quadrant, sizeof(unsigned short));
-        memcpy(_mac_key_data + (2 * length) + sizeof(unsigned short), mac_keys[_quadrant], Ethernet::MAC_BYTE_SIZE);
+        memcpy(_mac_key_data + (2 * length) + sizeof(unsigned short), &mac_keys[_quadrant-1], Ethernet::MAC_BYTE_SIZE);
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
@@ -132,13 +135,16 @@ public:
 
             auto packet_origin = _time_keeper->get_packet_origin();
             frame->metadata()->set_packet_origin(packet_origin);
+            frame->metadata()->set_has_mac_keys(false);
+
+            size_t payload_size = buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata);
 
             if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
-                auto mac = _mac_handler->generate_mac(frame->data(), sizeof(frame->data()));
-                if (mac != 0) {
-                    frame->metadata()->set_mac(mac);
-                }
+                auto mac = _mac_handler->generate_mac(frame->data(), payload_size);
+                frame->metadata()->set_mac(mac);
             }
+
+            frame->metadata()->set_quadrant(_quadrant);
             
             auto now = _time_keeper->get_system_timestamp();
             frame->metadata()->set_timestamp(now);
@@ -146,6 +152,8 @@ public:
             if(_send_mac_key) {
                 int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
                 memcpy(frame->data(), _mac_key_data, 3*length);
+                frame->metadata()->set_has_mac_keys(true);
+                ConsoleLogger::log("SENDING MAC KEY");
             }
             
             int result = Engine::raw_send(
@@ -155,9 +163,8 @@ public:
                 frame->data(),
                 buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata)
             );
-            if(result > 0) {
-                _send_mac_key = false;
-            }
+
+            _send_mac_key = false;
             
             free(buf);
 
@@ -204,12 +211,12 @@ public:
 
 private:
     static void sigio_handler(int signum) {
-        _instance->_data_semaphore.v();
+        sem_post(&_instance->_sem);
     }
 
     void data_processing_thread() {
         while (_running) {
-            _data_semaphore.p();
+            sem_wait(&_sem);
 
             if (!_running) {
                 break;
@@ -240,17 +247,22 @@ private:
             if (size > 0) {
                 // Successful read
                 auto t = _time_keeper->get_local_timestamp();
-                buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata));
+                buf->size(size);
 
                 auto sender_quadrant = metadata.get_quadrant();
 
                 // VERIFY IF THE RSU RECEIVED THE MESSAGE 
                 if(_time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::RSU) {
                     if(_quadrant == sender_quadrant) {
-                        Ethernet::Address* sender_address;
-                        memcpy(sender_address, frame->data(), 6);
-                        if(_vehicle_table.check_vehicle(sender_address)) {
-                            _vehicle_table.set_vehicle(sender_address);
+                        ConsoleLogger::log("RSU: Message with quadrant " + std::to_string(sender_quadrant) + " is in my quadrant " + std::to_string(_quadrant));
+                        Ethernet::Address sender_address;
+                        memcpy(&sender_address, frame->data(), 6);
+                        if(!_vehicle_table.check_vehicle(&sender_address)) {
+                            ConsoleLogger::log("RSU: New vehicle found with address: " + mac_to_string(sender_address));
+                            std::array<unsigned char, ETH_ALEN> sender_address_array;
+                            memcpy(sender_address_array.data(), &sender_address, ETH_ALEN);
+
+                            _vehicle_table.set_vehicle(sender_address_array);
                             _send_mac_key = true;
                         }
                     }
@@ -263,24 +275,31 @@ private:
                         auto system_timestamp = metadata.get_timestamp();
                         _time_keeper->update_time_keeper(system_timestamp, t);    
                         
-                        // FRAME -> FRAME HEADER + METADATA + (DATA) -> [(id1+CHAVE1) + (id2+CHAVE2) + (id3+CHAVE3)]
-                        int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
-                        for(int i = 0; i < 3; i++) {
-                            unsigned short quadrant;
-                            Ethernet::MAC_KEY key;
-                            memcpy(&quadrant, frame->data()+(i*length), sizeof(unsigned short));
-                            memcpy(key, frame->data()+(i*length)+2, Ethernet::MAC_BYTE_SIZE);
-                            _mac_key_cache->put(sender_quadrant, key);
+                        if (metadata.get_has_mac_keys()) {
+                            ConsoleLogger::log("Received RSU message has MAC keys");
+                            // FRAME -> FRAME HEADER + METADATA + (DATA) -> [(id1+CHAVE1) + (id2+CHAVE2) + (id3+CHAVE3)]
+                            int length = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
+                            for(int i = 0; i < 3; i++) {
+                                unsigned short quadrant;
+                                Ethernet::MAC_KEY key;
+                                memcpy(&quadrant, frame->data()+(i*length), sizeof(unsigned short));
+                                memcpy(key.data(), frame->data()+(i*length)+2, Ethernet::MAC_BYTE_SIZE);
+                                _mac_key_cache->put(sender_quadrant, key);
+                            }
                         }
                         free(buf);
                     } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
                         Ethernet::MAC_KEY* mac_key = _mac_key_cache->get(sender_quadrant);
+                        ConsoleLogger::log("Vehicle received message from other vehicle");
                         if(mac_key != nullptr) {
-                            if(_mac_handler->verify_mac(frame->data(), sizeof(frame->data()), metadata.get_mac())) {
+                            size_t payload_size = buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata);
+                            if(_mac_handler->verify_mac(frame->data(), payload_size, metadata.get_mac())) {
+                                ConsoleLogger::log("Received Vehicle message with known MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
                                 if (!notify(prot, buf)) {
                                     free(buf);
                                 }
                             } else {
+                                ConsoleLogger::log("Received Vehicle message but with unknown MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
                                 free(buf);
                             }
                         } else {
@@ -343,7 +362,8 @@ private:
 
     void cleanup_nic() {
         _running = false;
-        _data_semaphore.v();  // Wake up the processing thread
+        sem_wait(&_sem);
+        //_data_semaphore.v();  // Wake up the processing thread
         
         if (_worker_thread.joinable()) {
             _worker_thread.join();
@@ -364,7 +384,7 @@ private:
 
 private:
     BufferPool<Ethernet::Frame, BUFFER_SIZE> _buffer_pool;
-    Semaphore _data_semaphore;
+    sem_t _sem;
     bool _running;
     Address _address;
     std::thread _worker_thread;

@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <vector>
-
+#include <array>
 
 #include "u64_type.h"
 
@@ -28,7 +28,7 @@ public:
     typedef unsigned char Address[ETH_ALEN];
     typedef unsigned short Protocol;
     typedef uint32_t MAC;
-    typedef unsigned char MAC_KEY[MAC_BYTE_SIZE];
+    typedef std::array<unsigned char, MAC_BYTE_SIZE> MAC_KEY;
 
     class Metadata 
     {
@@ -43,8 +43,8 @@ public:
             OTHERS
         };
         
-        Metadata() : _timestamp(0), _sync_state(SyncState::NOT_SYNCHRONIZED), _packet_origin(PacketOrigin::OTHERS) {}
-        Metadata(U64 timestamp, SyncState sync_state, PacketOrigin packet_origin) : _timestamp(timestamp), _sync_state(sync_state), _packet_origin(packet_origin) {}
+        Metadata() : _timestamp(0), _sync_state(SyncState::NOT_SYNCHRONIZED), _packet_origin(PacketOrigin::OTHERS), _has_mac_keys(false) {}
+        Metadata(U64 timestamp, SyncState sync_state, PacketOrigin packet_origin) : _timestamp(timestamp), _sync_state(sync_state), _packet_origin(packet_origin), _has_mac_keys(false) {}
 
         MAC get_mac() {return _mac; }
         U64 get_timestamp() { return _timestamp; }

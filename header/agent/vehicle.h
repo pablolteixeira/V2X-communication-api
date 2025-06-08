@@ -23,7 +23,7 @@ public:
 protected:
     std::vector<Component*> _components;
     int _lifetime;
-    U64 _start_time;
+    std::chrono::_V2::system_clock::time_point _start_time;
 };
 
 #endif // VEHICLE_H

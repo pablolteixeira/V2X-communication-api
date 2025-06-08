@@ -22,14 +22,14 @@ VehicleTable::VehicleTable() {
 }
 
 bool VehicleTable::check_vehicle(Ethernet::Address* address) {
-    for(auto vehicle : _vehicles) {
-        if(memcmp(vehicle, address, 6) == 0) {
+    for(auto vehicle_add : _vehicles) {
+        if(memcmp(vehicle_add.data(), address, ETH_ALEN) == 0) {
             return true;
-        };
+        }
     }
     return false;
 }
 
-void VehicleTable::set_vehicle(Ethernet::Address* address) {
+void VehicleTable::set_vehicle(std::array<unsigned char, ETH_ALEN> address) {
     _vehicles.push_back(address);
 }

@@ -17,15 +17,10 @@ Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol, int lifetime)
 }
 
 Vehicle::~Vehicle() {
-    for(Component* component: _components) {
-        delete component;
-    }
 }
 
 void Vehicle::start() {
-    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();  
-    std::time_t epoch_time = std::chrono::system_clock::to_time_t(now);
-    _start_time = static_cast<U64>(epoch_time);
+    _start_time = std::chrono::system_clock::now();
     _nic->set_quadrant(Traits<Vehicle>::pick_random_quadrant());
     
     ConsoleLogger::log("Starting Vehicle -> " + std::to_string(_id));
@@ -48,22 +43,21 @@ void Vehicle::stop() {
     _running = false;
     
     for(Component* component: _components) {
-        component->stop();
+        ConsoleLogger::log("VEHICLE: DELETING COMPONENT BEFORE");
+        delete component;
+        ConsoleLogger::log("VEHICLE: DELETING COMPONENT AFTER");
     }
 }
 
 void Vehicle::run() {
-    U64 elapsed_time = 0;
-    while(elapsed_time < _lifetime) {
-        std::this_thread::sleep_for(std::chrono::seconds(_lifetime/3));
+    auto sleep_duration = std::chrono::seconds(_lifetime);
+
+    while (std::chrono::system_clock::now() - _start_time < sleep_duration) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    
         auto quad = _nic->get_quadrant();
         quad = (quad % Traits<Vehicle>::NUM_RSU) + 1;
 
-        _nic->set_quadrant(quad);
-
-        std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-        std::time_t epoch_time = std::chrono::system_clock::to_time_t(now);
-        U64 epoch = static_cast<U64>(epoch_time);
-        elapsed_time = epoch - _start_time;
+        // _nic->set_quadrant(quad);
     }
 }

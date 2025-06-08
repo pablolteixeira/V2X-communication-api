@@ -19,11 +19,15 @@ public:
 public:
     Communicator(Channel* channel, Address address): _channel(channel), _address(address) {
         _channel->attach(this, address.port());
+        _running = true;
     }
 
-    ~Communicator() { Channel::detach(this, _address.port()); }
+    ~Communicator() { 
+        Channel::detach(this, _address.port()); 
+    }
     
     bool send(const Message * message, Address from, Address to) {
+        if (!_running) return false;
         // ConsoleLogger::print("Communicator: Sending message.");
         return (_channel->send(from, to, message->data(),
             message->size()) > 0);
@@ -31,7 +35,7 @@ public:
 
     bool receive(Message * message) {
         Buffer * buf = Observer::updated(); // block until a notification is triggered
-        if (!buf) return false;
+        if (!buf || !_running) return false;
         typename Channel::Address from;
         int size = _channel->receive(buf, from, message->data(), message->max_size());
         if(size > 0) {
@@ -43,6 +47,7 @@ public:
     }
 
     void stop() {
+        _running = false;
         Observer::stop();
     }
 
@@ -54,6 +59,7 @@ private:
 private:
     Channel * _channel;
     Address _address;
+    bool _running;
 };
 
 #endif // COMMUNICATOR_H

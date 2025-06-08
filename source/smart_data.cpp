@@ -4,7 +4,7 @@
 #include "../header/period_thread.h"
 
 SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
-    : _running(false), _id(id), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _internal_response_thread(nullptr), _external_response_thread(nullptr) 
+    : _running(false), _id(id), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _interest_thread(nullptr), _internal_response_thread(nullptr), _external_response_thread(nullptr) 
 {
     EthernetProtocol::Address component_addr(nic_address, id);
     
@@ -13,7 +13,17 @@ SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
 
 SmartData::~SmartData() {
     stop();
+
     delete _communicator;
+
+    for (auto& pair : _internal_interest_messages) {
+        delete pair.first;
+        delete pair.second;
+    }
+    for (auto& pair : _external_interest_messages) {
+        delete pair.first;
+        delete pair.second;
+    }
 }
 
 void SmartData::start() {
@@ -36,25 +46,31 @@ void SmartData::start() {
 }
 
 void SmartData::stop() {
-    ConsoleLogger::log("SmartData: Stopping threads");
+    ConsoleLogger::log("SmartData: Stopping threads 0");
     _running = false;
 
     if (_interest_thread != nullptr) {
-        _interest_thread->stop();
+        delete _interest_thread;
     }
+    ConsoleLogger::log("SmartData: Stopping threads 1");
 
     if (_internal_response_thread != nullptr) {
-        _internal_response_thread->stop();
+        delete _internal_response_thread;
     }
-    
+    ConsoleLogger::log("SmartData: Stopping threads 2");
+
     if (_external_response_thread != nullptr) {
-        _external_response_thread->stop();
+        delete _external_response_thread;
     }
+    ConsoleLogger::log("SmartData: Stopping threads 3");
 
     if (_receive_thread.joinable()) {
+        ConsoleLogger::log("RECEIVE THREAD JOINABLE");
         _communicator->stop();
         _receive_thread.join();
     }
+
+    _communicator->stop();
 }
 
 void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data, ComponentDataType data_type) {

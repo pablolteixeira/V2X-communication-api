@@ -7,8 +7,7 @@ Component::Component(AutonomousAgent* autonomous_agent, const unsigned short& id
     }
     
 Component::~Component() {
-    delete _smart_data;
-    _running_thread->stop();
+    stop();
 }
 
 void Component::start() {
@@ -36,8 +35,13 @@ void Component::start() {
 
 void Component::stop() {
     _running = false;
-    _running_thread->stop();
-    _smart_data->stop();
+
+    ConsoleLogger::log("COMPONENT: STOPPING RUNNING THREAD");
+    if (_running_thread != nullptr) {
+        delete _running_thread;
+    }
+    ConsoleLogger::log("COMPONENT: STOPPING SMART DATA");
+    delete _smart_data;
 }
 
 Ethernet::Address& Component::get_address() {

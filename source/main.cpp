@@ -8,6 +8,7 @@
 #include <ctime>
 #include <vector>
 #include <random>
+#include <pthread.h>
 
 #include "../header/communicator.h"
 #include "../header/protocol.h"
@@ -40,7 +41,7 @@ int main() {
     std::cout << "Vehicle lifetime span: " << MIN_LIFETIME << " | " << MAX_LIFETIME << " s" << std::endl;
     std::cout << "\n---------------------------------------------------------------\n" << std::endl;
     
-    std::vector<Ethernet::MAC_KEY*> mac_key_vector;
+    std::vector<Ethernet::MAC_KEY> mac_key_vector;
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -56,7 +57,7 @@ int main() {
             key[j] = static_cast<unsigned char>(distrib(gen));
         }
 
-        mac_key_vector.push_back(&key);
+        mac_key_vector.push_back(key);
     }
 
     for (unsigned short i = 0; i < Traits<RSU>::NUM_RSU; i++) {
@@ -72,15 +73,14 @@ int main() {
             ConsoleLogger::log("Child process created: PID = " + std::to_string(child_pid));
             
             std::string id = "NIC" + std::to_string(child_pid);
-            EthernetNIC* nic = new EthernetNIC(id, i);
+            EthernetNIC* nic = new EthernetNIC(id, i+1);
             EthernetProtocol* protocol = EthernetProtocol::get_instance();  
             RSU* rsu = new RSU(nic, protocol, mac_key_vector);
             rsu->start();
             std::this_thread::sleep_for(std::chrono::seconds(MAX_RUNTIME_SECONDS));
-            rsu->stop();
+            delete rsu;
             ConsoleLogger::log("RSU AFTER STOP");
             delete nic;
-            delete rsu;
             ConsoleLogger::close();
             exit(0);
         }       
@@ -122,15 +122,20 @@ int main() {
             
             vehicle->start();
             ConsoleLogger::log("Vehicle " + id + " started");
-            
-            vehicle->run();
 
-            
-            vehicle->stop();
+            vehicle->run();
+            // auto sleep_duration = std::chrono::seconds(lifetime);
+            // auto start = std::chrono::steady_clock::now();
+            // while (std::chrono::steady_clock::now() - start < sleep_duration) {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // }
+            //std::this_thread::sleep_for(std::chrono::seconds(lifetime));
+
             ConsoleLogger::log("Vehicle " + id + " stopped");
-            
-            delete nic;
+            vehicle->stop();
+
             delete vehicle;
+            delete nic;
             
             ConsoleLogger::log("Vehicle " + id + " destroyed after " + std::to_string(lifetime) + " seconds");
             

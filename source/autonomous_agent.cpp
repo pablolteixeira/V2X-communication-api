@@ -13,7 +13,7 @@ std::string mac_to_string(Ethernet::Address& addr) {
     return ss.str();
 }
 
-AutonomousAgent::AutonomousAgent(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), _nic(nic), _protocol(protocol){}
+AutonomousAgent::AutonomousAgent(EthernetNIC* nic, EthernetProtocol* protocol) : _id(getpid()), _nic(nic), _protocol(protocol), _running(false) {}
 
 AutonomousAgent::~AutonomousAgent() {}
 

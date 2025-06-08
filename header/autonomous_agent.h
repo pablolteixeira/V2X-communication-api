@@ -26,7 +26,7 @@ protected:
     EthernetNIC* _nic;
     EthernetProtocol* _protocol;
     
-    std::atomic<bool> _running;
+    bool _running;
 
     // std::vector<Component*> _components;
     // EthernetCommunicator* _communicator[Traits<Vehicle>::NUM_COMPONENTS];

@@ -60,7 +60,7 @@ public:
         return &(node->value); 
     }
 
-    void put(const T& key, const V& value) {
+    void put(const T key, const V value) {
         if (cache.find(key) != cache.end()) {
             NodeT* existing = cache[key];
             remove(existing);
