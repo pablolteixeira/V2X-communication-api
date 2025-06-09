@@ -4,7 +4,7 @@
 #include "../header/period_thread.h"
 
 SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
-    : _running(false), _id(id), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _interest_thread(nullptr), _internal_response_thread(nullptr), _external_response_thread(nullptr) 
+    : _running(false), _id(id), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _internal_response_thread(nullptr), _external_response_thread(nullptr), _interest_thread(nullptr) 
 {
     EthernetProtocol::Address component_addr(nic_address, id);
     

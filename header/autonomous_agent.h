@@ -14,7 +14,7 @@ class AutonomousAgent
 {
 public:
     AutonomousAgent(EthernetNIC* nic, EthernetProtocol* protocol);
-    virtual ~AutonomousAgent() = 0;
+    virtual ~AutonomousAgent();
 
     virtual void start() = 0;
     virtual void stop() = 0;

@@ -32,9 +32,9 @@ public:
     bool verify_mac(const unsigned char* data, size_t data_length, uint32_t received_mac) const;
 
 private:
-    Ethernet::MAC_KEY _mac_key;
     bool _key_is_set;
     size_t _mac_byte_size;
+    Ethernet::MAC_KEY _mac_key;
 };
 
 #endif // MAC_HANDLER_H

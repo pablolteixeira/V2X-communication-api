@@ -44,6 +44,7 @@ void Vehicle::stop() {
     
     for(Component* component: _components) {
         ConsoleLogger::log("VEHICLE: DELETING COMPONENT BEFORE");
+        component->stop();
         delete component;
         ConsoleLogger::log("VEHICLE: DELETING COMPONENT AFTER");
     }

@@ -13,7 +13,6 @@ RSU::RSU(EthernetNIC* nic, EthernetProtocol* protocol, std::vector<Ethernet::MAC
 }
 
 RSU::~RSU() {
-    stop();
 }
 
 void RSU::send_sync_messages() {

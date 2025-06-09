@@ -10,7 +10,7 @@ class LRU_Cache
 private:
     typedef Node<T, V> NodeT;
 
-    int capacity;
+    unsigned int capacity;
     std::unordered_map<T, NodeT*> cache;
 
     NodeT* head; // Sentinel head node

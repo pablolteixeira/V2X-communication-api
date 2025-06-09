@@ -18,9 +18,9 @@ public:
     void stop() override;
 
 private:
+    std::vector<Ethernet::MAC_KEY> _mac_key_vector;
     PeriodicThread* _running_thread;
     EthernetCommunicator* _communicator;
-    std::vector<Ethernet::MAC_KEY> _mac_key_vector;
     unsigned short _quadrant;
 };
 

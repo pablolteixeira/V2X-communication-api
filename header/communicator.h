@@ -23,6 +23,7 @@ public:
     }
 
     ~Communicator() { 
+        stop();
         Channel::detach(this, _address.port()); 
     }
     

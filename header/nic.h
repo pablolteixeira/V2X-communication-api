@@ -96,7 +96,7 @@ public:
         std::stringstream geek;
         geek << std::hex;
         const auto& current_key = mac_keys[_quadrant - 1];
-        for (int i = 0; i < current_key.size(); i++) {
+        for (size_t i = 0; i < current_key.size(); i++) {
             geek << static_cast<unsigned int>(current_key[i]) << (i < current_key.size() - 1 ? " " : "");
         }
 
@@ -182,7 +182,7 @@ public:
 
             if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
                 auto mac = _mac_handler->generate_mac(frame->data(), payload_size);
-                ConsoleLogger::log("GENERATING MESSAGE MAC: " + std::to_string(mac) + " - PAYLOAD SIZE: " + std::to_string(payload_size));
+                //ConsoleLogger::log("GENERATING MESSAGE MAC: " + std::to_string(mac) + " - PAYLOAD SIZE: " + std::to_string(payload_size) +  " - HASH: " + calcularHashDJB2(frame->data(), payload_size));
                 frame->metadata()->set_mac(mac);
             }
 
@@ -345,7 +345,7 @@ private:
                                 if(key_2) {
                                     std::stringstream geek;
                                     geek << std::hex;
-                                    for (int i = 0; i < Ethernet::MAC_BYTE_SIZE; i++) {
+                                    for (size_t i = 0; i < Ethernet::MAC_BYTE_SIZE; i++) {
                                         geek << static_cast<unsigned int>(key_2->data()[i]) << " ";
                                     }
                                     
@@ -359,15 +359,14 @@ private:
                         ConsoleLogger::log("Vehicle received message from other vehicle");
                         if(mac_key) {
                             ConsoleLogger::log("Received Vehicle message with known MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
-                            size_t payload_size = buf->size();
-                            ConsoleLogger::log("RECEIVING MESSAGE MAC:" + std::to_string(metadata.get_mac()) + " | Payload size: " + std::to_string(payload_size));
+                            size_t payload_size = size;
+                            ConsoleLogger::log("RECEIVING MESSAGE MAC:" + std::to_string(metadata.get_mac()) + " | Payload size: " + std::to_string(payload_size) + " | HASH: " + calcularHashDJB2(frame->data(), size));
                             if(_mac_handler->verify_mac(frame->data(), payload_size, metadata.get_mac())) {
                                 ConsoleLogger::log("MAC verification successful");
                                 if (!notify(prot, buf)) {
                                     free(buf);
                                 }
                             } else {
-                                ConsoleLogger::log("MAC verification failed");
                                 free(buf);
                             }
                         } else {
@@ -448,6 +447,19 @@ private:
             ss << std::setw(2) << static_cast<int>(addr[i]);
         }
         
+        return ss.str();
+    }
+
+    std::string calcularHashDJB2(const unsigned char* dados, size_t tamanho) {
+        unsigned long hash = 5381; // Valor inicial arbitrário para o DJB2
+
+        for (size_t i = 0; i < tamanho; ++i) {
+            hash = ((hash << 5) + hash) + dados[i]; // hash * 33 + dados[i]
+        }
+
+        // Converter o valor de hash numérico para uma string hexadecimal
+        std::stringstream ss;
+        ss << std::hex << std::setw(16) << std::setfill('0') << hash;
         return ss.str();
     }
 

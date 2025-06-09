@@ -19,7 +19,7 @@
 #include "../header/agent/vehicle.h"
 #include "../header/agent/rsu.h"
 
-constexpr int MAX_RUNTIME_SECONDS = 5;  // total simulation time for the parent process (e.g., 5 min)
+constexpr int MAX_RUNTIME_SECONDS = 5; // total simulation time for the parent process (e.g., 5 min)
 constexpr int SPAWN_INTERVAL_MS = 500;  // interval between spawns (in milliseconds)
 constexpr int MIN_LIFETIME = 4;         // min vehicle lifetime (in seconds)
 constexpr int MAX_LIFETIME = 6;         // max vehicle lifetime (in seconds)
@@ -50,7 +50,7 @@ int main() {
     mac_key_vector.clear();
     mac_key_vector.reserve(Traits<RSU>::NUM_RSU);
 
-    for (int i = 0; i < Traits<RSU>::NUM_RSU; ++i) {
+    for (unsigned int i = 0; i < Traits<RSU>::NUM_RSU; ++i) {
         Ethernet::MAC_KEY key;
 
         for (size_t j = 0; j < Ethernet::MAC_BYTE_SIZE; ++j) {
@@ -78,6 +78,7 @@ int main() {
             RSU* rsu = new RSU(nic, protocol, mac_key_vector);
             rsu->start();
             std::this_thread::sleep_for(std::chrono::seconds(MAX_RUNTIME_SECONDS));
+            rsu->stop();
             delete rsu;
             ConsoleLogger::log("RSU AFTER STOP");
             delete nic;

@@ -1,8 +1,7 @@
 #include "../header/mac_handler.h"
-#include "../header/console_logger.h"
 
 MACHandler::MACHandler(size_t mac_size_bytes) : 
-    _key_is_set(false), _mac_byte_size(mac_size_bytes) {
+    _key_is_set(false), _mac_byte_size(mac_size_bytes), _mac_key(std::array<unsigned char, Ethernet::MAC_BYTE_SIZE>()) {
 }
 
 void MACHandler::set_mac_key(Ethernet::MAC_KEY *key) {
@@ -52,11 +51,12 @@ uint32_t MACHandler::generate_mac(const unsigned char* data, size_t data_length)
 
     uint32_t result_mac = 0;
     if (!mac_buffer.empty()) {
-        result_mac = mac_buffer[0]; // Inicializa com o primeiro byte (MSB)
+        result_mac = mac_buffer[0];
         for (size_t i = 1; i < this->_mac_byte_size; ++i) {
             result_mac = (result_mac << 8) | mac_buffer[i];
         }
     }
+    
     
     return result_mac;
 }
@@ -66,9 +66,7 @@ bool MACHandler::verify_mac(const unsigned char* data, size_t data_length, uint3
         return false; 
     }
 
-    ConsoleLogger::log("Checking mac integrity");
+    
     uint32_t calculated_mac = generate_mac(data, data_length);
-    ConsoleLogger::log("MAC comparison " + std::to_string(calculated_mac)+ " : " + std::to_string(received_mac));
-    calculated_mac == received_mac ? ConsoleLogger::log("MAC correct") : ConsoleLogger::log("MAC incorrect");
     return calculated_mac == received_mac;
 }

@@ -5,9 +5,9 @@ Component::Component(AutonomousAgent* autonomous_agent, const unsigned short& id
     : _id(id), _running(false), _semaphore(0), _autonomous_agent(autonomous_agent) {
         _smart_data = new SmartData(_autonomous_agent->nic()->address(), id);
     }
-    
+
 Component::~Component() {
-    stop();
+    
 }
 
 void Component::start() {
