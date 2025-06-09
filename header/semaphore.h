@@ -25,4 +25,4 @@ private:
     std::condition_variable _condition;
 };
 
-#endif
+#endif // SEMAPHORE_H

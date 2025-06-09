@@ -27,10 +27,6 @@ protected:
     EthernetProtocol* _protocol;
     
     bool _running;
-
-    // std::vector<Component*> _components;
-    // EthernetCommunicator* _communicator[Traits<Vehicle>::NUM_COMPONENTS];
-    // SmartData* _smart_datas[Traits<Vehicle>::NUM_COMPONENTS];
 };
 
 #endif // AUTONOMOUS_AGENT_H

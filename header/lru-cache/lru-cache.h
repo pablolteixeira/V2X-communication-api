@@ -13,18 +13,19 @@ private:
     int capacity;
     std::unordered_map<T, NodeT*> cache;
 
-    NodeT* head;
-    NodeT* tail;
+    NodeT* head; // Sentinel head node
+    NodeT* tail; // Sentinel tail node
 
     void remove(NodeT* node) {
-        node->next->prev = node->prev;
         node->prev->next = node->next;
+        node->next->prev = node->prev;
     }
+
     void add(NodeT* node) {
         node->next = head->next;
-        node->next->prev = node;
-        head->next = node;
         node->prev = head;
+        head->next->prev = node;
+        head->next = node;
     }
 
 public:
@@ -34,18 +35,16 @@ public:
         tail = new NodeT();
 
         head->next = tail;
-        tail->next = head;
+        tail->prev = head;
     }
+
     ~LRU_Cache() {
         NodeT* current = head;
-        while (current != tail) {
+        while (current != nullptr) {
             NodeT* next = current->next;
             delete current;
             current = next;
         }
-
-        delete head;
-        delete tail;
     }
 
     V* get(const T& key) {
@@ -91,4 +90,4 @@ public:
     }
 };
 
-#endif
+#endif // LRU_CACHE_H

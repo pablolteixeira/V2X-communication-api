@@ -10,4 +10,4 @@ typedef NIC<RawSocketEngine> EthernetNIC;
 typedef Protocol<EthernetNIC> EthernetProtocol;
 typedef Communicator<EthernetProtocol> EthernetCommunicator;
 
-#endif
+#endif // TYPES_H

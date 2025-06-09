@@ -8,8 +8,6 @@
 #include "../autonomous_agent.h"
 #include "../component.h"
 
-// class Component;
-
 class Vehicle: public AutonomousAgent
 {
 public:

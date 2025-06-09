@@ -23,7 +23,6 @@ public:
     }
     
     void size(size_t s) {
-        // Just update logical size, no reallocation
         _size = (s <= _max_size) ? s : _max_size;
     }
 

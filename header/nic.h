@@ -69,7 +69,7 @@ public:
         
         _time_keeper = new TimeKeeper();
         _mac_handler = new MACHandler();
-        _mac_key_cache = new LRU_Cache<unsigned short, Ethernet::MAC_KEY>(3);
+        _mac_key_cache = new LRU_Cache<unsigned short, Ethernet::MAC_KEY>(5);
 
         _worker_thread = std::thread(&NIC::data_processing_thread, this);
     }
@@ -83,10 +83,6 @@ public:
     }
     
     void create_mac_key_data(std::vector<Ethernet::MAC_KEY> mac_keys) {
-        // --- Defensive Check ---
-        // The ASan log indicates a heap-buffer-overflow, likely caused by an invalid
-        // _quadrant value being passed, leading to an out-of-bounds access on mac_keys.
-        // This check validates the _quadrant before it's used.
         if (mac_keys.empty()) {
             std::cerr << "Error: mac_keys vector is empty. Cannot create MAC key data." << std::endl;
             return;
@@ -110,39 +106,33 @@ public:
         //_mac_handler->print_mac_key();
 
         std::cout << "Creating MAC key data for quadrant " << _quadrant << std::endl;
-        // (Your printing logic can remain here)
 
-        // Calculate indices for the previous and next quadrants
         unsigned short prev_quad = (_quadrant == 1) ? mac_keys.size() : _quadrant - 1;
         unsigned short next_quad = (_quadrant % mac_keys.size()) + 1;
         
-        // --- Refactored Memory Copy ---
-        // Using a moving pointer is cleaner and less prone to calculation errors
-        // than multiple complex offsets.
         unsigned char* ptr = _mac_key_data;
         const size_t key_size = Ethernet::MAC_BYTE_SIZE;
         const size_t id_size = sizeof(unsigned short);
 
-        // Copy data for previous quadrant
+        // quadrante anterior
         memcpy(ptr, &prev_quad, id_size);
         ptr += id_size;
         memcpy(ptr, mac_keys[prev_quad - 1].data(), key_size);
         ptr += key_size;
 
-        // Copy data for next quadrant
+        // quadrante posterior
         memcpy(ptr, &next_quad, id_size);
         ptr += id_size;
         memcpy(ptr, mac_keys[next_quad - 1].data(), key_size);
         ptr += key_size;
 
-        // Copy data for current quadrant
+        // atual
         memcpy(ptr, &_quadrant, id_size);
         ptr += id_size;
         memcpy(ptr, mac_keys[_quadrant - 1].data(), key_size);
         ptr += key_size;
 
         if (_quadrant == 4) {
-            // (Your final buffer printing logic can remain here)
             std::cout << std::hex;
             int total_length = 3 * (id_size + key_size);
             for (int i = 0; i < total_length; i++) {
@@ -192,6 +182,7 @@ public:
 
             if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
                 auto mac = _mac_handler->generate_mac(frame->data(), payload_size);
+                ConsoleLogger::log("GENERATING MESSAGE MAC: " + std::to_string(mac) + " - PAYLOAD SIZE: " + std::to_string(payload_size));
                 frame->metadata()->set_mac(mac);
             }
 
@@ -264,10 +255,6 @@ public:
     Address& address() {
         return _address;
     }
-
-    //void address(Address address);
-
-    //const Statistics & statistics();
 
     using Observed::attach;
     using Observed::detach;
@@ -342,31 +329,49 @@ private:
                             ConsoleLogger::log("Received RSU message has MAC keys");
                             // FRAME -> FRAME HEADER + METADATA + (DATA) -> [(id1+CHAVE1) + (id2+CHAVE2) + (id3+CHAVE3)]
                             int length = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
+
+                            
                             for(int i = 0; i < 3; i++) {
                                 unsigned short quadrant;
                                 Ethernet::MAC_KEY key;
                                 memcpy(&quadrant, frame->data()+(i*length), sizeof(unsigned short));
-                                memcpy(key.data(), frame->data()+(i*length)+2, Ethernet::MAC_BYTE_SIZE);
+                                memcpy(key.data(), frame->data()+(i*length)+sizeof(unsigned short), Ethernet::MAC_BYTE_SIZE);
                                 
-                                _mac_key_cache->put(sender_quadrant, key);
+                                _mac_key_cache->put(quadrant, key);
+                            }
+                            _mac_handler->set_mac_key(_mac_key_cache->get(_quadrant));
+                            for(int i = 0; i < 4; i++) {
+                                auto key_2 = _mac_key_cache->get(i+1);
+                                if(key_2) {
+                                    std::stringstream geek;
+                                    geek << std::hex;
+                                    for (int i = 0; i < Ethernet::MAC_BYTE_SIZE; i++) {
+                                        geek << static_cast<unsigned int>(key_2->data()[i]) << " ";
+                                    }
+                                    
+                                    ConsoleLogger::log("MAC KEY ACCESSED [" + std::to_string(i+1) + "]: " + geek.str());
+                                }
                             }
                         }
                         free(buf);
                     } else if (metadata.get_packet_origin() == Ethernet::Metadata::PacketOrigin::OTHERS) {
                         Ethernet::MAC_KEY* mac_key = _mac_key_cache->get(sender_quadrant);
                         ConsoleLogger::log("Vehicle received message from other vehicle");
-                        if(mac_key != nullptr) {
-                            size_t payload_size = buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata);
+                        if(mac_key) {
+                            ConsoleLogger::log("Received Vehicle message with known MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
+                            size_t payload_size = buf->size();
+                            ConsoleLogger::log("RECEIVING MESSAGE MAC:" + std::to_string(metadata.get_mac()) + " | Payload size: " + std::to_string(payload_size));
                             if(_mac_handler->verify_mac(frame->data(), payload_size, metadata.get_mac())) {
-                                ConsoleLogger::log("Received Vehicle message with known MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
+                                ConsoleLogger::log("MAC verification successful");
                                 if (!notify(prot, buf)) {
                                     free(buf);
                                 }
                             } else {
-                                ConsoleLogger::log("Received Vehicle message but with unknown MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
+                                ConsoleLogger::log("MAC verification failed");
                                 free(buf);
                             }
                         } else {
+                            ConsoleLogger::log("Received Vehicle message but with unknown MAC -> from = " + std::to_string(sender_quadrant) + "; to = " + std::to_string(_quadrant));
                             free(buf);
                         }
                     } else {
@@ -427,7 +432,7 @@ private:
     void cleanup_nic() {
         _running = false;
         sem_wait(&_sem);
-        //_data_semaphore.v();  // Wake up the processing thread
+        //_data_semaphore.v();  
         
         if (_worker_thread.joinable()) {
             _worker_thread.join();

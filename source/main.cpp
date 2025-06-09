@@ -19,7 +19,7 @@
 #include "../header/agent/vehicle.h"
 #include "../header/agent/rsu.h"
 
-constexpr int MAX_RUNTIME_SECONDS = 5; // total simulation time for the parent process (e.g., 5 min)
+constexpr int MAX_RUNTIME_SECONDS = 5;  // total simulation time for the parent process (e.g., 5 min)
 constexpr int SPAWN_INTERVAL_MS = 500;  // interval between spawns (in milliseconds)
 constexpr int MIN_LIFETIME = 4;         // min vehicle lifetime (in seconds)
 constexpr int MAX_LIFETIME = 6;         // max vehicle lifetime (in seconds)
