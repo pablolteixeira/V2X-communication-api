@@ -82,23 +82,74 @@ public:
         cleanup_nic();
     }
     
-    void create_mac_key_data(std::vector<Ethernet::MAC_KEY> mac_keys){
+    void create_mac_key_data(std::vector<Ethernet::MAC_KEY> mac_keys) {
+        // --- Defensive Check ---
+        // The ASan log indicates a heap-buffer-overflow, likely caused by an invalid
+        // _quadrant value being passed, leading to an out-of-bounds access on mac_keys.
+        // This check validates the _quadrant before it's used.
+        if (mac_keys.empty()) {
+            std::cerr << "Error: mac_keys vector is empty. Cannot create MAC key data." << std::endl;
+            return;
+        }
+        if (_quadrant < 1 || _quadrant > mac_keys.size()) {
+            std::cerr << "Error: Invalid quadrant value " << _quadrant 
+                    << ". It must be between 1 and " << mac_keys.size() << "." << std::endl;
+            return;
+        }
+
+        std::stringstream geek;
+        geek << std::hex;
+        const auto& current_key = mac_keys[_quadrant - 1];
+        for (int i = 0; i < current_key.size(); i++) {
+            geek << static_cast<unsigned int>(current_key[i]) << (i < current_key.size() - 1 ? " " : "");
+        }
+
+        ConsoleLogger::log("MAC KEY: " + geek.str());
+
         _mac_handler->set_mac_key(&mac_keys[_quadrant-1]);
-        _mac_handler->print_mac_key(); 
-        
-        unsigned short prev_quad = _quadrant - 1 == 0 ? mac_keys.size() : _quadrant - 1;
+        //_mac_handler->print_mac_key();
+
+        std::cout << "Creating MAC key data for quadrant " << _quadrant << std::endl;
+        // (Your printing logic can remain here)
+
+        // Calculate indices for the previous and next quadrants
+        unsigned short prev_quad = (_quadrant == 1) ? mac_keys.size() : _quadrant - 1;
         unsigned short next_quad = (_quadrant % mac_keys.size()) + 1;
         
-        int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
+        // --- Refactored Memory Copy ---
+        // Using a moving pointer is cleaner and less prone to calculation errors
+        // than multiple complex offsets.
+        unsigned char* ptr = _mac_key_data;
+        const size_t key_size = Ethernet::MAC_BYTE_SIZE;
+        const size_t id_size = sizeof(unsigned short);
 
-        memcpy(_mac_key_data, &prev_quad, sizeof(unsigned short));
-        memcpy(_mac_key_data + sizeof(unsigned short), &mac_keys[prev_quad-1], Ethernet::MAC_BYTE_SIZE);
+        // Copy data for previous quadrant
+        memcpy(ptr, &prev_quad, id_size);
+        ptr += id_size;
+        memcpy(ptr, mac_keys[prev_quad - 1].data(), key_size);
+        ptr += key_size;
 
-        memcpy(_mac_key_data + length, &next_quad, sizeof(unsigned short));
-        memcpy(_mac_key_data + (length + sizeof(unsigned short)), &mac_keys[next_quad-1], Ethernet::MAC_BYTE_SIZE);
-        
-        memcpy(_mac_key_data + (2 * length), &_quadrant, sizeof(unsigned short));
-        memcpy(_mac_key_data + (2 * length) + sizeof(unsigned short), &mac_keys[_quadrant-1], Ethernet::MAC_BYTE_SIZE);
+        // Copy data for next quadrant
+        memcpy(ptr, &next_quad, id_size);
+        ptr += id_size;
+        memcpy(ptr, mac_keys[next_quad - 1].data(), key_size);
+        ptr += key_size;
+
+        // Copy data for current quadrant
+        memcpy(ptr, &_quadrant, id_size);
+        ptr += id_size;
+        memcpy(ptr, mac_keys[_quadrant - 1].data(), key_size);
+        ptr += key_size;
+
+        if (_quadrant == 4) {
+            // (Your final buffer printing logic can remain here)
+            std::cout << std::hex;
+            int total_length = 3 * (id_size + key_size);
+            for (int i = 0; i < total_length; i++) {
+                std::cout << static_cast<unsigned int>(_mac_key_data[i]) << " ";
+            }
+            std::cout << std::dec << std::endl;
+        }
     }
 
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
@@ -151,9 +202,19 @@ public:
 
             if(_send_mac_key) {
                 int length  = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;
-                memcpy(frame->data(), _mac_key_data, 3*length);
+                memcpy(frame->data(), &_mac_key_data, 3*length);
                 frame->metadata()->set_has_mac_keys(true);
                 ConsoleLogger::log("SENDING MAC KEY");
+                
+                /*std::stringstream geek;
+                geek << std::hex;
+                for (int i = 0; i < 3*length; i++) {
+                    geek << static_cast<unsigned int>(frame->data()[i]) << " ";
+                }*/
+
+                //ConsoleLogger::log("HEADER + METADATA SIZE: " +  std::to_string(sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata)));
+                buf->size(sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata) + 3*length);
+                //ConsoleLogger::log("MAC KEYS SENT: " + geek.str());
             }
             
             int result = Engine::raw_send(
@@ -163,6 +224,8 @@ public:
                 frame->data(),
                 buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata)
             );
+
+            //ConsoleLogger::log("Result: " + std::to_string(result + sizeof(Ethernet::Header) + sizeof(Ethernet::Metadata)));
 
             _send_mac_key = false;
             
@@ -284,6 +347,7 @@ private:
                                 Ethernet::MAC_KEY key;
                                 memcpy(&quadrant, frame->data()+(i*length), sizeof(unsigned short));
                                 memcpy(key.data(), frame->data()+(i*length)+2, Ethernet::MAC_BYTE_SIZE);
+                                
                                 _mac_key_cache->put(sender_quadrant, key);
                             }
                         }
@@ -395,7 +459,7 @@ private:
     unsigned int _quadrant;
     bool _send_mac_key;
     LRU_Cache<unsigned short, Ethernet::MAC_KEY>* _mac_key_cache;
-    unsigned char* _mac_key_data[3 * (Ethernet::MAC_BYTE_SIZE + sizeof(unsigned short))];
+    unsigned char _mac_key_data[3 * (Ethernet::MAC_BYTE_SIZE + sizeof(unsigned short))];
 };
 
 
