@@ -23,9 +23,7 @@ public:
     U64 get_system_timestamp();
     U64 get_local_timestamp();
     SyncState get_sync_state();
-    PacketOrigin get_packet_origin();
 
-    void update_packet_origin(PacketOrigin packet_origin);
     void update_sync_state(SyncState sync_sate);
     void update_time_keeper(U64 system_timestamp, U64 local_timestamp);
     void update_sync_status();

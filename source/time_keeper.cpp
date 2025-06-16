@@ -21,14 +21,6 @@ void TimeKeeper::update_sync_state(SyncState new_state) {
     sync_state = new_state;
 }
 
-TimeKeeper::PacketOrigin TimeKeeper::get_packet_origin() {
-    return _packet_origin;
-}
-
-void TimeKeeper::update_packet_origin(PacketOrigin packet_origin) {
-    _packet_origin = packet_origin;
-}
-
 U64 TimeKeeper::get_local_timestamp() {
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();

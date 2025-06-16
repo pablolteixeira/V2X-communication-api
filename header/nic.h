@@ -174,13 +174,12 @@ public:
             auto sync_state = _time_keeper->get_sync_state();
             frame->metadata()->set_sync_state(sync_state);
 
-            auto packet_origin = _time_keeper->get_packet_origin();
-            frame->metadata()->set_packet_origin(packet_origin);
+            frame->metadata()->set_packet_origin(_packet_origin);
             frame->metadata()->set_has_mac_keys(false);
 
             size_t payload_size = buf->size() - sizeof(Ethernet::Header) - sizeof(Ethernet::Metadata);
 
-            if (packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
+            if (_packet_origin == Ethernet::Metadata::PacketOrigin::OTHERS) {
                 auto mac = _mac_handler->generate_mac(frame->data(), payload_size);
                 //ConsoleLogger::log("GENERATING MESSAGE MAC: " + std::to_string(mac) + " - PAYLOAD SIZE: " + std::to_string(payload_size) +  " - HASH: " + calcularHashDJB2(frame->data(), payload_size));
                 frame->metadata()->set_mac(mac);
@@ -240,7 +239,7 @@ public:
     }
 
     void set_packet_origin(Ethernet::Metadata::PacketOrigin packet_origin) {
-        _time_keeper->update_packet_origin(packet_origin);
+        _packet_origin = packet_origin;
     }
 
     unsigned short get_quadrant() {
@@ -302,7 +301,7 @@ private:
                 auto sender_quadrant = metadata.get_quadrant();
 
                 // VERIFY IF THE RSU RECEIVED THE MESSAGE 
-                if(_time_keeper->get_packet_origin() == Ethernet::Metadata::PacketOrigin::RSU) {
+                if(_packet_origin == Ethernet::Metadata::PacketOrigin::RSU) {
                     if(_quadrant == sender_quadrant) {
                         ConsoleLogger::log("RSU: Message with quadrant " + std::to_string(sender_quadrant) + " is in my quadrant " + std::to_string(_quadrant));
                         Ethernet::Address sender_address;
@@ -471,6 +470,7 @@ private:
     std::thread _worker_thread;
     TimeKeeper* _time_keeper;
     MACHandler* _mac_handler;
+    Ethernet::Metadata::PacketOrigin _packet_origin;
     
     VehicleTable _vehicle_table;
     unsigned int _quadrant;
