@@ -215,6 +215,8 @@ void SmartData::receive() {
                     auto*  response_payload = msg->get_payload<Message::ResponseMessage>();
                     for (InterestData data : _get_interests()) {
                         if (response_payload->type == data.data_type) {
+                            ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: metadata id -> " + std::to_string(*id));
+
                             std::string type_string = Ethernet::address_to_string(response_payload->origin.mac) == component_address ? "Internal" : "External";
 
                             auto now = std::chrono::system_clock::now();

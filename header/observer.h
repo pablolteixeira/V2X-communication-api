@@ -140,12 +140,12 @@ public:
     ~Concurrent_Observer() {}
     
     void update(C c, unsigned int id, D * d) {
-        std::pair<unsigned int, D*> pair = std::make_pair(id, d);
+        std::pair<unsigned int, D*>* pair = new std::pair<unsigned int, D*>(id, d);
         _data.insert(pair);
         _semaphore.v();
     }
     
-    std::pair<unsigned int, D*> updated() {
+    std::pair<unsigned int, D*>* updated() {
         _semaphore.p();
         return _data.remove();
     }
@@ -168,3 +168,25 @@ private:
 };
 
 #endif // OBSERVER_H
+
+/*
+==292426==ERROR: AddressSanitizer: attempting free on address which was not malloc()-ed: 0x6100000000a0 in thread T3
+    #0 0x7f86830c551f in operator delete(void*) ../../../../src/libsanitizer/asan/asan_new_delete.cc:165
+    #1 0x55d84100e34f in __gnu_cxx::new_allocator<std::_List_node<std::pair<unsigned int, Buffer<Ethernet::Frame>*> > >::deallocate(std::_List_node<std::pair<unsigned int, Buffer<Ethernet::Frame>*> >*, unsigned long) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x3134f)
+    #2 0x55d84100e22a in std::allocator_traits<std::allocator<std::_List_node<std::pair<unsigned int, Buffer<Ethernet::Frame>*> > > >::deallocate(std::allocator<std::_List_node<std::pair<unsigned int, Buffer<Ethernet::Frame>*> > >&, std::_List_node<std::pair<unsigned int, Buffer<Ethernet::Frame>*> >*, unsigned long) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x3122a)
+    #3 0x55d841028e63 in std::__cxx11::_List_base<std::pair<unsigned int, Buffer<Ethernet::Frame>*>, std::allocator<std::pair<unsigned int, Buffer<Ethernet::Frame>*> > >::_M_put_node(std::_List_node<std::pair<unsigned int, Buffer<Ethernet::Frame>*> >*) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4be63)
+    #4 0x55d84102860c in std::__cxx11::list<std::pair<unsigned int, Buffer<Ethernet::Frame>*>, std::allocator<std::pair<unsigned int, Buffer<Ethernet::Frame>*> > >::_M_erase(std::_List_iterator<std::pair<unsigned int, Buffer<Ethernet::Frame>*> >) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4b60c)
+    #5 0x55d841026b89 in std::__cxx11::list<std::pair<unsigned int, Buffer<Ethernet::Frame>*>, std::allocator<std::pair<unsigned int, Buffer<Ethernet::Frame>*> > >::pop_front() (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x49b89)
+    #6 0x55d84102442e in List<std::pair<unsigned int, Buffer<Ethernet::Frame>*> >::remove() (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4742e)
+    #7 0x55d841021050 in Concurrent_Observer<Buffer<Ethernet::Frame>, unsigned short>::updated() (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x44050)
+    #8 0x55d84101d045 in Communicator<Protocol<NIC<RawSocketEngine> > >::receive(Message*, unsigned int*) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x40045)
+    #9 0x55d8410120c8 in SmartData::receive() (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x350c8)
+    #10 0x55d84102a52c in void std::__invoke_impl<void, void (SmartData::*)(), SmartData*>(std::__invoke_memfun_deref, void (SmartData::*&&)(), SmartData*&&) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4d52c)
+    #11 0x55d84102a342 in std::__invoke_result<void (SmartData::*)(), SmartData*>::type std::__invoke<void (SmartData::*)(), SmartData*>(void (SmartData::*&&)(), SmartData*&&) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4d342)
+    #12 0x55d84102a222 in void std::thread::_Invoker<std::tuple<void (SmartData::*)(), SmartData*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4d222)
+    #13 0x55d84102a189 in std::thread::_Invoker<std::tuple<void (SmartData::*)(), SmartData*> >::operator()() (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4d189)
+    #14 0x55d84102a0f1 in std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (SmartData::*)(), SmartData*> > >::_M_run() (/home/pablo/Desktop/INE-5424-SO2/bin/main+0x4d0f1)
+    #15 0x7f8682ea9df3  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xd6df3)
+    #16 0x7f8682c4e608 in start_thread /build/glibc-B3wQXB/glibc-2.31/nptl/pthread_create.c:477
+    #17 0x7f8682b73352 in __clone (/lib/x86_64-linux-gnu/libc.so.6+0x11f352)
+*/
