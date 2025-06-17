@@ -204,12 +204,12 @@ public:
     }
 
 private:
-    void update(NICBuffer * buf) override {
+    void update(NICBuffer* buf, unsigned int id) override {
         //ConsoleLogger::print("Protocol: Update observers.");
         
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
 
-        if(!_observed.notify(packet->to_port(), buf)) {
+        if(!_observed.notify(packet->to_port(), id, buf)) {
             //ConsoleLogger::print("Protocol: Calling free buffer.");
             _nic->free(buf);
         }

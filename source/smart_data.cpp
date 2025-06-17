@@ -138,10 +138,11 @@ void SmartData::send_internal_interests() {
 void SmartData::receive() {
     std::string component_address = Ethernet::address_to_string(_get_address());
     Message* msg = new Message();
+    unsigned int* id;
 
     ConsoleLogger::log("Smart data: Starting receive thread");
     while (_running) {
-        if (_communicator->receive(msg)) {
+        if (_communicator->receive(msg, id)) {
             if (!_running) {
                 break;
             }

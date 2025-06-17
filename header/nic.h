@@ -42,7 +42,7 @@ public:
     static NIC<Engine>* _instance;
 public:
     NIC(const std::string& id, const unsigned short quadrant) : _buffer_pool(Ethernet::MTU), _running(true), _quadrant(quadrant), 
-                                                                _send_mac_key(false), _packet_origin(Ethernet::Metadata::PacketOrigin::OTHERS) {
+                                                                _send_mac_key(false), _packet_origin(Ethernet::Metadata::PacketOrigin::OTHERS), _metadata_map_id(0) {
         ConsoleLogger::print("NIC " + id + ": Starting...");
         // MAC ADDRESS + PID + COMPONENT ID
         MacAddressGenerator::generate_mac_from_seed(id, _address);
@@ -166,9 +166,16 @@ public:
         bool is_local_broadcast = memcmp(frame->data(), frame->data() + 8, 6) == 0;
 
         if (is_local_broadcast) {
-            notify(prot, buf);
+            _metadata_map_id++;
+
+            notify(prot, _metadata_map_id.load(), buf);
+            {
+                std::lock_guard<std::mutex> lock(_metadata_map_mutex);
+                _metadata_map[_metadata_map_id] = *frame->metadata();
+            }
             //ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
+
         } else {
             _time_keeper->update_sync_status();
 
@@ -368,11 +375,18 @@ private:
                             ConsoleLogger::log("RECEIVING MESSAGE MAC:" + std::to_string(metadata.get_mac()) + " | Payload size: " + std::to_string(payload_size) + " | HASH: " + calcularHashDJB2(frame->data(), size));
                             if(_mac_handler->verify_mac(frame->data(), payload_size, metadata.get_mac())) {
                                 ConsoleLogger::log("MAC verification successful");
-                                if (!notify(prot, buf)) {
+                                
+                                _metadata_map_id++;
+                                
+                                if (!notify(prot, _metadata_map_id.load(),buf)) {
                                     free(buf);
+                                } else {
+                                    {
+                                        std::lock_guard<std::mutex> lock(_metadata_map_mutex);
+                                        _metadata_map[_metadata_map_id] = metadata;
+                                    }
                                 }
                             } else {
-
                                 free(buf);
                             }
                         } else {
@@ -393,44 +407,6 @@ private:
                 perror("Error reading from socket");
                 break;
             }
-
-            /*  
-                SE A MENSAGEM CHEGOU DE UM CARRO NA RSU, E O CARRO AINDA NÃO ESTÁ NA TABELA DA RSU, A RSU VAI MANDAR UMA MENSAGEM
-                RAW COM AS CHAVES DENTRO DO DATA DO FRAME
-                
-                if RSU {
-                    if VEICULO TA NO MEU QUADRANTE {
-                        if NOT VEICULO TA NA TABELA DE VEICULOS {
-                            ADICIONAR NA TABELA DE VEICULOS
-                            ENVIAR MAC KEY (SETA FLAG)
-                        }
-                    }
-                    FREE
-                }
-                
-                
-                if VEICULO {
-                    if VEM DE RSU DO MEU QUADRANTE {
-                        UPDATE TIME KEEPER
-                        if MENSAGEM TEM CHAVE {
-                            ATUALIZA CHAVES
-                    } ELSE {
-                        if CHECAR SE ELE TEM A CHAVE DAQUELE QUADRANTE {
-                            if VERIFICAR MAC{
-                                if NOT NOTIFY {
-                                    FREE
-                                }
-                            } ELSE {
-                                FREE
-                            }
-                        } ELSE {
-                            FREE
-                        }  
-                    } else {
-                        FREE
-                    }
-                }
-            */
         }
     }
 
@@ -479,6 +455,9 @@ private:
     MACHandler* _mac_handler;
     Ethernet::Metadata::PacketOrigin _packet_origin;
     
+    std::atomic<unsigned int> _metadata_map_id;
+    std::unordered_map<unsigned int, Ethernet::Metadata> _metadata_map;
+    std::mutex _metadata_map_mutex;
     VehicleTable _vehicle_table;
     unsigned int _quadrant;
     bool _send_mac_key;

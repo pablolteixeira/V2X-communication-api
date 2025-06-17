@@ -17,7 +17,7 @@ public:
     typedef T Observed_Data;
     typedef Condition Observing_Condition;
 
-    virtual void update(T* d) {};
+    virtual void update(T* d, unsigned int id) {};
 
     void set_condition(Condition condition) {
         _condition = condition;
@@ -52,13 +52,13 @@ public:
         _observers.remove(o);
     }
 
-    bool notify(Condition c, T* d) {
+    bool notify(Condition c, unsigned int id, T* d) {
         //ConsoleLogger::print("Conditionally_Data_Observed: Notifying observers.");
         bool notified = false;
         for(typename Observers::Iterator obs = _observers.begin(); obs != _observers.end(); ++obs) {
             //ConsoleLogger::print(std::to_string((*obs)->rank()) + " - " + std::to_string(c));
             if ((*obs)->rank() == c) {
-                (*obs)->update(d);
+                (*obs)->update(d, id);
                 notified = true;
             }
         }
@@ -96,7 +96,7 @@ public:
         _observers.remove(o);
     }
     
-    bool notify(C c, D * d) {
+    bool notify(C c, unsigned int id, D * d) {
         //ConsoleLogger::print("Concurrent_Observed: Starting to notify concurrent observers.");
         bool notified = false;
         Observers tmp_observers;
@@ -113,7 +113,7 @@ public:
             d->set_reference_counter(tmp_observers.size());
 
             for (auto observer : tmp_observers) {
-                observer->update(c, d);
+                observer->update(c, id, d);
             }
         }
 
@@ -139,12 +139,13 @@ public:
     }
     ~Concurrent_Observer() {}
     
-    void update(C c, D * d) {
-        _data.insert(d);
+    void update(C c, unsigned int id, D * d) {
+        std::pair<unsigned int, D*> pair = std::make_pair(id, d);
+        _data.insert(pair);
         _semaphore.v();
     }
     
-    D * updated() {
+    std::pair<unsigned int, D*> updated() {
         _semaphore.p();
         return _data.remove();
     }
@@ -162,7 +163,7 @@ public:
     }
 private:
     Semaphore _semaphore;
-    List<D> _data;
+    List<std::pair<unsigned int, D*>> _data;
     C _condition;
 };
 
