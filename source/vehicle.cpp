@@ -59,6 +59,6 @@ void Vehicle::run() {
         auto quad = _nic->get_quadrant();
         quad = (quad % Traits<Vehicle>::NUM_RSU) + 1;
 
-        // _nic->set_quadrant(quad);
+        _nic->set_quadrant(quad);
     }
 }
