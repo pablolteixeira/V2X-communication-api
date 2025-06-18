@@ -145,6 +145,9 @@ public:
 
     Ethernet::MessageInfo get_message_info(const unsigned int id) {
         auto it = _attribute_map.find(id);
+        if (it == _attribute_map.end()) {
+            return Ethernet::MessageInfo{id};
+        }
         auto info = it->second;
         if(mac_to_string(info.origin_mac) == mac_to_string(_address)) {
             info.timestamp = _time_keeper->get_local_timestamp();
@@ -162,6 +165,9 @@ public:
         //ConsoleLogger::print("NIC: Allocating buffer. ");
         
         NICBuffer* buf = _buffer_pool.alloc();
+        if(!buf) {
+            return nullptr;
+        }
 
         buf->size(size + sizeof(Ethernet::Header) + sizeof(Ethernet::Attributes));
         Ethernet::Frame* frame = buf->frame();
@@ -437,9 +443,10 @@ private:
 
     void cleanup_nic() {
         _running = false;
-        sem_wait(&_sem);
+        sem_post(&_sem);
         //_data_semaphore.v();  
-        
+        _buffer_pool.stop();
+
         if (_worker_thread.joinable()) {
             _worker_thread.join();
         }

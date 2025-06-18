@@ -73,6 +73,10 @@ public:
         }
     }
 
+    void stop() {
+        _free_buffers.v();
+    }
+
 private:
     BufferType* _buffers[SIZE];
     bool _in_use[SIZE];
