@@ -34,20 +34,22 @@ public:
             message->size()) > 0);
     }
 
-    bool receive(Message * message, unsigned int* id) {
+    bool receive(Message * message, unsigned int& id) {
         std::pair<unsigned int, Buffer*>* pair = Observer::updated(); // block until a notification is triggered
-        id = &pair->first;
-        Buffer* buf = pair->second;
 
-        if (!buf || !_running) return false;
+        if (!pair || !_running) return false;
+
+        Buffer* buf = pair->second;
+        id = pair->first;
+
         typename Channel::Address from;
         int size = _channel->receive(buf, from, message->data(), message->max_size());
+        delete pair;
         if(size > 0) {
             message->size(size);
             return true;
         }
 
-        delete pair;
         return false;
     }
 

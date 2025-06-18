@@ -39,7 +39,14 @@ void SteeringComponent::set_interests() {
     _interests.push_back(dig_command_int);
 }
 
-void SteeringComponent::process_data(Message::ResponseMessage* data) {
+void SteeringComponent::process_data(Message::ResponseMessage* data, const unsigned int id) {
     _command_value = data->value;
     ConsoleLogger::log("Received steering command: " + std::to_string(_command_value));
+
+    Ethernet::MessageInfo message_info = get_message_info(id);
+    ConsoleLogger::log("Steering Component: Message info received: Origin MAC address -> " + mac_to_string(message_info.origin_mac) +
+        "; Origin ID -> " + std::to_string(message_info.origin_id) +
+        "; Timestamp -> " + std::to_string(message_info.timestamp) + 
+        "; Quadrant -> " + std::to_string(message_info.quadrant) +
+        "; MAC -> " + std::to_string(message_info.mac));
 }

@@ -138,7 +138,7 @@ void SmartData::send_internal_interests() {
 void SmartData::receive() {
     std::string component_address = Ethernet::address_to_string(_get_address());
     Message* msg = new Message();
-    unsigned int* id;
+    unsigned int id;
 
     ConsoleLogger::log("Smart data: Starting receive thread");
     while (_running) {
@@ -215,8 +215,6 @@ void SmartData::receive() {
                     auto*  response_payload = msg->get_payload<Message::ResponseMessage>();
                     for (InterestData data : _get_interests()) {
                         if (response_payload->type == data.data_type) {
-                            ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: metadata id -> " + std::to_string(*id));
-
                             std::string type_string = Ethernet::address_to_string(response_payload->origin.mac) == component_address ? "Internal" : "External";
 
                             auto now = std::chrono::system_clock::now();
@@ -229,7 +227,7 @@ void SmartData::receive() {
                                 ConsoleLogger::log("SmartData [" + std::to_string(_id) + "]: received " + type_string + " response message - value = " + std::to_string(response_payload->value) +  " but descarting it.");
                             }
 
-                            _process_data(response_payload);
+                            _process_data(response_payload, id);
 
                             break;
                         }

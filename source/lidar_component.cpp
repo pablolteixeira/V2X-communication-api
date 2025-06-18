@@ -25,7 +25,13 @@ void LidarComponent::generate_data() {
 void LidarComponent::set_interests() {
 }
 
-void LidarComponent::process_data(Message::ResponseMessage* data) {
+void LidarComponent::process_data(Message::ResponseMessage* data, const unsigned int id) {
+    Ethernet::MessageInfo message_info = get_message_info(id);
+    ConsoleLogger::log("Lidar Component: Message info received: Origin MAC address -> " + mac_to_string(message_info.origin_mac) +
+        "; Origin ID -> " + std::to_string(message_info.origin_id) +
+        "; Timestamp -> " + std::to_string(message_info.timestamp) + 
+        "; Quadrant -> " + std::to_string(message_info.quadrant) +
+        "; MAC -> " + std::to_string(message_info.mac));
 }
 
 

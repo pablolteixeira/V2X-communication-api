@@ -13,7 +13,7 @@ public:
 
     void set_interests() override;
 
-    void process_data(Message::ResponseMessage* data) override;
+    void process_data(Message::ResponseMessage* data, const unsigned int id) override;
 
 private:
     int _command_value;

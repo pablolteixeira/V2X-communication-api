@@ -52,7 +52,6 @@ public:
         PacketOrigin get_packet_origin() {return _packet_origin; }
         unsigned short get_quadrant() { return _quadrant; }
         bool get_has_mac_keys() { return _has_mac_keys; }
-        // Address get_unicast_addr() { return _unicast_addr; }
 
         void set_mac(MAC mac) {_mac = mac; }
         void set_timestamp(U64 timestamp) {_timestamp = timestamp; }
@@ -60,7 +59,6 @@ public:
         void set_packet_origin(PacketOrigin packet_origin) { _packet_origin = packet_origin; }
         void set_quadrant(unsigned short quadrant) {_quadrant = quadrant; }
         void set_has_mac_keys(bool has_mac_keys) { _has_mac_keys = has_mac_keys; }
-        // void set_unicast_addr(Address unicast_addr) { _unicast_addr = unicast_addr; }
 
     private:
         U64 _timestamp;
@@ -69,7 +67,6 @@ public:
         PacketOrigin _packet_origin;
         unsigned short _quadrant;
         bool _has_mac_keys;
-        // Ethernet::Address _unicast_addr;
     }__attribute__((packed));
     
     class Frame 
@@ -92,6 +89,14 @@ public:
         unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Metadata)];
     } __attribute__((packed));
     
+    struct MessageInfo {
+        Address origin_mac;
+        unsigned short origin_id;
+        U64 timestamp;
+        unsigned short quadrant;
+        MAC mac;
+    };
+
     static std::string address_to_string(Address addr) {
         std::stringstream ss;
         

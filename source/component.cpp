@@ -18,7 +18,7 @@ void Component::start() {
         [&]() { return get_interests(); },
         [&]() { return get_value(); },
         [&]() -> Ethernet::Address& { return get_address(); },
-        [&](Message::ResponseMessage* msg) { process_data(msg); },
+        [&](Message::ResponseMessage* msg, const unsigned int id) { process_data(msg, id); },
         _data_type
     );
     

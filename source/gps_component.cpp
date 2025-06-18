@@ -24,5 +24,11 @@ void GPSComponent::generate_data() {
 void GPSComponent::set_interests() {
 }
 
-void GPSComponent::process_data(Message::ResponseMessage* data) {
+void GPSComponent::process_data(Message::ResponseMessage* data, const unsigned int id) {
+    Ethernet::MessageInfo message_info = get_message_info(id);
+    ConsoleLogger::log("GPS Component: Message info received: Origin MAC address -> " + mac_to_string(message_info.origin_mac) +
+        "; Origin ID -> " + std::to_string(message_info.origin_id) +
+        "; Timestamp -> " + std::to_string(message_info.timestamp) + 
+        "; Quadrant -> " + std::to_string(message_info.quadrant) +
+        "; MAC -> " + std::to_string(message_info.mac));
 }

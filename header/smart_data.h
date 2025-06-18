@@ -15,7 +15,6 @@
 #include "queue.h"
 #include "component_types.h"
 
-
 class SmartData {
 public:
     SmartData(Ethernet::Address& address, const unsigned short id);
@@ -24,7 +23,8 @@ public:
     typedef std::function<std::vector<InterestData>()>  GetInterestsCallback;
     typedef std::function<int()>                        GetDataCallback;
     typedef std::function<Ethernet::Address&()>         GetAddressCallback;
-    typedef std::function<void(Message::ResponseMessage *)> ProcessDataCallback;
+    typedef std::function<void(Message::ResponseMessage *, const unsigned int)> ProcessDataCallback;
+
     typedef std::pair<Message*, EthernetProtocol::Address*> MessageAddressPair;
 
     void start();

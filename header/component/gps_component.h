@@ -15,7 +15,7 @@ public:
 
     void set_interests() override;
 
-    void process_data(Message::ResponseMessage* data) override;
+    void process_data(Message::ResponseMessage* data, const unsigned int id) override;
 };
 
 #endif // GPS_COMPONENT_H

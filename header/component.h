@@ -31,7 +31,7 @@ public:
 
     virtual void run() = 0;
     virtual void set_interests() = 0;
-    virtual void process_data(Message::ResponseMessage* data) = 0;
+    virtual void process_data(Message::ResponseMessage* data, const unsigned int id) = 0;
     virtual void generate_data() = 0;
     Ethernet::Address& get_address();
     const unsigned short& id() const;
@@ -40,6 +40,10 @@ public:
     int get_value();
 
     std::vector<InterestData> get_interests();
+
+    Ethernet::MessageInfo get_message_info(const unsigned int id) {
+        return _autonomous_agent->nic()->get_message_info(id);
+    }
 
 protected:
     unsigned short _id;
@@ -56,8 +60,7 @@ protected:
 
     AutonomousAgent* _autonomous_agent;
     SmartData* _smart_data;
-
-private:
+    
     std::string mac_to_string(Ethernet::Address& addr);
 };
 

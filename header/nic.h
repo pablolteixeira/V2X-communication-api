@@ -143,6 +143,21 @@ public:
         }
     }
 
+    Ethernet::MessageInfo get_message_info(const unsigned int id) {
+        auto it = _metadata_map.find(id);
+        auto info = it->second;
+        if(mac_to_string(info.origin_mac) == mac_to_string(_address)) {
+            info.timestamp = _time_keeper->get_local_timestamp();
+            info.quadrant = _quadrant;
+            {
+                std::lock_guard<std::mutex> lock(_metadata_map_mutex);
+                _metadata_map[id] = info;
+            }
+        }
+        
+        return info;
+    } 
+
     NICBuffer* alloc(const Address dst, Protocol_Number prot, unsigned int size) {
         //ConsoleLogger::print("NIC: Allocating buffer. ");
         
@@ -167,15 +182,20 @@ public:
 
         if (is_local_broadcast) {
             _metadata_map_id++;
-
-            notify(prot, _metadata_map_id.load(), buf);
             {
                 std::lock_guard<std::mutex> lock(_metadata_map_mutex);
-                _metadata_map[_metadata_map_id] = *frame->metadata();
-            }
+                Ethernet::MessageInfo message_info;
+                memcpy(&message_info.origin_mac, _address, ETH_ALEN);
+                memcpy(&message_info.origin_id,  frame->data() + 6, 2);
+                message_info.quadrant = 0;
+                message_info.timestamp = 0;
+                message_info.mac = 0;
+
+                _metadata_map[_metadata_map_id] = message_info;
+            }                
+            notify(prot, _metadata_map_id.load(), buf);
             //ConsoleLogger::print("NIC: Frame sent BROADCAST LOCAL.");
             return 0;
-
         } else {
             _time_keeper->update_sync_status();
 
@@ -308,13 +328,13 @@ private:
                 buf->size(size);
 
                 auto sender_quadrant = metadata.get_quadrant();
+                Address sender_address;
+                memcpy(&sender_address, frame->data(), 6);
 
                 // VERIFY IF THE RSU RECEIVED THE MESSAGE 
                 if(_packet_origin == Ethernet::Metadata::PacketOrigin::RSU) {
                     if(_quadrant == sender_quadrant) {
                         ConsoleLogger::log("RSU: Message with quadrant " + std::to_string(sender_quadrant) + " is in my quadrant " + std::to_string(_quadrant));
-                        Address sender_address;
-                        memcpy(&sender_address, frame->data(), 6);
                         if(!_vehicle_table.check_vehicle(&sender_address)) {
                             ConsoleLogger::log("RSU: New vehicle found with address: " + mac_to_string(sender_address));
                             std::array<unsigned char, ETH_ALEN> sender_address_array;
@@ -322,7 +342,6 @@ private:
                             _vehicle_table.set_vehicle(sender_address_array);
                             _send_mac_key = true;
                             memcpy(&_unicast_addr, &sender_address, ETH_ALEN);
-
                         }
                     }
 
@@ -344,11 +363,11 @@ private:
                                 
                                 for(int i = 0; i < 3; i++) {
                                     unsigned short quadrant;
-                                Ethernet::MAC_KEY key;
-                                memcpy(&quadrant, frame->data()+(i*length)+ETH_ALEN, sizeof(unsigned short));
-                                memcpy(key.data(), frame->data()+(i*length)+sizeof(unsigned short)+ETH_ALEN, Ethernet::MAC_BYTE_SIZE);
-                                
-                                _mac_key_cache->put(quadrant, key);
+                                    Ethernet::MAC_KEY key;
+                                    memcpy(&quadrant, frame->data()+(i*length)+ETH_ALEN, sizeof(unsigned short));
+                                    memcpy(key.data(), frame->data()+(i*length)+sizeof(unsigned short)+ETH_ALEN, Ethernet::MAC_BYTE_SIZE);
+                                    
+                                    _mac_key_cache->put(quadrant, key);
                                 }
                                 _mac_handler->set_mac_key(_mac_key_cache->get(_quadrant));
                                 for(int i = 0; i < 4; i++) {
@@ -377,14 +396,20 @@ private:
                                 ConsoleLogger::log("MAC verification successful");
                                 
                                 _metadata_map_id++;
-                                
+                                Ethernet::MessageInfo message_info;
+                                memcpy(&message_info.origin_mac, sender_address, ETH_ALEN);
+                                memcpy(&message_info.origin_id, frame->data() + 6, 2);
+                                message_info.quadrant = metadata.get_quadrant();
+                                message_info.timestamp = metadata.get_timestamp();
+                                message_info.mac = metadata.get_mac();
+                                {
+                                    std::lock_guard<std::mutex> lock(_metadata_map_mutex);
+                                    _metadata_map[_metadata_map_id] = message_info;
+                                }
+
                                 if (!notify(prot, _metadata_map_id.load(),buf)) {
+                                    _metadata_map.erase(_metadata_map_id);
                                     free(buf);
-                                } else {
-                                    {
-                                        std::lock_guard<std::mutex> lock(_metadata_map_mutex);
-                                        _metadata_map[_metadata_map_id] = metadata;
-                                    }
                                 }
                             } else {
                                 free(buf);
@@ -456,7 +481,7 @@ private:
     Ethernet::Metadata::PacketOrigin _packet_origin;
     
     std::atomic<unsigned int> _metadata_map_id;
-    std::unordered_map<unsigned int, Ethernet::Metadata> _metadata_map;
+    std::unordered_map<unsigned int, Ethernet::MessageInfo> _metadata_map;
     std::mutex _metadata_map_mutex;
     VehicleTable _vehicle_table;
     unsigned int _quadrant;
@@ -466,9 +491,7 @@ private:
     unsigned char _mac_key_data[3 * (Ethernet::MAC_BYTE_SIZE + sizeof(unsigned short))];
 };
 
-
 template <typename Engine>
 NIC<Engine>* NIC<Engine>::_instance = nullptr;
-
 
 #endif // NIC_H

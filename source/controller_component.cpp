@@ -64,7 +64,7 @@ void ControllerComponent::set_interests() {
     _interests.push_back(comp_gps_ext);
 }
 
-void ControllerComponent::process_data(Message::ResponseMessage* data) {
+void ControllerComponent::process_data(Message::ResponseMessage* data, const unsigned int id) {
     ComponentDataType data_type = data->type;
     
     bool is_internal = Ethernet::address_to_string(data->origin.mac) == Ethernet::address_to_string(get_address());
@@ -84,4 +84,11 @@ void ControllerComponent::process_data(Message::ResponseMessage* data) {
             ConsoleLogger::log("Received external GPS data: " + std::to_string(_external_gps_value));
         }
     }
+
+    Ethernet::MessageInfo message_info = get_message_info(id);
+    ConsoleLogger::log("Controller Component: Message info received: Origin MAC address -> " + mac_to_string(message_info.origin_mac) +
+        "; Origin ID -> " + std::to_string(message_info.origin_id) +
+        "; Timestamp -> " + std::to_string(message_info.timestamp) + 
+        "; Quadrant -> " + std::to_string(message_info.quadrant) +
+        "; MAC -> " + std::to_string(message_info.mac));
 }
