@@ -72,14 +72,14 @@ bool test_raw_socket_send_receive() {
         std::thread receive_thread([&]() {
             Ethernet::Address src;
             Ethernet::Protocol prot;
-            Ethernet::Metadata metadata;
+            Ethernet::Attributes attributes;
             char buffer[1024];
             
             auto start_time = std::chrono::steady_clock::now();
             while (!packet_received && 
                    std::chrono::steady_clock::now() - start_time < std::chrono::seconds(5)) {
                 
-                int bytes_received = receiver.raw_receive(&src, &prot, &metadata, buffer, sizeof(buffer));
+                int bytes_received = receiver.raw_receive(&src, &prot, &attributes, buffer, sizeof(buffer));
                 
                 if (bytes_received > 0 && prot == 0x8888) {  // Protocolo personalizado para teste
                     std::string received_data(buffer, bytes_received);
@@ -99,12 +99,12 @@ bool test_raw_socket_send_receive() {
         // Envia pacote de teste para o endereço de broadcast
         Ethernet::Address broadcast = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
         const char* test_data = "TESTE_RAW_SOCKET";
-        Ethernet::Metadata* metadata;
-        metadata = new Ethernet::Metadata;
-        metadata->set_packet_origin(Ethernet::Metadata::PacketOrigin::OTHERS);
+        Ethernet::Attributes* attributes;
+        attributes = new Ethernet::Attributes;
+        attributes->set_packet_origin(Ethernet::Attributes::PacketOrigin::OTHERS);
 
         std::cout << "Enviando pacote de teste..." << std::endl;
-        int bytes_sent = sender.raw_send(broadcast, 0x8888, metadata, test_data, strlen(test_data));
+        int bytes_sent = sender.raw_send(broadcast, 0x8888, attributes, test_data, strlen(test_data));
         
         std::cout << "Enviados " << bytes_sent << " bytes." << std::endl;
         

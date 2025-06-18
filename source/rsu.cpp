@@ -30,7 +30,7 @@ void RSU::start() {
     if (_running) return;
     ConsoleLogger::log("Starting RSU -> " + std::to_string(_id));
     
-    _nic->set_packet_origin(Ethernet::Metadata::PacketOrigin::RSU);
+    _nic->set_packet_origin(Ethernet::Attributes::PacketOrigin::RSU);
 
     _running = true;
 

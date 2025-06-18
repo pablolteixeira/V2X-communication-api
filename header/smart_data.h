@@ -24,13 +24,14 @@ public:
     typedef std::function<int()>                        GetDataCallback;
     typedef std::function<Ethernet::Address&()>         GetAddressCallback;
     typedef std::function<void(Message::ResponseMessage *, const unsigned int)> ProcessDataCallback;
+    typedef std::function<Ethernet::MessageInfo(const unsigned int)> GetMessageInfoCallback;
 
     typedef std::pair<Message*, EthernetProtocol::Address*> MessageAddressPair;
 
     void start();
     void stop();
 
-    void register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data, ComponentDataType data_type);
+    void register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data, GetMessageInfoCallback get_message_info, ComponentDataType data_type);
     void send_external_interests();
     void send_internal_interests();
 
@@ -55,6 +56,8 @@ private:
     std::thread _receive_thread;
     std::thread _send_thread;
 
+    EthernetProtocol::Address _component_addr;
+
     InterestTable _interest_table;
     std::vector<MessageAddressPair> _external_interest_messages;
     std::vector<MessageAddressPair> _internal_interest_messages;
@@ -65,6 +68,7 @@ private:
     GetDataCallback _get_data;
     GetAddressCallback _get_address;
     ProcessDataCallback _process_data;
+    GetMessageInfoCallback _get_message_info;
 };
 
 #endif // SMART_DATA_H

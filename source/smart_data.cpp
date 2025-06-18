@@ -6,9 +6,9 @@
 SmartData::SmartData(Ethernet::Address& nic_address, const unsigned short id)
     : _running(false), _id(id), _semaphore(0), _period_time_internal_response_thread(0), _period_time_external_response_thread(0), _internal_response_thread(nullptr), _external_response_thread(nullptr), _interest_thread(nullptr) 
 {
-    EthernetProtocol::Address component_addr(nic_address, id);
+    _component_addr = EthernetProtocol::Address(nic_address, id);
     
-    _communicator = new EthernetCommunicator(EthernetProtocol::get_instance(), component_addr);
+    _communicator = new EthernetCommunicator(EthernetProtocol::get_instance(), _component_addr);
 }
 
 SmartData::~SmartData() {
@@ -73,11 +73,12 @@ void SmartData::stop() {
     _communicator->stop();
 }
 
-void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data, ComponentDataType data_type) {
+void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback get_data, GetAddressCallback get_add, ProcessDataCallback p_data, GetMessageInfoCallback get_message_info, ComponentDataType data_type) {
     _get_interests = get_cb;
     _get_data = get_data;
     _get_address = get_add;
     _process_data = p_data;
+    _get_message_info = get_message_info;
     _data_type = data_type;
 
     Ethernet::Address address;
@@ -95,14 +96,8 @@ void SmartData::register_component(GetInterestsCallback get_cb, GetDataCallback 
         
         Message::InterestMessage interest_payload;
         
-        Origin origin;
-        memcpy(origin.mac, _get_address(), 6);
-        origin.port = _id;
-        
-        interest_payload.origin = origin;
         interest_payload.type = interest.data_type;
         interest_payload.period = interest.period;
-        interest_payload.timestamp = 0;
         
         Message* msg = new Message();
         msg->set_type(Message::Type::INTEREST);
@@ -153,13 +148,18 @@ void SmartData::receive() {
                 case Message::Type::INTEREST: {
                     auto* interest_payload = msg->get_payload<Message::InterestMessage>();
                     if (interest_payload->type == _data_type) {
-                        bool is_internal = Ethernet::address_to_string(interest_payload->origin.mac) == component_address;
+                        Ethernet::MessageInfo message_info = _get_message_info(id);
 
-                        ConsoleLogger::log("Interest arrived: From -> " + Ethernet::address_to_string(interest_payload->origin.mac));
+                        bool is_internal = Ethernet::address_to_string(message_info.origin_mac) == component_address;
+
+                        ConsoleLogger::log("Interest arrived: From -> " + Ethernet::address_to_string(message_info.origin_mac));
+                        Origin origin;
+                        memcpy(&origin.mac, &message_info.origin_mac, 6);
+                        origin.port = 0;
 
                         // Register the interest
                         _interest_table.register_interest(
-                            interest_payload->origin,
+                            origin,
                             interest_payload->type,
                             interest_payload->period,
                             is_internal
@@ -215,7 +215,8 @@ void SmartData::receive() {
                     auto*  response_payload = msg->get_payload<Message::ResponseMessage>();
                     for (InterestData data : _get_interests()) {
                         if (response_payload->type == data.data_type) {
-                            std::string type_string = Ethernet::address_to_string(response_payload->origin.mac) == component_address ? "Internal" : "External";
+                            Ethernet::MessageInfo message_info = _get_message_info(id);
+                            std::string type_string = Ethernet::address_to_string(message_info.origin_mac) == component_address ? "Internal" : "External";
 
                             auto now = std::chrono::system_clock::now();
                             auto now_micro = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch());
@@ -261,11 +262,6 @@ void SmartData::send_response_external() {
 
     Message::ResponseMessage response_payload;
 
-    Origin origin;
-    memcpy(origin.mac, _get_address(), 6);
-    origin.port = _id;
-
-    response_payload.origin = origin;
     response_payload.type = _data_type;
     response_payload.value = value;
 
@@ -292,14 +288,8 @@ void SmartData::send_response_internal() {
 
     Message::ResponseMessage response_payload;
 
-    Origin origin;
-    memcpy(origin.mac, _get_address(), 6);
-    origin.port = _id;
-
-    response_payload.origin = origin;
     response_payload.type = _data_type;
     response_payload.value = value;
-    response_payload.timestamp = 0;
 
     msg->set_type(Message::Type::RESPONSE);
     msg->set_payload(response_payload);
@@ -311,10 +301,5 @@ void SmartData::send_response_internal() {
 
 void SmartData::send_interest(MessageAddressPair interest) {
     EthernetProtocol::Address* to = interest.second;
-
-    Message::InterestMessage* interest_payload = interest.first->get_payload<Message::InterestMessage>();
-    Origin origin = interest_payload->origin;
-    EthernetProtocol::Address from(origin.mac, origin.port);
-
-    _communicator->send(interest.first, from, *to);
+    _communicator->send(interest.first, _component_addr, *to);
 }

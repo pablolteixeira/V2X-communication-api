@@ -19,6 +19,7 @@ void Component::start() {
         [&]() { return get_value(); },
         [&]() -> Ethernet::Address& { return get_address(); },
         [&](Message::ResponseMessage* msg, const unsigned int id) { process_data(msg, id); },
+        [&](const unsigned int id) { return _autonomous_agent->nic()->get_message_info(id); },
         _data_type
     );
     

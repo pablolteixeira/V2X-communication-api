@@ -30,7 +30,7 @@ public:
     typedef uint32_t MAC;
     typedef std::array<unsigned char, MAC_BYTE_SIZE> MAC_KEY;
 
-    class Metadata 
+    class Attributes 
     {
     public:
         enum SyncState {
@@ -43,8 +43,8 @@ public:
             OTHERS
         };
         
-        Metadata() : _timestamp(0), _sync_state(SyncState::NOT_SYNCHRONIZED), _packet_origin(PacketOrigin::OTHERS), _has_mac_keys(false) {}
-        Metadata(U64 timestamp, SyncState sync_state, PacketOrigin packet_origin) : _timestamp(timestamp), _sync_state(sync_state), _packet_origin(packet_origin), _has_mac_keys(false) {}
+        Attributes() : _timestamp(0), _sync_state(SyncState::NOT_SYNCHRONIZED), _packet_origin(PacketOrigin::OTHERS), _has_mac_keys(false) {}
+        Attributes(U64 timestamp, SyncState sync_state, PacketOrigin packet_origin) : _timestamp(timestamp), _sync_state(sync_state), _packet_origin(packet_origin), _has_mac_keys(false) {}
 
         MAC get_mac() {return _mac; }
         U64 get_timestamp() { return _timestamp; }
@@ -80,13 +80,13 @@ public:
         }
         
         Header* header() { return &_header; }
-        Metadata* metadata() { return &_metadata; }
+        Attributes* attributes() { return &_attributes; }
         unsigned char* data() { return _data; }
         
     private:
         Header _header;
-        Metadata _metadata;
-        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Metadata)];
+        Attributes _attributes;
+        unsigned char _data[ETH_FRAME_LEN - sizeof(Header) - sizeof(Attributes)];
     } __attribute__((packed));
     
     struct MessageInfo {

@@ -206,7 +206,7 @@ public:
 private:
     void update(NICBuffer* buf, unsigned int id) override {
         //ConsoleLogger::print("Protocol: Update observers.");
-        
+
         Packet* packet = reinterpret_cast<Packet*>(buf->frame()->data());
 
         if(!_observed.notify(packet->to_port(), id, buf)) {
@@ -230,7 +230,7 @@ template <typename NIC>
 const typename Protocol<NIC>::Address Protocol<NIC>::Address::BROADCAST(Protocol<NIC>::Address::BROADCAST_MAC, 0);
 
 template <typename NIC>
-const unsigned int Protocol<NIC>::MTU = NIC::MTU - sizeof(Protocol<NIC>::Header) - sizeof(Ethernet::Metadata);
+const unsigned int Protocol<NIC>::MTU = NIC::MTU - sizeof(Protocol<NIC>::Header) - sizeof(Ethernet::Attributes);
 
 template <typename NIC>
 typename Protocol<NIC>::Observed Protocol<NIC>::_observed;

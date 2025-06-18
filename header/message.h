@@ -74,17 +74,13 @@ public:
     }
 
     struct InterestMessage {
-        Origin origin;
         unsigned int type;
         std::chrono::microseconds period;
-        U64 timestamp;
     };
 
     struct ResponseMessage {
-        Origin origin;
         unsigned int type;
         int value;
-        U64 timestamp;
     };
 
     // Constructor with a specified maximum size
