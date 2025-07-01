@@ -11,7 +11,7 @@
 class Vehicle: public AutonomousAgent
 {
 public:
-    Vehicle(EthernetNIC* nic, EthernetProtocol* protocol, int lifetime);
+    Vehicle(int id, EthernetNIC* nic, EthernetProtocol* protocol, int lifetime);
     ~Vehicle();
     
     void start() override;

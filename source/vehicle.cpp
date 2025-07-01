@@ -4,16 +4,20 @@
 #include "../header/component/gps_component.h"
 #include "../header/component/steering_component.h"
 #include "../header/component/controller_component.h"
+#include "../header/component/accelerometer_component.h"
 
-
-Vehicle::Vehicle(EthernetNIC* nic, EthernetProtocol* protocol, int lifetime) 
+Vehicle::Vehicle(int id, EthernetNIC* nic, EthernetProtocol* protocol, int lifetime) 
     : AutonomousAgent(nic, protocol), _lifetime(lifetime) {
     _protocol->register_nic(_nic);
+    _id = id;
     
+    ConsoleLogger::log("Vehicle: dataset id " + std::to_string(_id) + " set");
+
     _components.push_back(new LidarComponent(this, 1));
     _components.push_back(new GPSComponent(this, 2));
     _components.push_back(new ControllerComponent(this, 3));
     _components.push_back(new SteeringComponent(this, 4));
+    _components.push_back(new AccelerometerComponent(this, 5, _id));
 }
 
 Vehicle::~Vehicle() {

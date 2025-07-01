@@ -86,7 +86,7 @@ int main() {
             exit(0);
         }       
     }
-    
+    int dataset_id = 0;
     while (true) {
         // Check if the parent should stop
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
@@ -119,7 +119,7 @@ int main() {
             
             int lifetime = MIN_LIFETIME + rand() % (MAX_LIFETIME - MIN_LIFETIME + 1);
             ConsoleLogger::log("Vehicle " + id + " will live for " + std::to_string(lifetime) + " seconds");
-            Vehicle* vehicle = new Vehicle(nic, child_protocol, lifetime);
+            Vehicle* vehicle = new Vehicle(dataset_id, nic, child_protocol, lifetime);
             
             vehicle->start();
             ConsoleLogger::log("Vehicle " + id + " started");
@@ -147,6 +147,8 @@ int main() {
             ConsoleLogger::log("Spawned vehicle process with PID: " + std::to_string(pid));
             std::cout << "Spawned vehicle process with PID: " << std::to_string(pid) << std::endl;
             
+            dataset_id++;
+
             // Reap any finished child processes to avoid zombies
             int status;
             while (waitpid(-1, &status, WNOHANG) > 0) {
