@@ -5,6 +5,7 @@
 
 #include "../component.h"
 #include "../csv.hpp"
+#include "../u64_type.h"
 
 using namespace csv;
 
@@ -21,6 +22,8 @@ public:
     void process_data(Message::ResponseMessage* data, const unsigned int id) override;
 private:
     std::atomic<double> _value;
+    U64 _initial_time;
+    U64 _local_initial_time;
 
     CSVReader* _reader;
     CSVRow _row;

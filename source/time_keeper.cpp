@@ -5,7 +5,7 @@ TimeKeeper::TimeKeeper() {
     std::mt19937 gen(rd());
 
     std::uniform_int_distribution<int> dist(0, 500);
-    fake_offset = dist(gen);
+    fake_offset = 0;
     sync_timeout *= 1000;
 }
 

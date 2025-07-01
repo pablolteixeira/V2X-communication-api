@@ -78,6 +78,10 @@ public:
         _instance->stop();
     }
 
+    U64 get_local_timestamp() {
+        return _time_keeper->get_local_timestamp();
+    }
+
     void stop() {
         ConsoleLogger::log("NIC: Stopping");
         cleanup_nic();
