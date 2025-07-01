@@ -149,7 +149,7 @@ public:
             return Ethernet::MessageInfo{id};
         }
         auto info = it->second;
-        if(mac_to_string(info.origin_mac) == mac_to_string(_address)) {
+        if(memcmp(info.origin_mac, _address, ETH_ALEN) == 0) {
             info.timestamp = _time_keeper->get_local_timestamp();
             info.quadrant = _quadrant;
             {
@@ -362,7 +362,7 @@ private:
                         if (attributes.get_has_mac_keys()) {
                             Address dest;
                             memcpy(&dest, frame->data(), ETH_ALEN);
-                            if (mac_to_string(dest) == mac_to_string(_address)){                                 
+                            if (memcmp(dest, _address, ETH_ALEN)){                                 
                                 ConsoleLogger::log("Received RSU message has MAC keys");
                                 // FRAME -> FRAME HEADER + METADATA + (DATA) -> [(id1+CHAVE1) + (id2+CHAVE2) + (id3+CHAVE3)]
                                 int length = sizeof(unsigned short) + Ethernet::MAC_BYTE_SIZE;      

@@ -68,7 +68,7 @@ void ControllerComponent::process_data(Message::ResponseMessage* data, const uns
     ComponentDataType data_type = data->type;
     Ethernet::MessageInfo message_info = get_message_info(id);
     
-    bool is_internal = Ethernet::address_to_string(message_info.origin_mac) == Ethernet::address_to_string(get_address());
+    bool is_internal = memcmp(message_info.origin_mac, get_address(), ETH_ALEN) == 0;
     
     if (data_type == (ComponentDataTypes::METER_DATATYPE)) {
         _lidar_value = data->value;

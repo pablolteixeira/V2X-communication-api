@@ -150,7 +150,7 @@ void SmartData::receive() {
                     if (interest_payload->type == _data_type) {
                         Ethernet::MessageInfo message_info = _get_message_info(id);
 
-                        bool is_internal = Ethernet::address_to_string(message_info.origin_mac) == component_address;
+                        bool is_internal = memcmp(message_info.origin_mac, _get_address(), ETH_ALEN) == 0;
 
                         ConsoleLogger::log("Interest arrived: From -> " + Ethernet::address_to_string(message_info.origin_mac));
                         Origin origin;
